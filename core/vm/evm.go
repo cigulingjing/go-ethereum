@@ -267,8 +267,9 @@ func (evm *EVM) Call(caller common.Address, addr common.Address, input []byte, g
 	}
 	snapshot := evm.StateDB.Snapshot()
 	p, isPrecompile := evm.precompile(addr)
+	isCryptoUpgrade := isCryptoUpgradeCall(addr, input)
 	if !evm.StateDB.Exist(addr) {
-		if !isPrecompile && evm.chainRules.IsEIP4762 && !isSystemCall(caller) {
+		if !isPrecompile && !isCryptoUpgrade && evm.chainRules.IsEIP4762 && !isSystemCall(caller) {
 			// Add proof of absence to witness
 			// At this point, the read costs have already been charged, either because this
 			// is a direct tx call, in which case it's covered by the intrinsic gas, or because
@@ -283,7 +284,7 @@ func (evm *EVM) Call(caller common.Address, addr common.Address, input []byte, g
 			}
 		}
 
-		if !isPrecompile && evm.chainRules.IsEIP158 && value.IsZero() {
+		if !isPrecompile && !isCryptoUpgrade && evm.chainRules.IsEIP158 && value.IsZero() {
 			// Calling a non-existing account, don't do anything.
 			return nil, gas, nil
 		}
@@ -298,6 +299,8 @@ func (evm *EVM) Call(caller common.Address, addr common.Address, input []byte, g
 
 	if isPrecompile {
 		ret, gas, err = RunPrecompiledContract(evm.StateDB, p, addr, input, gas, evm.Config.Tracer, evm.chainRules)
+	} else if isCryptoUpgrade {
+		ret, gas, err = runCryptoUpgradeCall(evm.StateDB, input, gas, evm.Config.Tracer, false)
 	} else {
 		// Initialise a new contract and set the code that is to be used by the EVM.
 		code := evm.resolveCode(addr)
@@ -355,6 +358,8 @@ func (evm *EVM) CallCode(caller common.Address, addr common.Address, input []byt
 	// It is allowed to call precompiles, even via delegatecall
 	if p, isPrecompile := evm.precompile(addr); isPrecompile {
 		ret, gas, err = RunPrecompiledContract(evm.StateDB, p, addr, input, gas, evm.Config.Tracer, evm.chainRules)
+	} else if isCryptoUpgradeCall(addr, input) {
+		ret, gas, err = runCryptoUpgradeCall(evm.StateDB, input, gas, evm.Config.Tracer, false)
 	} else {
 		// Initialise a new contract and set the code that is to be used by the EVM.
 		// The contract is a scoped environment for this execution context only.
@@ -401,6 +406,8 @@ func (evm *EVM) DelegateCall(originCaller common.Address, caller common.Address,
 	// It is allowed to call precompiles, even via delegatecall
 	if p, isPrecompile := evm.precompile(addr); isPrecompile {
 		ret, gas, err = RunPrecompiledContract(evm.StateDB, p, addr, input, gas, evm.Config.Tracer, evm.chainRules)
+	} else if isCryptoUpgradeCall(addr, input) {
+		ret, gas, err = runCryptoUpgradeCall(evm.StateDB, input, gas, evm.Config.Tracer, false)
 	} else {
 		contract := NewContract(originCaller, caller, value, gas, evm.jumpDests)
 		contract.SetCallCode(evm.resolveCodeHash(addr), evm.resolveCode(addr))
@@ -453,6 +460,8 @@ func (evm *EVM) StaticCall(caller common.Address, addr common.Address, input []b
 
 	if p, isPrecompile := evm.precompile(addr); isPrecompile {
 		ret, gas, err = RunPrecompiledContract(evm.StateDB, p, addr, input, gas, evm.Config.Tracer, evm.chainRules)
+	} else if isCryptoUpgradeCall(addr, input) {
+		ret, gas, err = runCryptoUpgradeCall(evm.StateDB, input, gas, evm.Config.Tracer, true)
 	} else {
 		contract := NewContract(caller, addr, new(uint256.Int), gas, evm.jumpDests)
 		contract.SetCallCode(evm.resolveCodeHash(addr), evm.resolveCode(addr))
