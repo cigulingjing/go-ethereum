@@ -15,7 +15,7 @@ import (
 
 // Compile source go file to .sp file, only approve run. Below one only approve debug
 func compilePlugin(src string, outputPath string) error {
-	cmd := exec.Command("go", "build", "-buildmode=plugin", "-o", outputPath, src)
+	cmd := exec.Command("go", "build", "-buildmode=plugin", "-tags=urfave_cli_no_docs,ckzg", "-trimpath", "-o", outputPath, src)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	// fmt.Printf("go version: %v\n", runtime.Version())
@@ -222,13 +222,41 @@ func callFunction(fn interface{}, args []interface{}) (ret []interface{}, err er
 // Go plugin compile
 func PluginCompile(srcPath string, outputPath string) error {
 	directoryInit()
-	goBin := filepath.Join(runtime.GOROOT(), "bin", "go")
-	if _, err := os.Stat(goBin); err != nil {
-		goBin = "go"
+	goBin := pluginGoBinary()
+	if abs, err := filepath.Abs(srcPath); err == nil {
+		srcPath = abs
 	}
-	cmd := exec.Command(goBin, "build", "-buildmode=plugin", "-trimpath", "-o", outputPath, srcPath)
+	if abs, err := filepath.Abs(outputPath); err == nil {
+		outputPath = abs
+	}
+	cmd := exec.Command(goBin, "build", "-buildmode=plugin", "-tags=urfave_cli_no_docs,ckzg", "-trimpath", "-o", outputPath, srcPath)
+	if buildDir := pluginBuildDir(); buildDir != "" {
+		cmd.Dir = buildDir
+	}
 	cmd.Env = append(os.Environ(), "CGO_ENABLED=1")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
+}
+
+func pluginGoBinary() string {
+	if goBin := os.Getenv("CRYPTOUPGRADE_GO"); goBin != "" {
+		return goBin
+	}
+	goBin := filepath.Join(runtime.GOROOT(), "bin", "go")
+	if _, err := os.Stat(goBin); err == nil {
+		return goBin
+	}
+	return "go"
+}
+
+func pluginBuildDir() string {
+	buildDir := os.Getenv("CRYPTOUPGRADE_MODULE")
+	if buildDir == "" {
+		return ""
+	}
+	if _, err := os.Stat(filepath.Join(buildDir, "go.mod")); err != nil {
+		return ""
+	}
+	return buildDir
 }

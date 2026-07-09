@@ -63,6 +63,7 @@ var PrecompiledContractsHomestead = PrecompiledContracts{
 	common.BytesToAddress([]byte{0x2}): &sha256hash{},
 	common.BytesToAddress([]byte{0x3}): &ripemd160hash{},
 	common.BytesToAddress([]byte{0x4}): &dataCopy{},
+	common.Blake2bSum256Address:        &blake2bSum256{},
 }
 
 // PrecompiledContractsByzantium contains the default set of pre-compiled Ethereum
@@ -76,6 +77,7 @@ var PrecompiledContractsByzantium = PrecompiledContracts{
 	common.BytesToAddress([]byte{0x6}): &bn256AddByzantium{},
 	common.BytesToAddress([]byte{0x7}): &bn256ScalarMulByzantium{},
 	common.BytesToAddress([]byte{0x8}): &bn256PairingByzantium{},
+	common.Blake2bSum256Address:        &blake2bSum256{},
 }
 
 // PrecompiledContractsIstanbul contains the default set of pre-compiled Ethereum
@@ -90,6 +92,7 @@ var PrecompiledContractsIstanbul = PrecompiledContracts{
 	common.BytesToAddress([]byte{0x7}): &bn256ScalarMulIstanbul{},
 	common.BytesToAddress([]byte{0x8}): &bn256PairingIstanbul{},
 	common.BytesToAddress([]byte{0x9}): &blake2F{},
+	common.Blake2bSum256Address:        &blake2bSum256{},
 }
 
 // PrecompiledContractsBerlin contains the default set of pre-compiled Ethereum
@@ -104,6 +107,7 @@ var PrecompiledContractsBerlin = PrecompiledContracts{
 	common.BytesToAddress([]byte{0x7}): &bn256ScalarMulIstanbul{},
 	common.BytesToAddress([]byte{0x8}): &bn256PairingIstanbul{},
 	common.BytesToAddress([]byte{0x9}): &blake2F{},
+	common.Blake2bSum256Address:        &blake2bSum256{},
 }
 
 // PrecompiledContractsCancun contains the default set of pre-compiled Ethereum
@@ -119,6 +123,7 @@ var PrecompiledContractsCancun = PrecompiledContracts{
 	common.BytesToAddress([]byte{0x8}): &bn256PairingIstanbul{},
 	common.BytesToAddress([]byte{0x9}): &blake2F{},
 	common.BytesToAddress([]byte{0xa}): &kzgPointEvaluation{},
+	common.Blake2bSum256Address:        &blake2bSum256{},
 }
 
 // PrecompiledContractsPrague contains the set of pre-compiled Ethereum
@@ -141,6 +146,7 @@ var PrecompiledContractsPrague = PrecompiledContracts{
 	common.BytesToAddress([]byte{0x0f}): &bls12381Pairing{},
 	common.BytesToAddress([]byte{0x10}): &bls12381MapG1{},
 	common.BytesToAddress([]byte{0x11}): &bls12381MapG2{},
+	common.Blake2bSum256Address:         &blake2bSum256{},
 }
 
 var PrecompiledContractsBLS = PrecompiledContractsPrague
@@ -167,6 +173,7 @@ var PrecompiledContractsOsaka = PrecompiledContracts{
 	common.BytesToAddress([]byte{0x0f}): &bls12381Pairing{},
 	common.BytesToAddress([]byte{0x10}): &bls12381MapG1{},
 	common.BytesToAddress([]byte{0x11}): &bls12381MapG2{},
+	common.Blake2bSum256Address:         &blake2bSum256{},
 
 	common.BytesToAddress([]byte{0x1, 0x00}): &p256Verify{},
 }
@@ -339,6 +346,22 @@ func (c *sha256hash) Run(input []byte) ([]byte, error) {
 
 func (c *sha256hash) Name() string {
 	return "SHA256"
+}
+
+// blake2bSum256 implements BLAKE2b-256 as a native precompiled contract.
+type blake2bSum256 struct{}
+
+func (c *blake2bSum256) RequiredGas(input []byte) uint64 {
+	return uint64(len(input)+31)/32*params.Sha256PerWordGas + params.Sha256BaseGas
+}
+
+func (c *blake2bSum256) Run(input []byte) ([]byte, error) {
+	h := blake2b.Sum256(input)
+	return h[:], nil
+}
+
+func (c *blake2bSum256) Name() string {
+	return "BLAKE2B_SUM256"
 }
 
 // RIPEMD160 implemented as a native contract.

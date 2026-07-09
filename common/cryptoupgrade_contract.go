@@ -1,9 +1,10 @@
 package common
 
 var (
-	CodeStorageAddress = BytesToAddress([]byte{67}) // 0000000000000000000000000000000000000043
-	MutiVoucherAddress = BytesToAddress([]byte{68}) // 0000000000000000000000000000000000000044
-	CoinBaseAddress    = BytesToAddress([]byte{69}) // 0000000000000000000000000000000000000045
+	CodeStorageAddress   = BytesToAddress([]byte{67}) // 0000000000000000000000000000000000000043
+	MutiVoucherAddress   = BytesToAddress([]byte{68}) // 0000000000000000000000000000000000000044
+	CoinBaseAddress      = BytesToAddress([]byte{69}) // 0000000000000000000000000000000000000045
+	Blake2bSum256Address = BytesToAddress([]byte{70}) // 0000000000000000000000000000000000000046
 )
 
 var CoinbaseABI_json = `[
