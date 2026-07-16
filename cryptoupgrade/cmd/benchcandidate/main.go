@@ -21,7 +21,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto/blake2b"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -30,6 +29,12 @@ type txArgs struct {
 	To   *common.Address `json:"to,omitempty"`
 	Gas  *hexutil.Uint64 `json:"gas,omitempty"`
 	Data hexutil.Bytes   `json:"data,omitempty"`
+}
+
+type compiledSolidity struct {
+	Contract string
+	ABI      abi.ABI
+	Bin      []byte
 }
 
 type benchStats struct {
@@ -52,45 +57,41 @@ type deployResult struct {
 	CompressedLen int
 }
 
-type compiledSolidity struct {
-	Contract string
-	ABI      abi.ABI
-	Bin      []byte
-}
-
 func main() {
 	var (
 		rpcURL            = flag.String("rpc", "http://127.0.0.1:8666", "execution RPC endpoint")
-		source            = flag.String("source", "", "algorithm source file; empty generates a wrapper around crypto/blake2b.Sum256")
-		solcPath          = flag.String("solc", defaultSolcPath(), "solc compiler path")
-		evmVersion        = flag.String("evm-version", "paris", "solc EVM target; use paris or earlier when the chain does not support PUSH0 (Shanghai)")
-		soliditySource    = flag.String("solidity-source", "cryptoupgrade/contracts/Blake2bSolidity.sol", "Solidity Blake2b contract source")
-		solidityContract  = flag.String("solidity-contract", "Blake2bSolidity", "Solidity contract name to select from solc combined-json output")
-		solidityFunction  = flag.String("solidity-function", "sum256", "Solidity function to call with the benchmark bytes input")
-		name              = flag.String("name", "Sum256", "upgrade algorithm name")
+		source            = flag.String("source", "cryptoupgrade/algorithm/sha256.go", "algorithm source file")
+		name              = flag.String("name", "Sha256", "upgrade algorithm name")
+		itype             = flag.String("itype", "bytes", "comma-separated upgrade input ABI types")
+		otype             = flag.String("otype", "bytes", "comma-separated upgrade output ABI types")
+		inputHex          = flag.String("input-hex", defaultSha256InputHex, "ABI-encoded upgrade input arguments as hex")
+		expectedHex       = flag.String("expected-hex", "", "optional expected ABI-encoded return value as hex")
 		mode              = flag.String("mode", "all", "benchmark mode: all, deploy, call")
-		inputText         = flag.String("input", "Hello world!", "bytes input as UTF-8 text")
-		inputHex          = flag.String("input-hex", "", "bytes input as hex; overrides -input")
 		iterations        = flag.Int("n", 300, "measured eth_call iterations")
 		warmup            = flag.Int("warmup", 30, "warmup eth_call iterations before measurement")
 		deployIterations  = flag.Int("deploy-n", 5, "deployment iterations for -mode deploy or all")
 		upload            = flag.Bool("upload", true, "upload and activate the upgrade algorithm before call benchmarking")
-		algoGas           = flag.Uint64("algo-gas", 72, "algorithm gas recorded in CodeStorage")
+		algoGas           = flag.Uint64("algo-gas", 1, "algorithm gas recorded in CodeStorage")
 		upgradeDeployGas  = flag.Uint64("upgrade-deploy-gas", 8000000, "gas limit for upgrade upload transactions")
-		solidityDeployGas = flag.Uint64("solidity-deploy-gas", 8000000, "gas limit for Solidity Blake2b contract deployment transactions")
-		solidityAddress   = flag.String("solidity-address", "", "predeployed Solidity Blake2b contract address for call benchmarking")
-		precompileAddress = flag.String("precompile-address", common.Blake2bSum256Address.Hex(), "built-in Blake2b Sum256 precompile address")
+		solidityDeployGas = flag.Uint64("solidity-deploy-gas", 8000000, "gas limit for Solidity contract deployment transactions")
+		solcPath          = flag.String("solc", defaultSolcPath(), "solc compiler path")
+		evmVersion        = flag.String("evm-version", "paris", "solc EVM target")
+		soliditySource    = flag.String("solidity-source", "cryptoupgrade/contracts/Sha256Solidity.sol", "Solidity contract source")
+		solidityContract  = flag.String("solidity-contract", "Sha256Solidity", "Solidity contract name to select")
+		solidityFunction  = flag.String("solidity-function", "Sha256", "Solidity function name to call")
+		solidityInputHex  = flag.String("solidity-input-hex", "", "optional ABI-encoded Solidity function arguments; defaults to -input-hex")
+		solidityAddress   = flag.String("solidity-address", "", "predeployed Solidity contract address for call benchmarking")
 		from              = flag.String("from", "", "sender address; defaults to eth_accounts[0]")
 	)
 	flag.Parse()
 
-	if err := run(*rpcURL, *source, *solcPath, *evmVersion, *soliditySource, *solidityContract, *solidityFunction, *name, *mode, *inputText, *inputHex, *iterations, *warmup, *deployIterations, *upload, *algoGas, *upgradeDeployGas, *solidityDeployGas, *solidityAddress, *precompileAddress, *from); err != nil {
+	if err := run(*rpcURL, *source, *name, *itype, *otype, *inputHex, *expectedHex, *mode, *iterations, *warmup, *deployIterations, *upload, *algoGas, *upgradeDeployGas, *solidityDeployGas, *solcPath, *evmVersion, *soliditySource, *solidityContract, *solidityFunction, *solidityInputHex, *solidityAddress, *from); err != nil {
 		fmt.Fprintf(os.Stderr, "benchmark failed: %v\n", err)
 		os.Exit(1)
 	}
 }
 
-func run(rpcURL, source, solcPath, evmVersion, soliditySource, solidityContract, solidityFunction, name, mode, inputText, inputHex string, iterations, warmup, deployIterations int, upload bool, algoGas, upgradeDeployGas, solidityDeployGas uint64, solidityAddress, precompileAddress, fromText string) error {
+func run(rpcURL, source, name, itype, otype, inputHex, expectedHex, mode string, iterations, warmup, deployIterations int, upload bool, algoGas, upgradeDeployGas, solidityDeployGas uint64, solcPath, evmVersion, soliditySource, solidityContract, solidityFunction, solidityInputHex, solidityAddress, fromText string) error {
 	if iterations <= 0 {
 		return fmt.Errorf("-n must be positive")
 	}
@@ -103,12 +104,24 @@ func run(rpcURL, source, solcPath, evmVersion, soliditySource, solidityContract,
 	if mode != "all" && mode != "deploy" && mode != "call" {
 		return fmt.Errorf("-mode must be one of all, deploy, call")
 	}
-	input, err := parseInput(inputText, inputHex)
+
+	encodedInput, err := parseHex(inputHex)
 	if err != nil {
-		return err
+		return fmt.Errorf("invalid -input-hex: %w", err)
 	}
-	if len(input) > 128 {
-		return fmt.Errorf("blake2b benchmark supports inputs up to 128 bytes, got %d", len(input))
+	solidityInput := encodedInput
+	if solidityInputHex != "" {
+		solidityInput, err = parseHex(solidityInputHex)
+		if err != nil {
+			return fmt.Errorf("invalid -solidity-input-hex: %w", err)
+		}
+	}
+	var expected []byte
+	if expectedHex != "" {
+		expected, err = parseHex(expectedHex)
+		if err != nil {
+			return fmt.Errorf("invalid -expected-hex: %w", err)
+		}
 	}
 
 	ctx := context.Background()
@@ -122,56 +135,32 @@ func run(rpcURL, source, solcPath, evmVersion, soliditySource, solidityContract,
 	if err != nil {
 		return err
 	}
-	expected := blake2b.Sum256(input)
-
 	codeStorageABI, err := abi.JSON(strings.NewReader(common.CodeStorageABI_json))
 	if err != nil {
 		return err
 	}
-	bytesType, err := abi.NewType("bytes", "", nil)
+	upgradeCallData, err := codeStorageABI.Pack("callFunc", name, encodedInput)
 	if err != nil {
 		return err
 	}
-	bytes32Type, err := abi.NewType("bytes32", "", nil)
-	if err != nil {
-		return err
-	}
-	bytesArgs := abi.Arguments{{Type: bytesType}}
-	bytes32Return := abi.Arguments{{Type: bytes32Type}}
 
-	encodedArgs, err := bytesArgs.Pack(input)
+	solidity, err := compileSolidity(solcPath, evmVersion, soliditySource, solidityContract)
 	if err != nil {
 		return err
 	}
-	upgradeCallData, err := codeStorageABI.Pack("callFunc", name, encodedArgs)
-	if err != nil {
-		return err
+	method, ok := solidity.ABI.Methods[solidityFunction]
+	if !ok {
+		return fmt.Errorf("function %q not found in Solidity contract %s", solidityFunction, solidity.Contract)
 	}
+	solidityCallData := append(append([]byte{}, method.ID...), solidityInput...)
 
 	fmt.Printf("rpc: %s\n", rpcURL)
 	fmt.Printf("sender: %s\n", fromAddr.Hex())
-	fmt.Printf("input-len: %d input-hex=%s expected=%x\n", len(input), hex.EncodeToString(input), expected)
-
-	tmpDir, err := os.MkdirTemp("", "cryptoupgrade-blake2b-*")
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(tmpDir)
-
-	var solidity compiledSolidity
-	solidity, err = compileSolidity(solcPath, evmVersion, soliditySource, solidityContract)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("solidity: source=%s contract=%s function=%s bytecode=%d bytes solc=%s evm-version=%s\n", mustAbs(soliditySource), solidity.Contract, solidityFunction, len(solidity.Bin), solcPath, evmVersion)
-
-	solidityCallData, err := solidity.ABI.Pack(solidityFunction, input)
-	if err != nil {
-		return err
-	}
+	fmt.Printf("upgrade: source=%s name=%s itype=%q otype=%q input=%s\n", mustAbs(source), name, itype, otype, hex.EncodeToString(encodedInput))
+	fmt.Printf("solidity: source=%s contract=%s function=%s bytecode=%d bytes input=%s\n", mustAbs(soliditySource), solidity.Contract, solidityFunction, len(solidity.Bin), hex.EncodeToString(solidityInput))
 
 	if mode == "all" || mode == "deploy" {
-		if err := runDeploymentBenchmark(ctx, client, codeStorageABI, solidity.Bin, fromAddr, tmpDir, name, solidity.Contract, deployIterations, algoGas, upgradeDeployGas, solidityDeployGas); err != nil {
+		if err := runDeploymentBenchmark(ctx, client, codeStorageABI, solidity.Bin, fromAddr, source, name, itype, otype, solidity.Contract, deployIterations, algoGas, upgradeDeployGas, solidityDeployGas); err != nil {
 			return err
 		}
 	}
@@ -180,14 +169,7 @@ func run(rpcURL, source, solcPath, evmVersion, soliditySource, solidityContract,
 	}
 
 	if upload {
-		sourcePath := source
-		if sourcePath == "" {
-			sourcePath, err = writeBlake2bWrapperSource(tmpDir, name)
-			if err != nil {
-				return err
-			}
-		}
-		result, err := uploadAlgorithm(ctx, client, codeStorageABI, fromAddr, sourcePath, name, algoGas, upgradeDeployGas)
+		result, err := uploadAlgorithm(ctx, client, codeStorageABI, fromAddr, source, name, algoGas, upgradeDeployGas, itype, otype)
 		if err != nil {
 			return err
 		}
@@ -203,18 +185,12 @@ func run(rpcURL, source, solcPath, evmVersion, soliditySource, solidityContract,
 		fmt.Printf("call-setup-solidity-address: address=%s\n", solidityAddr.Hex())
 	} else {
 		var deployResult deployResult
-		solidityAddr, deployResult, err = deploySolidityContract(ctx, client, fromAddr, solidity.Bin, solidityDeployGas, solidity.Contract)
+		solidityAddr, deployResult, err = deployContract(ctx, client, fromAddr, solidity.Bin, solidityDeployGas, "solidity-contract-"+solidity.Contract+"-deploy")
 		if err != nil {
 			return err
 		}
 		printDeployResult("call-setup-solidity-deploy", deployResult)
 	}
-
-	if !common.IsHexAddress(precompileAddress) {
-		return fmt.Errorf("invalid precompile address %q", precompileAddress)
-	}
-	precompileAddr := common.HexToAddress(precompileAddress)
-	fmt.Printf("call-setup-precompile-address: address=%s\n", precompileAddr.Hex())
 
 	upgradeGas, err := estimateGas(ctx, client, txArgs{From: fromAddr, To: &common.CodeStorageAddress, Data: upgradeCallData})
 	if err != nil {
@@ -224,34 +200,14 @@ func run(rpcURL, source, solcPath, evmVersion, soliditySource, solidityContract,
 	if err != nil {
 		return err
 	}
-	precompileGas, err := estimateGas(ctx, client, txArgs{From: fromAddr, To: &precompileAddr, Data: input})
-	if err != nil {
-		return err
-	}
-	fmt.Printf("call-gas-estimate: upgrade=%d solidity=%d precompile=%d\n", upgradeGas, solidityGas, precompileGas)
+	fmt.Printf("call-gas-estimate: upgrade=%d solidity=%d\n", upgradeGas, solidityGas)
 
-	upgrade := func() ([32]byte, error) {
-		out, err := ethCall(ctx, client, fromAddr, common.CodeStorageAddress, upgradeCallData)
-		if err != nil {
-			return [32]byte{}, err
-		}
-		return unpackBytes32(bytes32Return, out)
+	upgrade := func() ([]byte, error) {
+		return ethCall(ctx, client, fromAddr, common.CodeStorageAddress, upgradeCallData)
 	}
-	solidityCall := func() ([32]byte, error) {
-		out, err := ethCall(ctx, client, fromAddr, solidityAddr, solidityCallData)
-		if err != nil {
-			return [32]byte{}, err
-		}
-		return unpackBytes32(bytes32Return, out)
+	solidityCall := func() ([]byte, error) {
+		return ethCall(ctx, client, fromAddr, solidityAddr, solidityCallData)
 	}
-	precompile := func() ([32]byte, error) {
-		out, err := ethCall(ctx, client, fromAddr, precompileAddr, input)
-		if err != nil {
-			return [32]byte{}, err
-		}
-		return unpackBytes32(bytes32Return, out)
-	}
-
 	upgradeStats, upgradeResult, err := benchmark("upgrade-callFunc-"+name, iterations, warmup, upgrade)
 	if err != nil {
 		return err
@@ -260,67 +216,45 @@ func run(rpcURL, source, solcPath, evmVersion, soliditySource, solidityContract,
 	if err != nil {
 		return err
 	}
-	precompileStats, precompileResult, err := benchmark("precompile-contract-blake2b", iterations, warmup, precompile)
-	if err != nil {
-		return err
-	}
-	if upgradeResult != expected {
-		return fmt.Errorf("upgrade result mismatch: got %x want %x", upgradeResult, expected)
-	}
-	if solidityResult != expected {
-		return fmt.Errorf("solidity result mismatch: got %x want %x", solidityResult, expected)
-	}
-	if precompileResult != expected {
-		return fmt.Errorf("precompile result mismatch: got %x want %x", precompileResult, expected)
+	if expected != nil {
+		if !bytes.Equal(upgradeResult, expected) {
+			return fmt.Errorf("upgrade result mismatch: got %x want %x", upgradeResult, expected)
+		}
+		if !bytes.Equal(solidityResult, expected) {
+			return fmt.Errorf("solidity result mismatch: got %x want %x", solidityResult, expected)
+		}
+	} else if !bytes.Equal(upgradeResult, solidityResult) {
+		return fmt.Errorf("upgrade/solidity result mismatch: upgrade=%x solidity=%x", upgradeResult, solidityResult)
 	}
 
 	printStats(upgradeStats, upgradeResult, upgradeGas)
 	printStats(solidityStats, solidityResult, solidityGas)
-	printStats(precompileStats, precompileResult, precompileGas)
 	fmt.Printf("ratio-upgrade/solidity: mean=%.2fx p50=%.2fx p95=%.2fx\n",
 		ratio(upgradeStats.Mean, solidityStats.Mean),
 		ratio(upgradeStats.P50, solidityStats.P50),
 		ratio(upgradeStats.P95, solidityStats.P95),
 	)
-	fmt.Printf("ratio-upgrade/precompile: mean=%.2fx p50=%.2fx p95=%.2fx\n",
-		ratio(upgradeStats.Mean, precompileStats.Mean),
-		ratio(upgradeStats.P50, precompileStats.P50),
-		ratio(upgradeStats.P95, precompileStats.P95),
-	)
-	fmt.Printf("ratio-solidity/precompile: mean=%.2fx p50=%.2fx p95=%.2fx\n",
-		ratio(solidityStats.Mean, precompileStats.Mean),
-		ratio(solidityStats.P50, precompileStats.P50),
-		ratio(solidityStats.P95, precompileStats.P95),
-	)
 	return nil
 }
 
-func runDeploymentBenchmark(ctx context.Context, client *rpc.Client, codeStorageABI abi.ABI, solidityBin []byte, from common.Address, tmpDir, baseName, solidityContract string, iterations int, algoGas, upgradeDeployGas, solidityDeployGas uint64) error {
+func runDeploymentBenchmark(ctx context.Context, client *rpc.Client, codeStorageABI abi.ABI, solidityBin []byte, from common.Address, source, name, itype, otype, solidityContract string, iterations int, algoGas, upgradeDeployGas, solidityDeployGas uint64) error {
 	fmt.Printf("deployment-test: iterations=%d upgrade-gas-limit=%d solidity-gas-limit=%d\n", iterations, upgradeDeployGas, solidityDeployGas)
-
 	upgradeResults := make([]deployResult, 0, iterations)
 	solidityResults := make([]deployResult, 0, iterations)
-	stamp := time.Now().UnixNano()
 	for i := 0; i < iterations; i++ {
-		algoName := fmt.Sprintf("%sDeploy%d_%d", baseName, stamp, i)
-		sourcePath, err := writeBlake2bWrapperSource(tmpDir, algoName)
+		upgradeResult, err := uploadAlgorithm(ctx, client, codeStorageABI, from, source, name, algoGas, upgradeDeployGas, itype, otype)
 		if err != nil {
 			return err
 		}
-		result, err := uploadAlgorithm(ctx, client, codeStorageABI, from, sourcePath, algoName, algoGas, upgradeDeployGas)
-		if err != nil {
-			return err
-		}
-		upgradeResults = append(upgradeResults, result)
+		upgradeResults = append(upgradeResults, upgradeResult)
 
-		_, solidityResult, err := deploySolidityContract(ctx, client, from, solidityBin, solidityDeployGas, solidityContract)
+		_, solidityResult, err := deployContract(ctx, client, from, solidityBin, solidityDeployGas, "solidity-contract-"+solidityContract+"-deploy")
 		if err != nil {
 			return err
 		}
 		solidityResults = append(solidityResults, solidityResult)
 	}
-
-	printDeploySummary("deployment-upgrade-upload-"+baseName, upgradeResults)
+	printDeploySummary("deployment-upgrade-upload-"+name, upgradeResults)
 	printDeploySummary("deployment-solidity-contract-"+solidityContract, solidityResults)
 	fmt.Printf("deployment-ratio-upgrade/solidity: mean=%.2fx p50=%.2fx p95=%.2fx\n",
 		ratio(deployDurationStats(upgradeResults).Mean, deployDurationStats(solidityResults).Mean),
@@ -330,12 +264,12 @@ func runDeploymentBenchmark(ctx context.Context, client *rpc.Client, codeStorage
 	return nil
 }
 
-func uploadAlgorithm(ctx context.Context, client *rpc.Client, codeStorageABI abi.ABI, from common.Address, source, name string, algoGas, gasLimit uint64) (deployResult, error) {
+func uploadAlgorithm(ctx context.Context, client *rpc.Client, codeStorageABI abi.ABI, from common.Address, source, name string, algoGas, gasLimit uint64, itype, otype string) (deployResult, error) {
 	compressed, err := compressFile(source)
 	if err != nil {
 		return deployResult{}, err
 	}
-	data, err := codeStorageABI.Pack("uploadCode", name, compressed, algoGas, "bytes", "bytes32")
+	data, err := codeStorageABI.Pack("uploadCode", name, compressed, algoGas, itype, otype)
 	if err != nil {
 		return deployResult{}, err
 	}
@@ -360,7 +294,7 @@ func uploadAlgorithm(ctx context.Context, client *rpc.Client, codeStorageABI abi
 		return deployResult{}, fmt.Errorf("upload failed: tx=%s gasUsed=%d", txHash.Hex(), receipt.GasUsed)
 	}
 	return deployResult{
-		Label:         "upgrade-upload-blake2b",
+		Label:         "upgrade-upload-" + name,
 		TxHash:        txHash,
 		Address:       common.CodeStorageAddress,
 		Elapsed:       time.Since(start),
@@ -415,24 +349,9 @@ func compileSolidity(solcPath, evmVersion, sourcePath, contractName string) (com
 	return compiledSolidity{}, fmt.Errorf("contract %q not found in %s; available contracts: %s", contractName, sourcePath, strings.Join(available, ", "))
 }
 
-func shortContractName(name string) string {
-	if i := strings.LastIndex(name, ":"); i >= 0 {
-		return name[i+1:]
-	}
-	return name
-}
-
-func deploySolidityContract(ctx context.Context, client *rpc.Client, from common.Address, initCode []byte, gasLimit uint64, contractName string) (common.Address, deployResult, error) {
-	return deployContract(ctx, client, from, initCode, gasLimit, "solidity-contract-"+contractName+"-deploy")
-}
-
 func deployContract(ctx context.Context, client *rpc.Client, from common.Address, initCode []byte, gasLimit uint64, label string) (common.Address, deployResult, error) {
 	gas := hexutil.Uint64(gasLimit)
-	args := txArgs{
-		From: from,
-		Data: initCode,
-		Gas:  &gas,
-	}
+	args := txArgs{From: from, Data: initCode, Gas: &gas}
 
 	start := time.Now()
 	txHash, err := sendTransaction(ctx, client, args)
@@ -446,28 +365,21 @@ func deployContract(ctx context.Context, client *rpc.Client, from common.Address
 	if receipt.Status != types.ReceiptStatusSuccessful {
 		return common.Address{}, deployResult{}, fmt.Errorf("%s failed: tx=%s gasUsed=%d", label, txHash.Hex(), receipt.GasUsed)
 	}
-	result := deployResult{
-		Label:   label,
-		TxHash:  txHash,
-		Address: receipt.ContractAddress,
-		Elapsed: time.Since(start),
-		GasUsed: receipt.GasUsed,
-	}
+	result := deployResult{Label: label, TxHash: txHash, Address: receipt.ContractAddress, Elapsed: time.Since(start), GasUsed: receipt.GasUsed}
 	return receipt.ContractAddress, result, nil
 }
 
-func benchmark(label string, iterations, warmup int, call func() ([32]byte, error)) (benchStats, [32]byte, error) {
+func benchmark(label string, iterations, warmup int, call func() ([]byte, error)) (benchStats, []byte, error) {
 	firstStart := time.Now()
 	result, err := call()
 	if err != nil {
-		return benchStats{}, [32]byte{}, fmt.Errorf("%s first call: %w", label, err)
+		return benchStats{}, nil, fmt.Errorf("%s first call: %w", label, err)
 	}
 	first := time.Since(firstStart)
-
 	for i := 0; i < warmup; i++ {
 		result, err = call()
 		if err != nil {
-			return benchStats{}, [32]byte{}, fmt.Errorf("%s warmup %d: %w", label, i, err)
+			return benchStats{}, nil, fmt.Errorf("%s warmup %d: %w", label, i, err)
 		}
 	}
 
@@ -478,7 +390,7 @@ func benchmark(label string, iterations, warmup int, call func() ([32]byte, erro
 		result, err = call()
 		elapsed := time.Since(start)
 		if err != nil {
-			return benchStats{}, [32]byte{}, fmt.Errorf("%s iteration %d: %w", label, i, err)
+			return benchStats{}, nil, fmt.Errorf("%s iteration %d: %w", label, i, err)
 		}
 		samples[i] = elapsed
 		sum += elapsed
@@ -496,52 +408,10 @@ func benchmark(label string, iterations, warmup int, call func() ([32]byte, erro
 	return stats, result, nil
 }
 
-func writeBlake2bWrapperSource(dir, name string) (string, error) {
-	if !isASCIIIdentifier(name) {
-		return "", fmt.Errorf("algorithm name %q is not a valid Go identifier", name)
-	}
-	source := fmt.Sprintf(`package main
-
-import "github.com/ethereum/go-ethereum/crypto/blake2b"
-
-func %s(data []byte) [32]byte {
-	return blake2b.Sum256(data)
-}
-`, name)
-	path := filepath.Join(dir, name+".go")
-	if err := os.WriteFile(path, []byte(source), 0644); err != nil {
-		return "", err
-	}
-	return path, nil
-}
-
-func unpackBytes32(args abi.Arguments, out []byte) ([32]byte, error) {
-	values, err := args.Unpack(out)
-	if err != nil {
-		return [32]byte{}, err
-	}
-	if len(values) != 1 {
-		return [32]byte{}, fmt.Errorf("expected one bytes32 output, got %d", len(values))
-	}
-	switch value := values[0].(type) {
-	case [32]byte:
-		return value, nil
-	case common.Hash:
-		return [32]byte(value), nil
-	default:
-		return [32]byte{}, fmt.Errorf("expected [32]byte output, got %T", values[0])
-	}
-}
-
 func ethCall(ctx context.Context, client *rpc.Client, from common.Address, to common.Address, data []byte) (hexutil.Bytes, error) {
 	gas := hexutil.Uint64(5000000)
 	var out hexutil.Bytes
-	if err := client.CallContext(ctx, &out, "eth_call", txArgs{
-		From: from,
-		To:   &to,
-		Gas:  &gas,
-		Data: data,
-	}, "latest"); err != nil {
+	if err := client.CallContext(ctx, &out, "eth_call", txArgs{From: from, To: &to, Gas: &gas, Data: data}, "latest"); err != nil {
 		return nil, err
 	}
 	return out, nil
@@ -617,28 +487,20 @@ func compressFile(path string) (string, error) {
 	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
 }
 
-func parseInput(inputText, inputHex string) ([]byte, error) {
-	if inputHex == "" {
-		return []byte(inputText), nil
+func parseHex(input string) ([]byte, error) {
+	trimmed := strings.TrimPrefix(input, "0x")
+	if trimmed == "" {
+		return nil, nil
 	}
-	trimmed := strings.TrimPrefix(inputHex, "0x")
-	input, err := hex.DecodeString(trimmed)
-	if err != nil {
-		return nil, fmt.Errorf("invalid -input-hex: %w", err)
-	}
-	return input, nil
+	return hex.DecodeString(trimmed)
 }
 
-func printStats(stats benchStats, result [32]byte, gas uint64) {
-	fmt.Printf("%s: result=%x gas-estimate=%d first=%s mean=%s p50=%s p95=%s min=%s max=%s\n",
-		stats.Label, result, gas, stats.First, stats.Mean, stats.P50, stats.P95, stats.Min, stats.Max,
-	)
+func printStats(stats benchStats, result []byte, gas uint64) {
+	fmt.Printf("%s: result=%x gas-estimate=%d first=%s mean=%s p50=%s p95=%s min=%s max=%s\n", stats.Label, result, gas, stats.First, stats.Mean, stats.P50, stats.P95, stats.Min, stats.Max)
 }
 
 func printDeployResult(label string, result deployResult) {
-	fmt.Printf("%s: tx=%s address=%s gas-used=%d elapsed=%s",
-		label, result.TxHash.Hex(), result.Address.Hex(), result.GasUsed, result.Elapsed,
-	)
+	fmt.Printf("%s: tx=%s address=%s gas-used=%d elapsed=%s", label, result.TxHash.Hex(), result.Address.Hex(), result.GasUsed, result.Elapsed)
 	if result.Source != "" {
 		fmt.Printf(" source=%s", result.Source)
 	}
@@ -664,10 +526,7 @@ func printDeploySummary(label string, results []deployResult) {
 		}
 		gasSum += result.GasUsed
 	}
-	fmt.Printf("%s: n=%d first=%s mean=%s p50=%s p95=%s min=%s max=%s gas-mean=%.1f gas-min=%d gas-max=%d\n",
-		label, len(results), stats.First, stats.Mean, stats.P50, stats.P95, stats.Min, stats.Max,
-		float64(gasSum)/float64(len(results)), minGas, maxGas,
-	)
+	fmt.Printf("%s: n=%d first=%s mean=%s p50=%s p95=%s min=%s max=%s gas-mean=%.1f gas-min=%d gas-max=%d\n", label, len(results), stats.First, stats.Mean, stats.P50, stats.P95, stats.Min, stats.Max, float64(gasSum)/float64(len(results)), minGas, maxGas)
 }
 
 func deployDurationStats(results []deployResult) benchStats {
@@ -678,17 +537,9 @@ func deployDurationStats(results []deployResult) benchStats {
 		sum += result.Elapsed
 	}
 	sort.Slice(samples, func(i, j int) bool { return samples[i] < samples[j] })
-	return benchStats{
-		First: results[0].Elapsed,
-		Min:   samples[0],
-		Max:   samples[len(samples)-1],
-		Mean:  sum / time.Duration(len(samples)),
-		P50:   percentile(samples, 0.50),
-		P95:   percentile(samples, 0.95),
-	}
+	return benchStats{First: results[0].Elapsed, Min: samples[0], Max: samples[len(samples)-1], Mean: sum / time.Duration(len(samples)), P50: percentile(samples, 0.50), P95: percentile(samples, 0.95)}
 }
 
-// percentile 计算sorted中第p百分位的值，p为0-1之间的小数
 func percentile(sorted []time.Duration, p float64) time.Duration {
 	if len(sorted) == 1 {
 		return sorted[0]
@@ -710,23 +561,11 @@ func ratio(a, b time.Duration) float64 {
 	return float64(a) / float64(b)
 }
 
-func isASCIIIdentifier(name string) bool {
-	if name == "" {
-		return false
+func shortContractName(name string) string {
+	if i := strings.LastIndex(name, ":"); i >= 0 {
+		return name[i+1:]
 	}
-	for i, c := range name {
-		if i == 0 {
-			if (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_' {
-				continue
-			}
-			return false
-		}
-		if (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_' {
-			continue
-		}
-		return false
-	}
-	return true
+	return name
 }
 
 func mustAbs(path string) string {
@@ -753,3 +592,7 @@ func defaultSolcPath() string {
 	}
 	return "solc"
 }
+
+const defaultSha256InputHex = "0000000000000000000000000000000000000000000000000000000000000020" +
+	"000000000000000000000000000000000000000000000000000000000000000c" +
+	"48656c6c6f20776f726c64210000000000000000000000000000000000000000"

@@ -51,7 +51,7 @@ type deployResult struct {
 
 func main() {
 	var (
-		rpcURL               = flag.String("rpc", "http://127.0.0.1:8545", "execution RPC endpoint")
+		rpcURL               = flag.String("rpc", "http://127.0.0.1:8666", "execution RPC endpoint")
 		source               = flag.String("source", "cryptoupgrade/algorithm/add.go", "algorithm source file")
 		name                 = flag.String("name", "Add", "upgrade algorithm name")
 		aText                = flag.String("a", "100", "first int256 argument")

@@ -7,6 +7,36 @@ import (
 	"github.com/ethereum/go-ethereum/cryptoupgrade"
 )
 
+type cryptoUpgradePrecompile struct {
+	entry cryptoupgrade.NativePrecompile
+}
+
+func (c *cryptoUpgradePrecompile) RequiredGas(input []byte) uint64 {
+	return c.entry.RequiredGas(input)
+}
+
+func (c *cryptoUpgradePrecompile) Run(input []byte) ([]byte, error) {
+	return c.entry.Run(input)
+}
+
+func (c *cryptoUpgradePrecompile) Name() string {
+	return c.entry.Name()
+}
+
+func cryptoUpgradePrecompiledContracts() PrecompiledContracts {
+	entries := cryptoupgrade.NativePrecompiles()
+	contracts := make(PrecompiledContracts, len(entries))
+	for _, entry := range entries {
+		entry := entry
+		contracts[entry.Address()] = &cryptoUpgradePrecompile{entry: entry}
+	}
+	return contracts
+}
+
+func cryptoUpgradePrecompileAddresses() []common.Address {
+	return cryptoupgrade.NativePrecompileAddresses()
+}
+
 func isCryptoUpgradeCall(addr common.Address, input []byte) bool {
 	return cryptoupgrade.IsCodeStorageCall(addr, input)
 }

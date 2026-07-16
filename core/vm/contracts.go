@@ -219,24 +219,34 @@ func init() {
 }
 
 func activePrecompiledContracts(rules params.Rules) PrecompiledContracts {
+	var contracts PrecompiledContracts
 	switch {
 	case rules.IsUBT:
-		return PrecompiledContractsVerkle
+		contracts = PrecompiledContractsVerkle
 	case rules.IsOsaka:
-		return PrecompiledContractsOsaka
+		contracts = PrecompiledContractsOsaka
 	case rules.IsPrague:
-		return PrecompiledContractsPrague
+		contracts = PrecompiledContractsPrague
 	case rules.IsCancun:
-		return PrecompiledContractsCancun
+		contracts = PrecompiledContractsCancun
 	case rules.IsBerlin:
-		return PrecompiledContractsBerlin
+		contracts = PrecompiledContractsBerlin
 	case rules.IsIstanbul:
-		return PrecompiledContractsIstanbul
+		contracts = PrecompiledContractsIstanbul
 	case rules.IsByzantium:
-		return PrecompiledContractsByzantium
+		contracts = PrecompiledContractsByzantium
 	default:
-		return PrecompiledContractsHomestead
+		contracts = PrecompiledContractsHomestead
 	}
+	return withCryptoUpgradePrecompiledContracts(contracts)
+}
+
+func withCryptoUpgradePrecompiledContracts(contracts PrecompiledContracts) PrecompiledContracts {
+	merged := maps.Clone(contracts)
+	for address, contract := range cryptoUpgradePrecompiledContracts() {
+		merged[address] = contract
+	}
+	return merged
 }
 
 // ActivePrecompiledContracts returns a copy of precompiled contracts enabled with the current configuration.
@@ -246,22 +256,29 @@ func ActivePrecompiledContracts(rules params.Rules) PrecompiledContracts {
 
 // ActivePrecompiles returns the precompile addresses enabled with the current configuration.
 func ActivePrecompiles(rules params.Rules) []common.Address {
+	var addresses []common.Address
 	switch {
 	case rules.IsOsaka:
-		return PrecompiledAddressesOsaka
+		addresses = PrecompiledAddressesOsaka
 	case rules.IsPrague:
-		return PrecompiledAddressesPrague
+		addresses = PrecompiledAddressesPrague
 	case rules.IsCancun:
-		return PrecompiledAddressesCancun
+		addresses = PrecompiledAddressesCancun
 	case rules.IsBerlin:
-		return PrecompiledAddressesBerlin
+		addresses = PrecompiledAddressesBerlin
 	case rules.IsIstanbul:
-		return PrecompiledAddressesIstanbul
+		addresses = PrecompiledAddressesIstanbul
 	case rules.IsByzantium:
-		return PrecompiledAddressesByzantium
+		addresses = PrecompiledAddressesByzantium
 	default:
-		return PrecompiledAddressesHomestead
+		addresses = PrecompiledAddressesHomestead
 	}
+	return withCryptoUpgradePrecompileAddresses(addresses)
+}
+
+func withCryptoUpgradePrecompileAddresses(addresses []common.Address) []common.Address {
+	merged := append([]common.Address(nil), addresses...)
+	return append(merged, cryptoUpgradePrecompileAddresses()...)
 }
 
 // RunPrecompiledContract runs and evaluates the output of a precompiled contract.
