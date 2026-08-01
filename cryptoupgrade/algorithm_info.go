@@ -64,8 +64,10 @@ func splitTypeList(types string) []string {
 
 // When geth exit, need to store @algoInfoMap
 func Store() error {
-	directoryInit()
-	return storeAlgoMap(algoInfoPath)
+	if err := directoryInit(); err != nil {
+		return err
+	}
+	return storeAlgoMap(algorithmInfoPath())
 }
 
 func getAlgorithmInfo(name string) (algoInfo, bool) {

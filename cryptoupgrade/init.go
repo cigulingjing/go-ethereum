@@ -12,8 +12,6 @@ import (
 // Private attributes
 var (
 	codeUploaded   = crypto.Keccak256Hash([]byte("codeUploaded(string)"))
-	algoInfoPath   = "./plugin/algorithm_info.json"
-	compressedPath = "./plugin"
 	CodeStorageABI abi.ABI
 )
 
@@ -24,8 +22,11 @@ func init() {
 	if err != nil {
 		log.Error("Failed to load codestorage ABI", "err", err)
 	}
+	if runtimePluginPathsErr != nil {
+		log.Error("Failed to resolve cryptoupgrade plugin directory", "env", pluginDirEnvVar, "err", runtimePluginPathsErr)
+	}
 	// Load stashed map
-	if err = loadFromFile(algoInfoPath); err != nil {
-		log.Error("Failed to load upgrade algorithm map", "err", err)
+	if err = loadFromFile(algorithmInfoPath()); err != nil {
+		log.Error("Failed to load upgrade algorithm map", "path", algorithmInfoPath(), "err", err)
 	}
 }

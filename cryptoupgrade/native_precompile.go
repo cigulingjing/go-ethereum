@@ -43,8 +43,8 @@ type nativePrecompileSpec struct {
 	handler     nativePrecompileHandler
 }
 
-// NativePrecompile describes one deterministic cryptoupgrade algorithm exposed
-// through the EVM precompile path.
+// @Description: NativePrecompile describes one deterministic cryptoupgrade algorithm exposed through the EVM precompile path.
+// NativePrecompile实现了PrecompiledContract接口，可以被EVM直接调用。
 type NativePrecompile struct {
 	address     common.Address
 	name        string

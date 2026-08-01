@@ -221,7 +221,9 @@ func callFunction(fn interface{}, args []interface{}) (ret []interface{}, err er
 
 // Go plugin compile
 func PluginCompile(srcPath string, outputPath string) error {
-	directoryInit()
+	if err := directoryInit(); err != nil {
+		return err
+	}
 	goBin := pluginGoBinary()
 	if abs, err := filepath.Abs(srcPath); err == nil {
 		srcPath = abs

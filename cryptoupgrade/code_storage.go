@@ -108,7 +108,9 @@ func ActivateAlgorithm(name string, info algoInfo) error {
 		return errors.New("algorithm name is empty")
 	}
 	name = capitalString(name)
-	directoryInit()
+	if err := directoryInit(); err != nil {
+		return err
+	}
 
 	sourcefilePath := gofilePath(name)
 	if err := decompressStringToFile(info.code, sourcefilePath); err != nil {
