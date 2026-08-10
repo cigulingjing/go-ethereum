@@ -1,0 +1,110 @@
+WARN [08-10|19:27:45.699] Unknown config environment variable      envvar=GETH_CRYPTOUPGRADE_PLUGIN_DIR
+INFO [08-10|19:27:45.709] Maximum peer count                       ETH=50 total=50
+INFO [08-10|19:27:45.710] Smartcard socket not found, disabling    err="stat /run/pcscd/pcscd.comm: no such file or directory"
+WARN [08-10|19:27:45.714] Sanitizing cache to Go's GC limits       source=system provided=4096 updated=2530
+INFO [08-10|19:27:45.716] Set global gas cap                       cap=50,000,000
+INFO [08-10|19:27:46.737] Using developer account                  address=0xF5F871aA6Bd253914705898c66251f994aa426FA
+INFO [08-10|19:27:46.738] Using pebble as the backing database
+INFO [08-10|19:27:46.738] Allocated cache and file handles         database=/home/liuqi/project/paper/go-ethereum/build/bin/chain/chain/node1/geth/chaindata cache=1.24GiB handles=524,288 version=v2
+INFO [08-10|19:27:46.746] Opened ancient database                  database=/home/liuqi/project/paper/go-ethereum/build/bin/chain/chain/node1/geth/chaindata/ancient/chain readonly=true
+INFO [08-10|19:27:46.746] Opened Era store                         datadir=/home/liuqi/project/paper/go-ethereum/build/bin/chain/chain/node1/geth/chaindata/ancient/chain/era
+WARN [08-10|19:27:46.749] Setting network ID with command-line flag id=11,223,344
+INFO [08-10|19:27:46.749] Initializing the KZG library             backend=gokzg
+INFO [08-10|19:27:46.751] Allocated trie memory caches             clean=379.00MiB dirty=632.00MiB
+INFO [08-10|19:27:46.751] Using pebble as the backing database
+INFO [08-10|19:27:46.751] Allocated cache and file handles         database=/home/liuqi/project/paper/go-ethereum/build/bin/chain/chain/node1/geth/chaindata cache=1.24GiB handles=524,288 version=v2
+INFO [08-10|19:27:46.818] Opened ancient database                  database=/home/liuqi/project/paper/go-ethereum/build/bin/chain/chain/node1/geth/chaindata/ancient/chain readonly=false
+INFO [08-10|19:27:46.818] Opened Era store                         datadir=/home/liuqi/project/paper/go-ethereum/build/bin/chain/chain/node1/geth/chaindata/ancient/chain/era
+INFO [08-10|19:27:46.818] State scheme set to already existing     scheme=path
+INFO [08-10|19:27:46.819] Initialising Ethereum protocol           network=11,223,344 dbversion=9
+WARN [08-10|19:27:46.819] Sanitizing invalid node buffer size      provided=632.00MiB updated=256.00MiB
+INFO [08-10|19:27:46.819] Load database journal from file          path=/home/liuqi/project/paper/go-ethereum/build/bin/chain/chain/node1/geth/triedb/merkle.journal
+INFO [08-10|19:27:46.843] Opened ancient database                  database=/home/liuqi/project/paper/go-ethereum/build/bin/chain/chain/node1/geth/chaindata/ancient/state readonly=false
+INFO [08-10|19:27:46.843] Initialized path database                triecache=379.00MiB statecache=253.00MiB buffer=256.00MiB state-history="last 90000 blocks" journal-dir=/home/liuqi/project/paper/go-ethereum/build/bin/chain/chain/node1/geth/triedb
+INFO [08-10|19:27:46.843] 
+INFO [08-10|19:27:46.843] ---------------------------------------------------------------------------------------------------------------------------------------------------------
+INFO [08-10|19:27:46.843] Chain ID:  11223344 (unknown)
+INFO [08-10|19:27:46.844] Consensus: Beacon (proof-of-stake), merged from Clique (proof-of-authority)
+INFO [08-10|19:27:46.844] 
+INFO [08-10|19:27:46.844] Pre-Merge hard forks (block based):
+INFO [08-10|19:27:46.844]  - Homestead:                   #0       
+INFO [08-10|19:27:46.844]  - Tangerine Whistle (EIP 150): #0       
+INFO [08-10|19:27:46.844]  - Spurious Dragon/1 (EIP 155): #0       
+INFO [08-10|19:27:46.844]  - Spurious Dragon/2 (EIP 158): #0       
+INFO [08-10|19:27:46.844]  - Byzantium:                   #0       
+INFO [08-10|19:27:46.844]  - Constantinople:              #0       
+INFO [08-10|19:27:46.844]  - Petersburg:                  #0       
+INFO [08-10|19:27:46.844]  - Istanbul:                    #0       
+INFO [08-10|19:27:46.844]  - Berlin:                      #0       
+INFO [08-10|19:27:46.844]  - London:                      #0       
+INFO [08-10|19:27:46.844] 
+INFO [08-10|19:27:46.844] Merge configured:
+INFO [08-10|19:27:46.844]  - Total terminal difficulty:  0
+INFO [08-10|19:27:46.844] 
+INFO [08-10|19:27:46.844] Post-Merge hard forks (timestamp based):
+INFO [08-10|19:27:46.844] 
+INFO [08-10|19:27:46.844] All fork specifications can be found at https://ethereum.github.io/execution-specs/src/ethereum/forks/
+INFO [08-10|19:27:46.844] 
+INFO [08-10|19:27:46.844] ---------------------------------------------------------------------------------------------------------------------------------------------------------
+INFO [08-10|19:27:46.844] 
+INFO [08-10|19:27:46.844] Loaded most recent local block           number=0 hash=c68400..2d02fd age=57y5mo5d
+INFO [08-10|19:27:46.844] Initialized transaction indexer          range="last 2350000 blocks"
+INFO [08-10|19:27:46.877] Enabled full-sync                        head=0 hash=c68400..2d02fd
+INFO [08-10|19:27:46.878] Gasprice oracle is ignoring threshold set threshold=2
+INFO [08-10|19:27:46.878] Registered sync override service
+WARN [08-10|19:27:46.879] You are running Geth in --dev mode. Please note the following:
+WARN [08-10|19:27:46.879] 
+WARN [08-10|19:27:46.879]   1. This mode is only intended for fast, iterative development without assumptions on
+WARN [08-10|19:27:46.879]      security or persistence.
+WARN [08-10|19:27:46.879]   2. The database is created in memory unless specified otherwise. Therefore, shutting down
+WARN [08-10|19:27:46.879]      your computer or losing power will wipe your entire block data and chain state for
+WARN [08-10|19:27:46.879]      your dev environment.
+WARN [08-10|19:27:46.879]   3. A random, pre-allocated developer account will be available and unlocked as
+WARN [08-10|19:27:46.879]      eth.coinbase, which can be used for testing. The random dev account is temporary,
+WARN [08-10|19:27:46.879]      stored on a ramdisk, and will be lost if your machine is restarted.
+WARN [08-10|19:27:46.879]   4. Mining is enabled by default. However, the client will only seal blocks if transactions
+WARN [08-10|19:27:46.879]      are pending in the mempool. The miner's minimum accepted gas price is 1.
+WARN [08-10|19:27:46.879]   5. Networking is disabled; there is no listen-address, the maximum number of peers is set
+WARN [08-10|19:27:46.879]      to 0, and discovery is disabled.
+WARN [08-10|19:27:46.879] 
+INFO [08-10|19:27:46.879] Starting peer-to-peer node               instance=Geth/v1.17.5-unstable-82c7b26c-20260801/linux-amd64/go1.25.0
+WARN [08-10|19:27:46.879] P2P server will be useless, neither dialing nor listening
+INFO [08-10|19:27:46.927] New local node record                    seq=1,786,181,964,963 id=5d0e29c118909caa ip=127.0.0.1 udp=0 tcp=0
+INFO [08-10|19:27:46.927] Started P2P networking                   self=enode://f14a42ea169c25322e08468654c6a4d31fc18b0b9981389d63f8ff8187643adabc32eb07d8cabe9dc7ac4b95c3f747cedc5c5b83f3b4a532dfd0557429c17610@127.0.0.1:0
+INFO [08-10|19:27:46.928] IPC endpoint opened                      url=/home/liuqi/project/paper/go-ethereum/build/bin/chain/chain/node1/geth.ipc
+INFO [08-10|19:27:46.974] HTTP server started                      endpoint=[::]:8666 auth=false prefix= cors=* vhosts=*
+INFO [08-10|19:27:46.974] Loaded local transaction journal         transactions=0 dropped=0
+INFO [08-10|19:27:46.975] Started log indexer
+INFO [08-10|19:27:47.081] Submitted transaction                    hash=0xc9d09c439eaa544eec48cadcad9df9874ae93c341af7435b8b7ee29e8abfc8ba from=0xF5F871aA6Bd253914705898c66251f994aa426FA nonce=0 recipient=0x0000000000000000000000000000000000000043 value=0
+INFO [08-10|19:27:47.083] Starting work on payload                 id=0x028f2d2625d739e5
+WARN [08-10|19:27:47.083] Served eth_getTransactionReceipt         conn=127.0.0.1:51110 reqid=7 duration="286.324µs" err="transaction indexing is in progress" errdata="\"transaction indexing is in progress\""
+WARN [08-10|19:27:47.286] Served eth_getTransactionReceipt         conn=127.0.0.1:51110 reqid=8 duration="140.958µs" err="transaction indexing is in progress" errdata="\"transaction indexing is in progress\""
+WARN [08-10|19:27:47.488] Served eth_getTransactionReceipt         conn=127.0.0.1:51110 reqid=9 duration="119.297µs" err="transaction indexing is in progress" errdata="\"transaction indexing is in progress\""
+WARN [08-10|19:27:47.690] Served eth_getTransactionReceipt         conn=127.0.0.1:51110 reqid=10 duration="194.239µs" err="transaction indexing is in progress" errdata="\"transaction indexing is in progress\""
+WARN [08-10|19:27:47.893] Served eth_getTransactionReceipt         conn=127.0.0.1:51110 reqid=11 duration="103.577µs" err="transaction indexing is in progress" errdata="\"transaction indexing is in progress\""
+WARN [08-10|19:27:48.095] Served eth_getTransactionReceipt         conn=127.0.0.1:51110 reqid=12 duration="117.273µs" err="transaction indexing is in progress" errdata="\"transaction indexing is in progress\""
+WARN [08-10|19:27:48.296] Served eth_getTransactionReceipt         conn=127.0.0.1:51110 reqid=13 duration="196.794µs" err="transaction indexing is in progress" errdata="\"transaction indexing is in progress\""
+WARN [08-10|19:27:48.499] Served eth_getTransactionReceipt         conn=127.0.0.1:51110 reqid=14 duration="205.902µs" err="transaction indexing is in progress" errdata="\"transaction indexing is in progress\""
+WARN [08-10|19:27:48.701] Served eth_getTransactionReceipt         conn=127.0.0.1:51110 reqid=15 duration="177.537µs" err="transaction indexing is in progress" errdata="\"transaction indexing is in progress\""
+INFO [08-10|19:27:48.831] Updated payload                          id=0x028f2d2625d739e5 number=1 hash=07b25b..32621b txs=1 withdrawals=0 gas=85288 fees=8.5288e-14 root=8b362c..54d825 elapsed=1.748s
+INFO [08-10|19:27:48.831] Stopping work on payload                 id=0x028f2d2625d739e5 reason=delivery
+WARN [08-10|19:27:48.903] Served eth_getTransactionReceipt         conn=127.0.0.1:51110 reqid=16 duration="153.111µs" err="transaction indexing is in progress" errdata="\"transaction indexing is in progress\""
+INFO [08-10|19:27:49.012] Imported new potential chain segment     number=1 hash=07b25b..32621b blocks=1 txs=1 mgas=0.085 elapsed=180.565ms mgasps=0.472 triediffs=332.00B triedirty=0.00B
+INFO [08-10|19:27:49.013] Chain head was updated                   number=1 hash=07b25b..32621b root=8b362c..54d825 elapsed="243.685µs"
+INFO [08-10|19:27:49.013] Catch codeUploaded event!
+INFO [08-10|19:27:49.013] Indexed transactions                     blocks=2 txs=1 tail=0 elapsed="403.667µs"
+INFO [08-10|19:27:49.014] Loaded upgrade algorithm info            name=Add
+INFO [08-10|19:27:49.014] Upgrade algorithm is already active      name=Add
+INFO [08-10|19:27:49.111] Call upgrade algorithm                   name=Add input="[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 100]"
+INFO [08-10|19:27:49.111] Loaded upgrade algorithm ABI types       input="[int256 int256]" output=[int256]
+INFO [08-10|19:27:49.134] Successfully called upgrade algorithm    gas=18,446,744,073,709,551,615 output="[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 200]"
+INFO [08-10|19:27:49.135] Got interrupt, shutting down...
+INFO [08-10|19:27:49.136] HTTP server stopped                      endpoint=[::]:8666
+INFO [08-10|19:27:49.136] IPC endpoint closed                      url=/home/liuqi/project/paper/go-ethereum/build/bin/chain/chain/node1/geth.ipc
+ERROR[08-10|19:27:49.136] Error while listening for coinbase logs  err=EOF
+ERROR[08-10|19:27:49.136] Error while listening for cryptoupgrade log err=EOF
+INFO [08-10|19:27:49.136] Ethereum protocol stopped
+INFO [08-10|19:27:49.246] Transaction pool stopped
+INFO [08-10|19:27:49.253] Persisting dirty state                   head=1 root=8b362c..54d825 layers=1
+INFO [08-10|19:27:49.285] Persisted dirty state to file            path=/home/liuqi/project/paper/go-ethereum/build/bin/chain/chain/node1/geth/triedb/merkle.journal size=494.00B elapsed=31.445ms
+INFO [08-10|19:27:49.307] Blockchain stopped

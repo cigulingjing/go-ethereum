@@ -26,7 +26,7 @@ func TestCryptoUpgradePrecompilesRegistered(t *testing.T) {
 		addressSet[address] = true
 	}
 
-	for _, entry := range cryptoupgrade.NativePrecompiles() {
+	for _, entry := range cryptoupgrade.Precompiles() {
 		if _, ok := contracts[entry.Address()]; !ok {
 			t.Fatalf("missing cryptoupgrade precompile contract %s at %s", entry.Name(), entry.Address())
 		}
@@ -144,9 +144,9 @@ func TestCryptoUpgradeCodeStorageSpecialCaseRemains(t *testing.T) {
 	}
 }
 
-func mustCryptoUpgradeEntry(t *testing.T, name string) cryptoupgrade.NativePrecompile {
+func mustCryptoUpgradeEntry(t *testing.T, name string) cryptoupgrade.Precompile {
 	t.Helper()
-	entry, ok := cryptoupgrade.NativePrecompileByName(name)
+	entry, ok := cryptoupgrade.PrecompileByName(name)
 	if !ok {
 		t.Fatalf("missing cryptoupgrade precompile %s", name)
 	}

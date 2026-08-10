@@ -17,7 +17,7 @@
 
 | 实现方式 | 说明 | 是否存在部署阶段 |
 | --- | --- | --- |
-| Solidity 纯合约 | 通过 `cryptoupgrade/contracts/Blake2bSolidity.sol` 在 Solidity 中实现 Blake2b-256，测试输入限制为不超过 128 字节。 | 是 |
+| Solidity 纯合约 | 通过 `cryptoupgrade/algorithm/contracts/Blake2b.sol` 在 Solidity 中实现 Blake2b-256，测试输入限制为不超过 128 字节。 | 是 |
 | 升级方案 | 通过 `CodeStorage.uploadCode` 上传 Go wrapper，wrapper 调用 `github.com/ethereum/go-ethereum/crypto/blake2b.Sum256`。 | 是 |
 | 预编译合约 | 在 geth 客户端中内置 `Blake2bSum256` 预编译合约，地址为 `0x0000000000000000000000000000000000000046`，直接调用 `go-ethereum/crypto/blake2b.Sum256`。 | 否 |
 

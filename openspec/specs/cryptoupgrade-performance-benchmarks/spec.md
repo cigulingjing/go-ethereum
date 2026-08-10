@@ -1,4 +1,4 @@
-# Cryptoupgrade Performance Benchmarks
+# cryptoupgrade 性能基准规范
 
 ## Purpose
 
@@ -6,7 +6,7 @@
 
 ## Requirements
 
-### Requirement: Deployment Resource Benchmark
+### Requirement: 部署资源基准
 
 系统 SHALL 统计算法部署阶段的资源消耗。
 
@@ -26,7 +26,7 @@
 - **WHEN** 等价密码算法通过预编译合约适配器部署
 - **THEN** 基准工具 SHALL 记录部署耗时和 receipt gas used
 
-### Requirement: Deployed Call Resource Benchmark
+### Requirement: 已部署调用资源基准
 
 系统 SHALL 统计算法完成部署后的调用资源消耗。
 
@@ -42,7 +42,7 @@
 - **THEN** 基准工具 SHOULD 通过 `eth_estimateGas` 或等价方式记录调用 gas
 - **AND** SHOULD 在结果文档中与调用耗时一起呈现
 
-### Requirement: Three-Way Cryptographic Algorithm Comparison
+### Requirement: 三组密码算法对照
 
 系统 SHALL 支持同一密码算法的三组实验对照。
 
@@ -64,7 +64,7 @@
 - **THEN** 密码算法 SHALL 在 geth 客户端侧以 native precompile 路径执行
 - **AND** 调用接口 SHALL 与其他对照组保持语义等价
 
-### Requirement: Reproducible Results Documentation
+### Requirement: 可复现实验结果文档
 
 系统 SHALL 保留可复现实验结果文档。
 

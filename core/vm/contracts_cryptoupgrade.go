@@ -8,7 +8,7 @@ import (
 )
 
 type cryptoUpgradePrecompile struct {
-	entry cryptoupgrade.NativePrecompile
+	entry cryptoupgrade.Precompile
 }
 
 func (c *cryptoUpgradePrecompile) RequiredGas(input []byte) uint64 {
@@ -24,7 +24,7 @@ func (c *cryptoUpgradePrecompile) Name() string {
 }
 
 func cryptoUpgradePrecompiledContracts() PrecompiledContracts {
-	entries := cryptoupgrade.NativePrecompiles()
+	entries := cryptoupgrade.Precompiles()
 	contracts := make(PrecompiledContracts, len(entries))
 	for _, entry := range entries {
 		entry := entry
@@ -34,7 +34,7 @@ func cryptoUpgradePrecompiledContracts() PrecompiledContracts {
 }
 
 func cryptoUpgradePrecompileAddresses() []common.Address {
-	return cryptoupgrade.NativePrecompileAddresses()
+	return cryptoupgrade.PrecompileAddresses()
 }
 
 func isCryptoUpgradeCall(addr common.Address, input []byte) bool {

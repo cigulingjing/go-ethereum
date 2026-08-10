@@ -1,0 +1,100 @@
+{
+  "timestamp": "2026-08-08T10:10:55.590817572Z",
+  "rpc": "http://127.0.0.1:8666",
+  "mode": "all",
+  "sender": "0x71562b71999873DB5b286dF957af199Ec94617F7",
+  "algorithm": "Sha256",
+  "sourcePath": "cryptoupgrade/algorithm/go/sha256.go",
+  "inputTypes": [
+    "bytes"
+  ],
+  "outputTypes": [
+    "bytes"
+  ],
+  "inputHex": "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001368656c6c6f2063727970746f7570677261646500000000000000000000000000",
+  "expectedHex": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000201dfa30acdf489c5a6ad291902fd7c58449fd325e8e64d0d45b704e8f4c453414",
+  "precompileAddress": "0x0000000000000000000000000000000000000048",
+  "command": [
+    "/tmp/go-build1670435019/b001/exe/benchrealchain",
+    "-rpc",
+    "http://127.0.0.1:8666",
+    "-name",
+    "Sha256",
+    "-source",
+    "cryptoupgrade/algorithm/go/sha256.go",
+    "-itype",
+    "bytes",
+    "-otype",
+    "bytes",
+    "-input-hex",
+    "0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001368656c6c6f2063727970746f7570677261646500000000000000000000000000",
+    "-expected-hex",
+    "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000201dfa30acdf489c5a6ad291902fd7c58449fd325e8e64d0d45b704e8f4c453414",
+    "-precompile-address",
+    "0x0000000000000000000000000000000000000048",
+    "-warmup",
+    "10",
+    "-n",
+    "100",
+    "-output-json",
+    "cryptoupgrade/docs/real_chain_upgrade_vs_precompile_result.json"
+  ],
+  "upgradeSetup": {
+    "scheme": "upgrade",
+    "txCount": 1,
+    "txHash": "0x5808d2b93896726f19ae7f24168efd1a4278e71260912c5f43dfb668d62b97bd",
+    "receiptStatus": 1,
+    "elapsedMillis": 410.854897,
+    "gasUsed": 87180,
+    "sourceBytes": 210,
+    "compressedBytes": 244,
+    "address": "0x0000000000000000000000000000000000000043"
+  },
+  "precompileSetup": {
+    "scheme": "precompile",
+    "txCount": 0,
+    "receiptStatus": 0,
+    "elapsedMillis": 0,
+    "gasUsed": 0,
+    "address": "0x0000000000000000000000000000000000000048"
+  },
+  "upgradeCall": {
+    "scheme": "upgrade",
+    "warmup": 10,
+    "samples": 100,
+    "gasEstimate": 25801,
+    "firstMillis": 1.084546,
+    "meanMillis": 1.122742,
+    "p50Millis": 1.047111,
+    "p95Millis": 1.699892,
+    "minMillis": 0.761653,
+    "maxMillis": 3.05652,
+    "outputHex": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000201dfa30acdf489c5a6ad291902fd7c58449fd325e8e64d0d45b704e8f4c453414",
+    "outputSha256": "0b2aff9a5f71723813fc0d09746dd7622495e0b9c8eb202c591c577ea247cd24",
+    "outputByteLength": 96
+  },
+  "precompileCall": {
+    "scheme": "precompile",
+    "warmup": 10,
+    "samples": 100,
+    "gasEstimate": 25156,
+    "firstMillis": 0.899019,
+    "meanMillis": 0.726246,
+    "p50Millis": 0.671001,
+    "p95Millis": 1.065185,
+    "minMillis": 0.528775,
+    "maxMillis": 1.880329,
+    "outputHex": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000201dfa30acdf489c5a6ad291902fd7c58449fd325e8e64d0d45b704e8f4c453414",
+    "outputSha256": "0b2aff9a5f71723813fc0d09746dd7622495e0b9c8eb202c591c577ea247cd24",
+    "outputByteLength": 96
+  },
+  "ratios": {
+    "meanTimeUpgradeOverPrecompile": 1.5459527487931086,
+    "p50TimeUpgradeOverPrecompile": 1.5605207741866256,
+    "p95TimeUpgradeOverPrecompile": 1.595865506930721,
+    "gasUpgradeOverPrecompile": 1.0256400063603117,
+    "upgradeSetupGas": 87180,
+    "precompileSetupGas": 0
+  },
+  "outputMatched": true
+}

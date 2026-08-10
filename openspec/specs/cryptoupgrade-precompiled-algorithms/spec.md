@@ -1,4 +1,4 @@
-# Cryptoupgrade Precompiled Algorithms
+# cryptoupgrade 预编译算法规范
 
 ## Purpose
 
@@ -6,90 +6,111 @@
 
 ## Requirements
 
-### Requirement: Cryptoupgrade Precompile Registration
-The system SHALL register cryptoupgrade algorithm precompiles in the active geth precompile set without removing or replacing existing precompiled contracts.
+### Requirement: cryptoupgrade 预编译注册
 
-#### Scenario: Active precompile map includes cryptoupgrade algorithms
-- **WHEN** the EVM builds active precompiled contracts for the current chain rules
-- **THEN** the returned precompile map SHALL include every registered cryptoupgrade algorithm address
-- **AND** the returned precompile map SHALL still include the existing Ethereum and cryptoupgrade system precompiles
+系统 SHALL 将 cryptoupgrade 算法 precompile 注册到当前激活的 geth precompile 集合中，并且不删除或替换已有预编译合约。
 
-#### Scenario: Address list includes registered algorithms
-- **WHEN** active precompile addresses are requested for the current chain rules
-- **THEN** the returned address list SHALL include every registered cryptoupgrade algorithm address
-- **AND** no registered cryptoupgrade algorithm address SHALL collide with another active precompile address
+#### Scenario: 激活的 precompile 映射包含 cryptoupgrade 算法
 
-### Requirement: Deterministic Algorithm Selection
-The system SHALL expose only deterministic and bounded `cryptoupgrade` algorithm entry points as native precompiles.
+- **WHEN** EVM 根据当前 chain rules 构建激活的预编译合约
+- **THEN** 返回的 precompile map SHALL 包含所有已注册的 cryptoupgrade 算法地址
+- **AND** 返回的 precompile map SHALL 仍包含已有 Ethereum precompile 和 cryptoupgrade 系统 precompile
 
-#### Scenario: Deterministic entry point is registered
-- **WHEN** a `cryptoupgrade` algorithm entry point has deterministic output for ABI-equivalent input and has a deterministic gas rule
-- **THEN** the implementation SHALL be eligible for registration as a cryptoupgrade precompile
+#### Scenario: 地址列表包含已注册算法
 
-#### Scenario: Random entry point is excluded
-- **WHEN** a `cryptoupgrade` algorithm entry point depends on system randomness, file system state, local compiler state, or runtime plugin loading
-- **THEN** the implementation SHALL NOT register that entry point as a native precompile
+- **WHEN** 请求当前 chain rules 下的激活 precompile 地址列表
+- **THEN** 返回的地址列表 SHALL 包含所有已注册的 cryptoupgrade 算法地址
+- **AND** 已注册 cryptoupgrade 算法地址 SHALL 不与其他激活 precompile 地址冲突
 
-#### Scenario: Random fallback is rejected
-- **WHEN** an otherwise deterministic algorithm function has an input form that would trigger random behavior
-- **THEN** the precompile SHALL reject that input instead of executing the random path
+### Requirement: 确定性算法选择
 
-### Requirement: ABI Call Semantics
-The system SHALL use a stable ABI for each cryptoupgrade algorithm precompile.
+系统 SHALL 仅将确定性且有界的 `cryptoupgrade` 算法入口暴露为 native precompile。
 
-#### Scenario: Successful precompile call
-- **WHEN** a caller sends ABI-encoded arguments to a registered cryptoupgrade algorithm precompile address
-- **THEN** the precompile SHALL decode the input using that algorithm's configured input ABI types
-- **AND** SHALL execute the selected native algorithm entry point
-- **AND** SHALL return ABI-encoded output using that algorithm's configured output ABI types
+#### Scenario: 注册确定性入口
 
-#### Scenario: Invalid ABI input
-- **WHEN** a caller sends input that cannot be decoded using the precompile's configured input ABI types
-- **THEN** the precompile SHALL return an execution error
-- **AND** SHALL NOT call the algorithm handler with partially decoded arguments
+- **WHEN** 一个 `cryptoupgrade` 算法入口对 ABI 等价输入具有确定性输出，并且具有确定性 gas 规则
+- **THEN** 该实现 SHALL 可被注册为 cryptoupgrade precompile
 
-#### Scenario: No method selector required
-- **WHEN** a caller invokes a registered cryptoupgrade algorithm precompile
-- **THEN** the input SHALL be interpreted as algorithm arguments for that address
-- **AND** the caller SHALL NOT be required to include a function selector or `CodeStorage.callFunc` wrapper
+#### Scenario: 排除随机入口
 
-### Requirement: Gas Accounting
-The system SHALL charge deterministic gas for each cryptoupgrade algorithm precompile before executing the algorithm handler.
+- **WHEN** 一个 `cryptoupgrade` 算法入口依赖系统随机数、文件系统状态、本地编译器状态或运行时 plugin 加载
+- **THEN** 实现 SHALL NOT 将该入口注册为 native precompile
 
-#### Scenario: Sufficient gas
-- **WHEN** a caller invokes a registered cryptoupgrade algorithm precompile with at least the required gas
-- **THEN** the EVM SHALL deduct the precompile required gas using the existing precompile gas path
-- **AND** SHALL execute the algorithm handler
-- **AND** SHALL return the remaining gas budget after the call
+#### Scenario: 拒绝随机 fallback
 
-#### Scenario: Insufficient gas
-- **WHEN** a caller invokes a registered cryptoupgrade algorithm precompile with less than the required gas
-- **THEN** the EVM SHALL return out-of-gas through the existing precompile gas path
-- **AND** SHALL NOT execute the algorithm handler
+- **WHEN** 一个原本确定性的算法函数收到会触发随机行为的输入形式
+- **THEN** precompile SHALL 拒绝该输入，而不是执行随机路径
 
-#### Scenario: Malformed gas-sensitive input
-- **WHEN** a caller sends malformed input to an algorithm whose gas rule depends on decoded parameters
-- **THEN** the required gas calculation SHALL remain deterministic
-- **AND** the subsequent run SHALL return an input decoding error
+### Requirement: ABI 调用语义
 
-### Requirement: Algorithm Result Equivalence
-The system SHALL return results equivalent to the selected cryptoupgrade algorithm implementation for supported inputs.
+系统 SHALL 为每个 cryptoupgrade 算法 precompile 使用稳定 ABI。
 
-#### Scenario: Fixture output matches
-- **WHEN** a registered cryptoupgrade algorithm precompile is called with a supported test fixture input
-- **THEN** the returned bytes SHALL match the ABI-encoded result produced by the corresponding native cryptoupgrade algorithm implementation
+#### Scenario: precompile 调用成功
 
-#### Scenario: Boolean output matches ABI encoding
-- **WHEN** a registered verification algorithm returns a boolean result
-- **THEN** the precompile SHALL return that boolean using standard ABI encoding
+- **WHEN** 调用方向已注册的 cryptoupgrade 算法 precompile 地址发送 ABI 编码参数
+- **THEN** precompile SHALL 使用该算法配置的输入 ABI 类型解码输入
+- **AND** SHALL 执行选定的 native 算法入口
+- **AND** SHALL 使用该算法配置的输出 ABI 类型返回 ABI 编码输出
 
-### Requirement: State Isolation
-The system SHALL keep cryptoupgrade algorithm precompile execution independent from dynamic code upload state.
+#### Scenario: 无效 ABI 输入
 
-#### Scenario: Static call succeeds for pure algorithm
-- **WHEN** a caller invokes a registered cryptoupgrade algorithm precompile through `STATICCALL`
-- **THEN** the call SHALL execute with the same result as a normal call for the same input and gas
+- **WHEN** 调用方发送的输入无法使用该 precompile 配置的输入 ABI 类型解码
+- **THEN** precompile SHALL 返回执行错误
+- **AND** SHALL NOT 使用部分解码的参数调用算法 handler
 
-#### Scenario: CodeStorage state is unchanged
-- **WHEN** a caller invokes a registered cryptoupgrade algorithm precompile
-- **THEN** the call SHALL NOT upload code, modify algorithm metadata, write logs, or depend on previously uploaded `CodeStorage` plugin state
+#### Scenario: 不需要方法选择器
+
+- **WHEN** 调用方调用已注册的 cryptoupgrade 算法 precompile
+- **THEN** 输入 SHALL 被解释为该地址对应算法的参数
+- **AND** 调用方 SHALL NOT 需要包含函数选择器或 `CodeStorage.callFunc` 包装
+
+### Requirement: Gas 计费
+
+系统 SHALL 在执行算法 handler 前，为每个 cryptoupgrade 算法 precompile 收取确定性 gas。
+
+#### Scenario: gas 充足
+
+- **WHEN** 调用方以不少于 required gas 的 gas 调用已注册 cryptoupgrade 算法 precompile
+- **THEN** EVM SHALL 通过既有 precompile gas 路径扣减 precompile required gas
+- **AND** SHALL 执行算法 handler
+- **AND** SHALL 返回调用后的剩余 gas budget
+
+#### Scenario: gas 不足
+
+- **WHEN** 调用方以低于 required gas 的 gas 调用已注册 cryptoupgrade 算法 precompile
+- **THEN** EVM SHALL 通过既有 precompile gas 路径返回 out-of-gas
+- **AND** SHALL NOT 执行算法 handler
+
+#### Scenario: gas 敏感输入格式错误
+
+- **WHEN** 调用方向 gas 规则依赖解码参数的算法发送格式错误输入
+- **THEN** required gas 计算 SHALL 保持确定性
+- **AND** 随后的 run SHALL 返回输入解码错误
+
+### Requirement: 算法结果等价
+
+系统 SHALL 对受支持输入返回与选定 cryptoupgrade 算法实现等价的结果。
+
+#### Scenario: fixture 输出匹配
+
+- **WHEN** 使用受支持的测试 fixture 输入调用已注册 cryptoupgrade 算法 precompile
+- **THEN** 返回 bytes SHALL 匹配对应 native cryptoupgrade 算法实现产生的 ABI 编码结果
+
+#### Scenario: bool 输出匹配 ABI 编码
+
+- **WHEN** 已注册验证算法返回 bool 结果
+- **THEN** precompile SHALL 使用标准 ABI 编码返回该 bool
+
+### Requirement: 状态隔离
+
+系统 SHALL 保持 cryptoupgrade 算法 precompile 执行独立于动态代码上传状态。
+
+#### Scenario: 纯算法 static call 成功
+
+- **WHEN** 调用方通过 `STATICCALL` 调用已注册 cryptoupgrade 算法 precompile
+- **THEN** 对相同输入和 gas，该调用 SHALL 与普通调用产生相同结果
+
+#### Scenario: CodeStorage 状态不变
+
+- **WHEN** 调用方调用已注册 cryptoupgrade 算法 precompile
+- **THEN** 该调用 SHALL NOT 上传代码、修改算法元数据、写入日志或依赖此前上传的 `CodeStorage` plugin 状态

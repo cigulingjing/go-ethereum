@@ -1,8 +1,8 @@
-# Cryptoupgrade Plugin Directory
+# Cryptoupgrade 插件目录
 
-Cryptoupgrade stores runtime plugin artifacts in a node-local plugin directory.
+Cryptoupgrade 将运行时插件产物存放在节点本地的插件目录中。
 
-By default, the directory is resolved from the geth process startup working directory:
+默认情况下，该目录相对于 geth 进程启动时的工作目录解析：
 
 ```text
 ./plugin/
@@ -13,17 +13,17 @@ By default, the directory is resolved from the geth process startup working dire
     <Algorithm>.so
 ```
 
-The default preserves the existing development layout. The runtime resolves the base directory once during package initialization, then derives all child paths from that resolved base.
+默认配置保留现有开发目录布局。运行时在包初始化阶段解析一次基础目录，随后所有子路径均基于该已解析的基础目录派生。
 
-## Override
+## 覆盖默认路径
 
-Set `GETH_CRYPTOUPGRADE_PLUGIN_DIR` before starting geth to place artifacts somewhere explicit:
+在启动 geth 之前设置 `GETH_CRYPTOUPGRADE_PLUGIN_DIR`，可将产物放到指定位置：
 
 ```sh
 GETH_CRYPTOUPGRADE_PLUGIN_DIR=/var/lib/geth-node-a/cryptoupgrade-plugin ./build/bin/geth ...
 ```
 
-With this setting, cryptoupgrade uses:
+设置后，cryptoupgrade 使用：
 
 ```text
 /var/lib/geth-node-a/cryptoupgrade-plugin/
@@ -32,11 +32,11 @@ With this setting, cryptoupgrade uses:
   so/
 ```
 
-Relative override values are resolved against the geth startup working directory. Prefer absolute paths for service deployments.
+相对路径的覆盖值会相对于 geth 启动时的工作目录解析。以服务方式部署时，建议使用绝对路径。
 
-## Operational Notes
+## 运维说明
 
-- Treat the plugin directory as node-local runtime state. Do not share one plugin directory between concurrently running nodes.
-- Set `GETH_CRYPTOUPGRADE_PLUGIN_DIR` before process startup; changing it after geth is running does not move the active paths.
-- The runtime does not automatically copy or migrate files from `./plugin` to an override directory. Copy `algorithm_info.json` and any required artifacts manually if reuse is needed.
-- Directory creation errors are returned through algorithm activation or metadata storage paths, which helps surface permission and path-conflict problems early.
+- 将插件目录视为节点本地的运行时状态，不要在多个并发运行的节点之间共享同一插件目录。
+- 在进程启动前设置 `GETH_CRYPTOUPGRADE_PLUGIN_DIR`；geth 运行后再修改该环境变量不会迁移当前生效的路径。
+- 运行时不会自动将 `./plugin` 中的文件复制或迁移到覆盖目录。如需复用，请手动复制 `algorithm_info.json` 及所需产物。
+- 目录创建错误会通过算法激活或元数据存储路径返回，便于尽早暴露权限与路径冲突问题。

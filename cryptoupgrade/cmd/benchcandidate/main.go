@@ -60,7 +60,7 @@ type deployResult struct {
 func main() {
 	var (
 		rpcURL            = flag.String("rpc", "http://127.0.0.1:8666", "execution RPC endpoint")
-		source            = flag.String("source", "cryptoupgrade/algorithm/sha256.go", "algorithm source file")
+		source            = flag.String("source", "cryptoupgrade/algorithm/go/sha256.go", "algorithm source file")
 		name              = flag.String("name", "Sha256", "upgrade algorithm name")
 		itype             = flag.String("itype", "bytes", "comma-separated upgrade input ABI types")
 		otype             = flag.String("otype", "bytes", "comma-separated upgrade output ABI types")
@@ -76,8 +76,8 @@ func main() {
 		solidityDeployGas = flag.Uint64("solidity-deploy-gas", 8000000, "gas limit for Solidity contract deployment transactions")
 		solcPath          = flag.String("solc", defaultSolcPath(), "solc compiler path")
 		evmVersion        = flag.String("evm-version", "paris", "solc EVM target")
-		soliditySource    = flag.String("solidity-source", "cryptoupgrade/contracts/Sha256Solidity.sol", "Solidity contract source")
-		solidityContract  = flag.String("solidity-contract", "Sha256Solidity", "Solidity contract name to select")
+		soliditySource    = flag.String("solidity-source", "cryptoupgrade/algorithm/contracts/Sha256.sol", "Solidity contract source")
+		solidityContract  = flag.String("solidity-contract", "Sha256Contract", "Solidity contract name to select")
 		solidityFunction  = flag.String("solidity-function", "Sha256", "Solidity function name to call")
 		solidityInputHex  = flag.String("solidity-input-hex", "", "optional ABI-encoded Solidity function arguments; defaults to -input-hex")
 		solidityAddress   = flag.String("solidity-address", "", "predeployed Solidity contract address for call benchmarking")

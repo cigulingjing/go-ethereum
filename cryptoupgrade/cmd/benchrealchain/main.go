@@ -247,10 +247,9 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("benchmark precompile path: %w", err)
 	}
-	upgradeOutput, err := normalizeCodeStorageReturn(codeStorageABI, upgradeStats.output)
-	if err != nil {
-		return err
-	}
+	// CodeStorage.callFunc 在 EVM special-case 中直接返回算法的 ABI 输出，而不是再次按 callFunc 的 bytes 返回值包装。
+	// 因此这里与 precompile 比较同一层的算法 ABI 输出，避免把 bytes 输出误解包成逻辑值后再比较。
+	upgradeOutput := upgradeStats.output
 	precompileOutput := precompileStats.output
 	if expectedOutput != nil {
 		if !bytes.Equal(upgradeOutput, expectedOutput) {
@@ -283,12 +282,12 @@ func parseFlags() config {
 	flag.StringVar(&cfg.rpc, "rpc", "http://127.0.0.1:8666", "JSON-RPC endpoint")
 	flag.StringVar(&cfg.mode, "mode", "all", "benchmark mode: all, setup, or call")
 	flag.StringVar(&cfg.algorithm, "name", "Sha256", "algorithm name registered in CodeStorage")
-	flag.StringVar(&cfg.sourcePath, "source", "cryptoupgrade/algorithm/sha256.go", "algorithm source file to upload")
+	flag.StringVar(&cfg.sourcePath, "source", "cryptoupgrade/algorithm/go/sha256.go", "algorithm source file to upload")
 	flag.StringVar(&cfg.inputTypes, "itype", "bytes", "comma-separated ABI input types")
 	flag.StringVar(&cfg.outputTypes, "otype", "bytes", "comma-separated ABI output types")
 	flag.StringVar(&cfg.inputHex, "input-hex", defaultInput, "ABI-encoded input bytes")
 	flag.StringVar(&cfg.expectedHex, "expected-hex", "", "expected ABI-encoded output bytes")
-	flag.StringVar(&cfg.precompileAddr, "precompile-address", common.CryptoUpgradeSha256Address.Hex(), "native precompile address")
+	flag.StringVar(&cfg.precompileAddr, "precompile-address", common.CryptoUpgradeSha256Address.Hex(), "precompile address")
 	flag.StringVar(&cfg.from, "from", "", "sender address; defaults to eth_accounts[0]")
 	flag.IntVar(&cfg.warmup, "warmup", 10, "warmup eth_call count per path")
 	flag.IntVar(&cfg.samples, "n", 100, "measured eth_call count per path")
@@ -507,6 +506,13 @@ func waitReceipt(ctx context.Context, client *rpc.Client, txHash common.Hash, ti
 	for {
 		var receipt *types.Receipt
 		if err := client.CallContext(ctx, &receipt, "eth_getTransactionReceipt", txHash); err != nil {
+			if isReceiptIndexing(err) {
+				if time.Now().After(deadline) {
+					return nil, fmt.Errorf("timed out waiting for receipt %s", txHash.Hex())
+				}
+				time.Sleep(200 * time.Millisecond)
+				continue
+			}
 			return nil, fmt.Errorf("eth_getTransactionReceipt %s: %w", txHash.Hex(), err)
 		}
 		if receipt != nil {
@@ -517,6 +523,11 @@ func waitReceipt(ctx context.Context, client *rpc.Client, txHash common.Hash, ti
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
+}
+
+func isReceiptIndexing(err error) bool {
+	// dev 模式刚提交交易时，receipt 查询可能早于 tx indexer 完成，此时继续轮询即可。
+	return strings.Contains(strings.ToLower(err.Error()), "transaction indexing is in progress")
 }
 
 func ethCall(ctx context.Context, client *rpc.Client, args callArgs) ([]byte, error) {
@@ -582,21 +593,6 @@ func percentile(sorted []time.Duration, q float64) time.Duration {
 		index = len(sorted) - 1
 	}
 	return sorted[index]
-}
-
-func normalizeCodeStorageReturn(codeStorageABI abi.ABI, raw []byte) ([]byte, error) {
-	values, err := codeStorageABI.Unpack("callFunc", raw)
-	if err != nil {
-		return nil, fmt.Errorf("decode CodeStorage.callFunc return: %w", err)
-	}
-	if len(values) != 1 {
-		return nil, fmt.Errorf("decode CodeStorage.callFunc return: got %d values", len(values))
-	}
-	out, ok := values[0].([]byte)
-	if !ok {
-		return nil, fmt.Errorf("decode CodeStorage.callFunc return: got %T", values[0])
-	}
-	return out, nil
 }
 
 func metricsFromStats(scheme string, cfg config, gas uint64, output []byte, stats benchmarkStats) callMetrics {

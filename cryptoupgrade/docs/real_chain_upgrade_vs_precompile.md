@@ -36,7 +36,7 @@ ABI 编码输入为 `abi.encode(bytes("hello cryptoupgrade"))`：
 go run ./cryptoupgrade/cmd/benchrealchain \
   -rpc http://127.0.0.1:8666 \
   -name Sha256 \
-  -source cryptoupgrade/algorithm/sha256.go \
+  -source cryptoupgrade/algorithm/go/sha256.go \
   -itype bytes \
   -otype bytes \
   -input-hex 0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001368656c6c6f2063727970746f7570677261646500000000000000000000000000 \
@@ -102,3 +102,173 @@ historical state 44558bbcebd211d272df58f6c7d2ff3b5569ff24af2678fd1a2ac343f1450e9
 ```
 
 因此本次只能验证 RPC 可达和命令执行路径，不能记录有效性能样本。待本地链完成同步并正常出块后，重新运行上文完整命令即可生成 `cryptoupgrade/docs/real_chain_upgrade_vs_precompile_result.json`。
+
+## 本机验证记录 2026-08-08
+
+本地 `geth` 进程已监听 `0.0.0.0:8666`，启动参数与 `cryptoupgrade/docs/chain_setup.md` 中的 `--dev --datadir chain/node1 --http.port 8666` 形式一致。
+
+当前 shell 配置了 HTTP 代理，访问本地 RPC 时需要绕过代理：
+
+```shell
+NO_PROXY=127.0.0.1,localhost no_proxy=127.0.0.1,localhost \
+ALL_PROXY= HTTP_PROXY= HTTPS_PROXY= all_proxy= http_proxy= https_proxy= \
+go run ./cryptoupgrade/cmd/benchrealchain ...
+```
+
+绕过代理后，`web3_clientVersion`、`eth_chainId` 和 `eth_accounts` 均可正常返回：
+
+```text
+web3_clientVersion = Geth/v1.17.5-unstable-82c7b26c-20260801/linux-amd64/go1.25.0
+eth_chainId = 0xab4130
+eth_accounts = ["0xf5f871aa6bd253914705898c66251f994aa426fa"]
+```
+
+按 SHA-256 完整命令执行时，`CodeStorage.uploadCode` 上传交易未能发送成功：
+
+```text
+send upload transaction: insufficient funds for gas * price + value: balance 0, tx cost 16000000008000000, overshot 16000000008000000
+```
+
+进一步检查链状态：
+
+```text
+eth_blockNumber = 0x0
+eth_getBalance(0xf5f871aa6bd253914705898c66251f994aa426fa) = 0x0
+debug_accountRange = {}
+```
+
+该状态说明当前 `--dev` 启动没有使用带账户 `alloc` 的 `chain/genesis.json` 状态，链上没有可支付上传交易 gas 的账户。因此本次仍不能生成有效性能样本。后续需要使用包含 funded sender 的链状态启动节点，或通过 `-from` 指定链上已有余额且节点可签名的账户后重新运行完整命令。
+
+随后使用不带 `--dev` 的私链启动命令重新验证：
+
+```shell
+./geth \
+  --datadir chain/node1 \
+  --password chain/password.txt \
+  --networkid 11223344 \
+  --http \
+  --http.addr "0.0.0.0" \
+  --http.port 8666 \
+  --http.corsdomain "*" \
+  --http.vhosts "*" \
+  --http.api "web3,eth,debug,net,admin"
+```
+
+本次 `CodeStorage` 预部署合约已经存在，`chain/genesis.json` 中的 funded account 也已经生效：
+
+```text
+eth_getCode(0x0000000000000000000000000000000000000043) != 0x
+eth_getBalance(0xc4e5e9b04769b82ce36f4aef4ead980e2ff82dc4) = 0x65a4da25d3016c00000
+eth_accounts = ["0xf5f871aa6bd253914705898c66251f994aa426fa"]
+eth_getBalance(0xf5f871aa6bd253914705898c66251f994aa426fa) = 0x0
+```
+
+用默认账户 `0xf5f...26fa` 运行完整 benchmark 仍会因为余额为 0 失败；改用 funded account `0xc4e5...2dc4` 作为 `-from` 时，节点返回：
+
+```text
+send upload transaction: unknown account
+```
+
+因此不带 `--dev` 后链状态已经正确加载了预部署合约和 funded account，但 funded account 不在当前节点 keystore 中，当前节点 keystore 中的账户又没有余额。完整 benchmark 需要满足同一个地址同时具备两项条件：链上有余额，并且节点本地可签名。
+
+再次重新初始化并启动后，账户与 signer 已经统一为 `0xf5f871aa6bd253914705898c66251f994aa426fa`，并且该账户已有余额：
+
+```text
+eth_accounts = ["0xf5f871aa6bd253914705898c66251f994aa426fa"]
+eth_getBalance(0xf5f871aa6bd253914705898c66251f994aa426fa) = 0x65a4da25d3016c00000
+genesis signer = 0xf5f871aa6bd253914705898c66251f994aa426fa
+```
+
+预编译路径可通过 `eth_call` 直接返回期望 SHA-256 输出，但完整 benchmark 的上传交易仍失败：
+
+```text
+send upload transaction: authentication needed: password or unlock
+```
+
+该状态说明账户已有余额但未解锁。由于当前 HTTP API 未暴露可用的在线解锁接口，后续启动节点时需要同时解锁 signer/sender，例如：
+
+```shell
+./geth \
+  --datadir chain/node1 \
+  --password chain/password.txt \
+  --networkid 11223344 \
+  --unlock 0xF5F871aA6Bd253914705898c66251f994aa426FA \
+  --allow-insecure-unlock \
+  --mine \
+  --http \
+  --http.addr "0.0.0.0" \
+  --http.port 8666 \
+  --http.corsdomain "*" \
+  --http.vhosts "*" \
+  --http.api "web3,eth,debug,net,admin"
+```
+
+其中 `--unlock` 解决 `eth_sendTransaction` 本地签名问题，`--mine` 用于让 Clique 私链在收到上传交易后出块并返回 receipt。
+
+## Dev 模式验证记录 2026-08-08
+
+考虑到本阶段实验核心是验证升级机制本身，而不是验证 Clique 私链账户解锁流程，本次使用独立 dev 链完成完整 benchmark。当前 `geth` 二进制不支持 `--unlock` 参数；dev 模式会自动创建一个预分配且已解锁的 developer account，适合本地迭代测试上传交易。
+
+从 `build/bin` 目录启动 dev 节点：
+
+```shell
+./geth \
+  --dev \
+  --datadir chain/dev-bench-8666 \
+  --networkid 11223344 \
+  --http \
+  --http.addr 0.0.0.0 \
+  --http.port 8666 \
+  --http.corsdomain "*" \
+  --http.vhosts "*" \
+  --http.api "web3,eth,debug,net,admin"
+```
+
+RPC 状态：
+
+```text
+eth_chainId = 0x539
+eth_accounts = ["0x71562b71999873db5b286df957af199ec94617f7"]
+eth_getBalance(0x71562b71999873db5b286df957af199ec94617f7) = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7
+```
+
+执行 benchmark 时继续显式绕过本机代理：
+
+```shell
+NO_PROXY=127.0.0.1,localhost no_proxy=127.0.0.1,localhost \
+ALL_PROXY= HTTP_PROXY= HTTPS_PROXY= all_proxy= http_proxy= https_proxy= \
+go run ./cryptoupgrade/cmd/benchrealchain \
+  -rpc http://127.0.0.1:8666 \
+  -name Sha256 \
+  -source cryptoupgrade/algorithm/go/sha256.go \
+  -itype bytes \
+  -otype bytes \
+  -input-hex 0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001368656c6c6f2063727970746f7570677261646500000000000000000000000000 \
+  -expected-hex 0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000201dfa30acdf489c5a6ad291902fd7c58449fd325e8e64d0d45b704e8f4c453414 \
+  -precompile-address 0x0000000000000000000000000000000000000048 \
+  -warmup 10 \
+  -n 100 \
+  -output-json cryptoupgrade/docs/real_chain_upgrade_vs_precompile_result.json
+```
+
+本次完整结果已写入 `cryptoupgrade/docs/real_chain_upgrade_vs_precompile_result.json`。关键结果：
+
+| 指标 | upgrade | precompile |
+| --- | ---: | ---: |
+| setup txs | 1 | 0 |
+| setup gas | 87180 | 0 |
+| setup elapsed | 410.855ms | 0ms |
+| call mean | 1.123ms | 0.726ms |
+| call p50 | 1.047ms | 0.671ms |
+| call p95 | 1.700ms | 1.065ms |
+| call gas estimate | 25801 | 25156 |
+
+比值：
+
+```text
+mean upgrade/precompile = 1.55x
+p50 upgrade/precompile = 1.56x
+p95 upgrade/precompile = 1.60x
+gas upgrade/precompile = 1.03x
+outputMatched = true
+```

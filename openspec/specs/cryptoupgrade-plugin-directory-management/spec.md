@@ -1,56 +1,75 @@
-# cryptoupgrade-plugin-directory-management Specification
+# cryptoupgrade 插件目录管理规范
 
 ## Purpose
-Define how cryptoupgrade resolves, initializes, and uses node-local runtime directories for uploaded algorithm source files, compiled Go plugins, and persisted algorithm metadata.
+
+定义 cryptoupgrade 如何解析、初始化和使用节点本地运行时目录，用于存放上传算法源码、已编译 Go plugin 和持久化算法元数据。
 
 ## Requirements
-### Requirement: Centralized Plugin Artifact Paths
-The cryptoupgrade runtime SHALL derive the algorithm source path, compiled plugin path, and algorithm metadata path from a single resolved plugin base directory.
 
-#### Scenario: Default plugin paths are derived from one base directory
-- **WHEN** no plugin directory override is configured
-- **THEN** the source directory SHALL resolve under `plugin/src`, the compiled plugin directory SHALL resolve under `plugin/so`, and the metadata file SHALL resolve to `plugin/algorithm_info.json` relative to the process startup directory
+### Requirement: 集中式插件制品路径
 
-#### Scenario: Algorithm-specific paths use the centralized resolver
-- **WHEN** the runtime needs paths for algorithm `Sha256`
-- **THEN** the source path SHALL be derived as `<base>/src/Sha256.go` and the compiled plugin path SHALL be derived as `<base>/so/Sha256.so`
+cryptoupgrade 运行时 SHALL 从同一个已解析的插件基础目录推导算法源码路径、已编译 plugin 路径和算法元数据路径。
 
-### Requirement: Configurable Plugin Base Directory
-The cryptoupgrade runtime SHALL support an explicit process-level plugin base directory override while preserving `./plugin` as the default.
+#### Scenario: 默认插件路径来自同一个基础目录
 
-#### Scenario: Override directory is configured
-- **WHEN** the configured plugin base directory is `/tmp/geth-node-a/cryptoupgrade-plugin`
-- **THEN** the runtime SHALL use `/tmp/geth-node-a/cryptoupgrade-plugin/src`, `/tmp/geth-node-a/cryptoupgrade-plugin/so`, and `/tmp/geth-node-a/cryptoupgrade-plugin/algorithm_info.json`
+- **WHEN** 未配置插件目录覆盖值
+- **THEN** 源码目录 SHALL 解析到进程启动目录下的 `plugin/src`
+- **AND** 已编译 plugin 目录 SHALL 解析到进程启动目录下的 `plugin/so`
+- **AND** 元数据文件 SHALL 解析到进程启动目录下的 `plugin/algorithm_info.json`
 
-#### Scenario: Relative override directory is configured
-- **WHEN** the configured plugin base directory is relative
-- **THEN** the runtime SHALL resolve it against the process startup working directory before deriving child paths
+#### Scenario: 算法专属路径使用集中式解析器
 
-### Requirement: Directory Initialization Error Handling
-The cryptoupgrade runtime SHALL create required plugin artifact directories before writing source, compiled plugin, or metadata files, and SHALL return any directory creation failure to the caller.
+- **WHEN** 运行时需要算法 `Sha256` 的路径
+- **THEN** 源码路径 SHALL 推导为 `<base>/src/Sha256.go`
+- **AND** 已编译 plugin 路径 SHALL 推导为 `<base>/so/Sha256.so`
 
-#### Scenario: Directory creation succeeds
-- **WHEN** an algorithm is activated or algorithm metadata is stored
-- **THEN** the runtime SHALL ensure the source and compiled plugin directories exist before writing files
+### Requirement: 可配置的插件基础目录
 
-#### Scenario: Directory creation fails
-- **WHEN** the source or compiled plugin directory cannot be created
-- **THEN** algorithm activation or metadata storage SHALL fail with an error that identifies the failing directory operation
+cryptoupgrade 运行时 SHALL 支持显式的进程级插件基础目录覆盖，同时保持 `./plugin` 作为默认值。
 
-### Requirement: Backward-Compatible Metadata Loading
-The cryptoupgrade runtime SHALL load `algorithm_info.json` from the resolved plugin base directory without changing the persisted metadata schema.
+#### Scenario: 配置了覆盖目录
 
-#### Scenario: Existing default metadata is present
-- **WHEN** no plugin directory override is configured and `./plugin/algorithm_info.json` exists
-- **THEN** package initialization SHALL load the existing metadata file using the current JSON schema
+- **WHEN** 已配置的插件基础目录是 `/tmp/geth-node-a/cryptoupgrade-plugin`
+- **THEN** 运行时 SHALL 使用 `/tmp/geth-node-a/cryptoupgrade-plugin/src`、`/tmp/geth-node-a/cryptoupgrade-plugin/so` 和 `/tmp/geth-node-a/cryptoupgrade-plugin/algorithm_info.json`
 
-#### Scenario: Metadata file is absent
-- **WHEN** the resolved metadata file does not exist
-- **THEN** package initialization SHALL continue without treating the missing file as an error
+#### Scenario: 配置了相对覆盖目录
 
-### Requirement: Execution Semantics Remain Unchanged
-The cryptoupgrade runtime SHALL keep algorithm upload, compilation, loading, invocation, ABI packing, and gas behavior unchanged while changing only path management.
+- **WHEN** 已配置的插件基础目录是相对路径
+- **THEN** 运行时 SHALL 先将其基于进程启动工作目录解析为路径，再推导子路径
 
-#### Scenario: Algorithm activation uses the new path resolver
-- **WHEN** an algorithm upload succeeds
-- **THEN** the algorithm SHALL still be decompressed, compiled, registered, persisted, and callable through the existing `CodeStorage` behavior
+### Requirement: 目录初始化错误处理
+
+cryptoupgrade 运行时 SHALL 在写入源码、已编译 plugin 或元数据文件之前创建必需的插件制品目录，并 SHALL 将任何目录创建失败返回给调用方。
+
+#### Scenario: 目录创建成功
+
+- **WHEN** 激活算法或存储算法元数据
+- **THEN** 运行时 SHALL 在写入文件前确保源码目录和已编译 plugin 目录存在
+
+#### Scenario: 目录创建失败
+
+- **WHEN** 源码目录或已编译 plugin 目录无法创建
+- **THEN** 算法激活或元数据存储 SHALL 失败，并返回能够标识失败目录操作的错误
+
+### Requirement: 向后兼容的元数据加载
+
+cryptoupgrade 运行时 SHALL 从已解析的插件基础目录加载 `algorithm_info.json`，且不改变持久化元数据 schema。
+
+#### Scenario: 默认元数据已经存在
+
+- **WHEN** 未配置插件目录覆盖值，并且 `./plugin/algorithm_info.json` 存在
+- **THEN** package 初始化 SHALL 使用当前 JSON schema 加载已有元数据文件
+
+#### Scenario: 元数据文件不存在
+
+- **WHEN** 已解析的元数据文件不存在
+- **THEN** package 初始化 SHALL 继续执行，且不将缺失文件视为错误
+
+### Requirement: 执行语义保持不变
+
+cryptoupgrade 运行时 SHALL 在仅改变路径管理的同时，保持算法上传、编译、加载、调用、ABI 打包和 gas 行为不变。
+
+#### Scenario: 算法激活使用新的路径解析器
+
+- **WHEN** 算法上传成功
+- **THEN** 算法 SHALL 仍通过既有 `CodeStorage` 行为完成解压、编译、注册、持久化，并可被调用
