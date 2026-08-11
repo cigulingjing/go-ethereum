@@ -137,6 +137,9 @@ type handler struct {
 
 	wg sync.WaitGroup
 
+	cliqueSyncMu  sync.Mutex
+	cliqueSyncing bool
+
 	handlerStartCh chan struct{}
 	handlerDoneCh  chan struct{}
 }
@@ -538,6 +541,7 @@ type blockRangeState struct {
 	headSub event.Subscription
 	syncCh  chan downloader.SyncEvent
 	syncSub event.Subscription
+	forceCh chan struct{}
 }
 
 func newBlockRangeState(chain *core.BlockChain, dl *downloader.Downloader) *blockRangeState {
@@ -550,6 +554,7 @@ func newBlockRangeState(chain *core.BlockChain, dl *downloader.Downloader) *bloc
 		headSub: headSub,
 		syncCh:  syncCh,
 		syncSub: syncSub,
+		forceCh: make(chan struct{}, 1),
 	}
 	st.update(chain, chain.CurrentBlock())
 	st.prev = *st.next.Load()
@@ -573,6 +578,9 @@ func (h *handler) blockRangeLoop(st *blockRangeState) {
 			if st.shouldSend() {
 				h.broadcastBlockRange(st)
 			}
+		case <-st.forceCh:
+			st.update(h.chain, h.chain.CurrentBlock())
+			h.broadcastBlockRange(st)
 		case <-st.headSub.Err():
 			return
 		}
@@ -592,16 +600,30 @@ func (h *handler) blockRangeWhileSnapSyncing(st *blockRangeState) {
 			if st.shouldSend() {
 				h.broadcastBlockRange(st)
 			}
-		// back to processing head block updates when sync is done
+			// back to processing head block updates when sync is done
 		case ev := <-st.syncCh:
 			if ev.Type == downloader.SyncFailed || ev.Type == downloader.SyncCompleted {
 				return
 			}
+		case <-st.forceCh:
+			st.update(h.chain, h.chain.CurrentBlock())
+			h.broadcastBlockRange(st)
 		// ignore head updates, but exit when the subscription ends
 		case <-st.headCh:
 		case <-st.headSub.Err():
 			return
 		}
+	}
+}
+
+func (h *handler) forceBlockRangeBroadcast() {
+	if h == nil || h.blockRange == nil {
+		return
+	}
+	// Clique 私链需要在每个 sealed block 后尽快通知 observer，否则默认 32-block 批量广播会拖慢同步验证。
+	select {
+	case h.blockRange.forceCh <- struct{}{}:
+	default:
 	}
 }
 

@@ -107,8 +107,8 @@ cd build/bin/chain
     2>>pc_exec.log
 ```
 
-使用测试账户完成测试，但是需要一个单独的clique客户端来提供POS服务。
-TODO: 当前没有设计POS客户端
+使用测试账户完成测试时，Clique signer 由 geth 节点内部提供共识出块服务。
+`--mine` 会启用本地 Clique sealing，`--unlock` 和 `--password` 用于接入 signer 账户。
 
 ```shell
 ./geth \
@@ -179,6 +179,5 @@ cmd.Env = append(os.Environ(), "CGO_ENABLED=1")
 |Add|Deployed call|`100 + 100`|450\.997us|414us|660\.3us|\-|416\.851us|388\.1us|626\.5us|\-|1\.08x|
 |Blake2b Sum256|Deploy|`Hello world!`|1\.508684648s|1\.50720113s|2\.008229072s|87180|1\.006960675s|1\.007835087s|1\.009231325s|93736|1\.50x|
 |Blake2b Sum256|Deployed call|`Hello world!`|432\.597us|406\.8us|591\.2us|\-|396\.946us|381\.8us|519\.7us|\-|1\.09x|
-
 
 

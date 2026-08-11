@@ -27,6 +27,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/common/lru"
@@ -48,6 +49,7 @@ const (
 	checkpointInterval = 1024 // Number of blocks after which to save the vote snapshot to the database
 	inmemorySnapshots  = 128  // Number of recent vote snapshots to keep in memory
 	inmemorySignatures = 4096 // Number of recent block signatures to keep in memory
+	wiggleTime         = 500 * time.Millisecond
 )
 
 // Clique proof-of-authority protocol constants.
@@ -134,7 +136,13 @@ var (
 	// errRecentlySigned is returned if a header is signed by an authorized entity
 	// that already signed a header recently, thus is temporarily not allowed to.
 	errRecentlySigned = errors.New("recently signed")
+
+	errMissingSignerFn = errors.New("missing signer function")
+	errMissingResults  = errors.New("missing sealing result channel")
 )
+
+// SignerFn signs Clique seal payloads with a locally unlocked account.
+type SignerFn func(accounts.Account, string, []byte) ([]byte, error)
 
 // ecrecover extracts the Ethereum account address from a signed header.
 func ecrecover(header *types.Header, sigcache *sigLRU) (common.Address, error) {
@@ -173,7 +181,8 @@ type Clique struct {
 	proposals map[common.Address]bool // Current list of proposals we are pushing
 
 	signer common.Address // Ethereum address of the signing key
-	lock   sync.RWMutex   // Protects the signer and proposals fields
+	signFn SignerFn       // Callback used to sign Clique seal payloads
+	lock   sync.RWMutex   // Protects the signer, signFn and proposals fields
 
 	// The fields below are for testing only
 	fakeDiff bool // Skip difficulty verifications
@@ -578,19 +587,90 @@ func (c *Clique) Finalize(chain consensus.ChainHeaderReader, header *types.Heade
 	// No block rewards in PoA, so the state remains as is
 }
 
-// Authorize injects a private key into the consensus engine to mint new blocks
-// with.
-func (c *Clique) Authorize(signer common.Address) {
+// Authorize injects a signer callback into the consensus engine to mint new
+// blocks with.
+func (c *Clique) Authorize(signer common.Address, signFn SignerFn) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
 	c.signer = signer
+	c.signFn = signFn
 }
 
 // Seal implements consensus.Engine, attempting to create a sealed block using
 // the local signing credentials.
 func (c *Clique) Seal(chain consensus.ChainHeaderReader, block *types.Block, results chan<- *types.Block, stop <-chan struct{}) error {
-	panic("clique (poa) sealing not supported any more")
+	if block == nil || block.NumberU64() == 0 {
+		return errUnknownBlock
+	}
+	if results == nil {
+		return errMissingResults
+	}
+	header := block.Header()
+	number := header.Number.Uint64()
+	snap, err := c.snapshot(chain, number-1, header.ParentHash, nil)
+	if err != nil {
+		return err
+	}
+	c.lock.RLock()
+	signer, signFn := c.signer, c.signFn
+	c.lock.RUnlock()
+
+	if signFn == nil {
+		return errMissingSignerFn
+	}
+	if _, authorized := snap.Signers[signer]; !authorized {
+		return errUnauthorizedSigner
+	}
+	for seen, recent := range snap.Recents {
+		if recent == signer {
+			if limit := uint64(len(snap.Signers)/2 + 1); number < limit || seen > number-limit {
+				return errRecentlySigned
+			}
+		}
+	}
+	sig, err := signFn(accounts.Account{Address: signer}, accounts.MimetypeClique, CliqueRLP(header))
+	if err != nil {
+		return err
+	}
+	copy(header.Extra[len(header.Extra)-extraSeal:], sig)
+
+	delay := time.Until(time.Unix(int64(header.Time), 0))
+	if header.Difficulty.Cmp(diffNoTurn) == 0 {
+		// 非轮值 signer 追加随机延迟，降低多 signer 私链中同时出块的概率。
+		wiggle := time.Duration(len(snap.Signers)/2+1) * wiggleTime
+		delay += time.Duration(rand.Int63n(int64(wiggle)))
+	}
+	if delay < 0 {
+		delay = 0
+	}
+	sealed := block.WithSeal(header)
+	go func() {
+		timer := time.NewTimer(delay)
+		defer timer.Stop()
+		select {
+		case <-stop:
+			return
+		case <-timer.C:
+		}
+		select {
+		case results <- sealed:
+		case <-stop:
+		}
+	}()
+	return nil
+}
+
+// Signers retrieves the authorized signers at the specified header.
+func (c *Clique) Signers(chain consensus.ChainHeaderReader, header *types.Header) ([]common.Address, error) {
+	if header == nil {
+		return nil, errUnknownBlock
+	}
+	snap, err := c.snapshot(chain, header.Number.Uint64(), header.Hash(), nil)
+	if err != nil {
+		return nil, err
+	}
+	return snap.signers(), nil
 }
 
 // CalcDifficulty is the difficulty adjustment algorithm. It returns the difficulty

@@ -1,0 +1,32 @@
+# Support setting various labels on the final image
+ARG COMMIT=""
+ARG VERSION=""
+ARG BUILDNUM=""
+
+FROM golang:1.26-alpine
+
+RUN apk add --no-cache ca-certificates gcc git linux-headers musl-dev
+
+WORKDIR /go-ethereum
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN go run build/ci.go install ./cmd/geth
+
+ENV CRYPTOUPGRADE_MODULE=/go-ethereum
+ENV GETH_CRYPTOUPGRADE_PLUGIN_DIR=/plugin
+ENV CGO_ENABLED=1
+ENV PATH="/go-ethereum/build/bin:${PATH}"
+
+RUN mkdir -p /data /plugin
+
+EXPOSE 8545 8546 30303 30303/udp
+ENTRYPOINT ["geth"]
+
+ARG COMMIT=""
+ARG VERSION=""
+ARG BUILDNUM=""
+
+LABEL commit="$COMMIT" version="$VERSION" buildnum="$BUILDNUM"

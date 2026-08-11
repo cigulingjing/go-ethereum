@@ -23,6 +23,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/beacon/engine"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus"
@@ -113,7 +114,7 @@ func newTestWorkerBackend(t *testing.T, chainConfig *params.ChainConfig, engine 
 	case *clique.Clique:
 		gspec.ExtraData = make([]byte, 32+common.AddressLength+crypto.SignatureLength)
 		copy(gspec.ExtraData[32:32+common.AddressLength], testBankAddress.Bytes())
-		e.Authorize(testBankAddress)
+		e.Authorize(testBankAddress, nil)
 	case *ethash.Ethash:
 	default:
 		t.Fatalf("unexpected consensus engine type: %T", engine)
@@ -191,6 +192,51 @@ func TestBuildPayload(t *testing.T) {
 	dataTwo := payload.Resolve()
 	if !reflect.DeepEqual(dataOne, dataTwo) {
 		t.Fatal("Unexpected payload data")
+	}
+}
+
+func TestCliqueSealerLoopProducesBlocks(t *testing.T) {
+	cfg := new(params.ChainConfig)
+	*cfg = *cliqueChainConfig
+	cfg.Clique = &params.CliqueConfig{Period: 0, Epoch: 30000}
+
+	db := rawdb.NewMemoryDatabase()
+	engine := clique.New(cfg.Clique, db)
+	backend := newTestWorkerBackend(t, cfg, engine, db, 0)
+	engine.Authorize(testBankAddress, func(account accounts.Account, mimeType string, data []byte) ([]byte, error) {
+		return crypto.Sign(crypto.Keccak256(data), testBankKey)
+	})
+	config := testConfig
+	config.Enabled = true
+	config.Recommit = 10 * time.Millisecond
+	sealedBlocks := make(chan *types.Block, 4)
+	config.SealedBlockHook = func(block *types.Block) {
+		select {
+		case sealedBlocks <- block:
+		default:
+		}
+	}
+	miner := New(backend, config, engine)
+	miner.Start()
+	defer miner.Stop()
+
+	deadline := time.After(2 * time.Second)
+	ticker := time.NewTicker(10 * time.Millisecond)
+	defer ticker.Stop()
+	hookSeen := false
+	for {
+		select {
+		case <-deadline:
+			t.Fatalf("sealer did not produce enough blocks, head=%d", backend.chain.CurrentBlock().Number.Uint64())
+		case block := <-sealedBlocks:
+			if block.NumberU64() > 0 {
+				hookSeen = true
+			}
+		case <-ticker.C:
+			if backend.chain.CurrentBlock().Number.Uint64() >= 2 && hookSeen {
+				return
+			}
+		}
 	}
 }
 

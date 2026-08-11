@@ -364,6 +364,14 @@ func New(stack *node.Node, config *ethconfig.Config) (*Ethereum, error) {
 
 	eth.dropper = newDropper(eth.p2pServer.MaxDialedConns(), eth.p2pServer.MaxInboundConns())
 
+	if err := eth.configureCliqueSigner(); err != nil {
+		return nil, err
+	}
+	if config.Miner.Enabled && chainConfig.Clique != nil {
+		config.Miner.SealedBlockHook = func(*types.Block) {
+			eth.handler.forceBlockRangeBroadcast()
+		}
+	}
 	eth.miner = miner.New(eth, config.Miner, eth.engine)
 	eth.miner.SetExtra(makeExtraData(config.Miner.ExtraData))
 	eth.miner.SetPrioAddresses(config.TxPool.Locals)
@@ -409,6 +417,12 @@ func makeExtraData(extra []byte) []byte {
 // NOTE, some of these services probably need to be moved to somewhere else.
 func (s *Ethereum) APIs() []rpc.API {
 	apis := ethapi.GetAPIs(s.APIBackend)
+	if cliqueAPI := newCliqueAPI(s); cliqueAPI != nil {
+		apis = append(apis, rpc.API{
+			Namespace: "clique",
+			Service:   cliqueAPI,
+		})
+	}
 
 	// Append all the local APIs and return
 	return append(apis, []rpc.API{
@@ -483,6 +497,7 @@ func (s *Ethereum) Start() error {
 	// start log indexer
 	s.filterMaps.Start()
 	go s.updateFilterMapsHeads()
+	s.miner.Start()
 	return nil
 }
 
@@ -597,6 +612,8 @@ func (s *Ethereum) setupDiscovery() error {
 // Stop implements node.Lifecycle, terminating all internal goroutines used by the
 // Ethereum protocol.
 func (s *Ethereum) Stop() error {
+	s.miner.Stop()
+
 	// Stop all the peer-related stuff first.
 	s.discmix.Close()
 	s.dropper.Stop()

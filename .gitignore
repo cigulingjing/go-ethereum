@@ -21,6 +21,7 @@
 /build/_workspace/
 /build/cache/
 /build/bin/
+/build/cryptoupgrade-networks/
 /geth*.zip
 
 # used by the build/ci.go archive + upload tool
@@ -43,6 +44,9 @@ profile.cov
 .vscode
 
 tests/spec-tests/
+
+# keystore for cryptoupgrade tests
+cryptoupgrade/examples/networks/keystore
 
 # binaries
 cmd/abidump/abidump

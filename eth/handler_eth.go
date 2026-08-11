@@ -24,6 +24,7 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/eth/protocols/eth"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/p2p/enode"
 )
 
@@ -81,8 +82,52 @@ func (h *ethHandler) Handle(peer *eth.Peer, packet eth.Packet) error {
 		}
 		return h.txFetcher.Enqueue(peer.ID(), txs, true)
 
+	case *eth.BlockRangeUpdatePacket:
+		return (*handler)(h).followCliqueBlockRange(peer, packet)
+
 	default:
 		return fmt.Errorf("unexpected eth packet type: %T", packet)
+	}
+}
+
+func (h *handler) followCliqueBlockRange(peer *eth.Peer, update *eth.BlockRangeUpdatePacket) error {
+	if h.chain.Config().Clique == nil {
+		return nil
+	}
+	current := h.chain.CurrentBlock()
+	if update.LatestBlock <= current.Number.Uint64() || update.LatestBlockHash == current.Hash() {
+		return nil
+	}
+	h.cliqueSyncMu.Lock()
+	if h.cliqueSyncing {
+		h.cliqueSyncMu.Unlock()
+		return nil
+	}
+	h.cliqueSyncing = true
+	h.cliqueSyncMu.Unlock()
+
+	go h.syncCliqueBlockRange(peer.ID(), update.LatestBlock, update.LatestBlockHash)
+	return nil
+}
+
+func (h *handler) syncCliqueBlockRange(peerID string, number uint64, hash common.Hash) {
+	defer func() {
+		h.cliqueSyncMu.Lock()
+		h.cliqueSyncing = false
+		h.cliqueSyncMu.Unlock()
+	}()
+
+	header, err := h.downloader.GetHeader(hash)
+	if err != nil {
+		log.Debug("Clique sync target unavailable", "peer", peerID, "number", number, "hash", hash, "err", err)
+		return
+	}
+	if header.Number.Uint64() <= h.chain.CurrentBlock().Number.Uint64() {
+		return
+	}
+	// Clique 私链没有外部 beacon client，observer 需要把 peer 宣告的 latest header 作为同步目标。
+	if err := h.downloader.BeaconSync(header, nil); err != nil {
+		log.Debug("Clique observer sync failed", "peer", peerID, "number", header.Number, "hash", header.Hash(), "err", err)
 	}
 }
 

@@ -590,6 +590,11 @@ var (
 		Usage:    "0x prefixed public address for the pending block producer (not used for actual block production)",
 		Category: flags.MinerCategory,
 	}
+	MiningEnabledFlag = &cli.BoolFlag{
+		Name:     "mine",
+		Usage:    "Enable local Clique sealing on private networks",
+		Category: flags.MinerCategory,
+	}
 	MinerMaxBlobsFlag = &cli.IntFlag{
 		Name:     "miner.maxblobs",
 		Usage:    "Maximum number of blobs per block (falls back to protocol maximum if unspecified)",
@@ -602,6 +607,16 @@ var (
 		Usage:     "Password file to use for non-interactive password input",
 		TakesFile: true,
 		Category:  flags.AccountCategory,
+	}
+	UnlockAccountFlag = &cli.StringFlag{
+		Name:     "unlock",
+		Usage:    "Comma separated list of accounts to unlock for private-network signing",
+		Category: flags.AccountCategory,
+	}
+	AllowInsecureUnlockFlag = &cli.BoolFlag{
+		Name:     "allow-insecure-unlock",
+		Usage:    "Allow account unlocks for private-network HTTP RPC workflows",
+		Category: flags.AccountCategory,
 	}
 	ExternalSignerFlag = &cli.StringFlag{
 		Name:     "signer",
@@ -1687,6 +1702,9 @@ func setBlobPool(ctx *cli.Context, cfg *blobpool.Config) {
 }
 
 func setMiner(ctx *cli.Context, cfg *miner.Config) {
+	if ctx.Bool(MiningEnabledFlag.Name) {
+		cfg.Enabled = true
+	}
 	if ctx.IsSet(MinerExtraDataFlag.Name) {
 		cfg.ExtraData = []byte(ctx.String(MinerExtraDataFlag.Name))
 	}
@@ -1701,6 +1719,24 @@ func setMiner(ctx *cli.Context, cfg *miner.Config) {
 	}
 	if ctx.IsSet(MinerMaxBlobsFlag.Name) {
 		cfg.MaxBlobsPerBlock = ctx.Int(MinerMaxBlobsFlag.Name)
+	}
+	if ctx.IsSet(UnlockAccountFlag.Name) {
+		for _, account := range strings.Split(ctx.String(UnlockAccountFlag.Name), ",") {
+			account = strings.TrimSpace(account)
+			if account == "" {
+				continue
+			}
+			if !common.IsHexAddress(account) {
+				Fatalf("Invalid account in --%s: %s", UnlockAccountFlag.Name, account)
+			}
+			cfg.UnlockAccounts = append(cfg.UnlockAccounts, common.HexToAddress(account))
+		}
+	}
+	if ctx.IsSet(PasswordFileFlag.Name) {
+		cfg.PasswordFile = ctx.Path(PasswordFileFlag.Name)
+	}
+	if ctx.IsSet(AllowInsecureUnlockFlag.Name) {
+		cfg.AllowInsecureUnlock = ctx.Bool(AllowInsecureUnlockFlag.Name)
 	}
 }
 

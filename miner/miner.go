@@ -43,13 +43,18 @@ type Backend interface {
 
 // Config is the configuration parameters of mining.
 type Config struct {
-	Etherbase           common.Address `toml:"-"`          // Deprecated
-	PendingFeeRecipient common.Address `toml:"-"`          // Address for pending block rewards.
-	ExtraData           hexutil.Bytes  `toml:",omitempty"` // Block extra data set by the miner
-	GasCeil             uint64         // Target gas ceiling for mined blocks.
-	GasPrice            *big.Int       // Minimum gas price for mining a transaction
-	Recommit            time.Duration  // The time interval for miner to re-create mining work.
-	MaxBlobsPerBlock    int            // Maximum number of blobs per block (0 for unset uses protocol default)
+	Etherbase           common.Address     `toml:"-"`          // Deprecated
+	PendingFeeRecipient common.Address     `toml:"-"`          // Address for pending block rewards.
+	ExtraData           hexutil.Bytes      `toml:",omitempty"` // Block extra data set by the miner
+	GasCeil             uint64             // Target gas ceiling for mined blocks.
+	GasPrice            *big.Int           // Minimum gas price for mining a transaction
+	Recommit            time.Duration      // The time interval for miner to re-create mining work.
+	MaxBlobsPerBlock    int                // Maximum number of blobs per block (0 for unset uses protocol default)
+	Enabled             bool               `toml:"-"` // Whether local Clique sealing is enabled.
+	UnlockAccounts      []common.Address   `toml:"-"` // Accounts unlocked for local signing.
+	PasswordFile        string             `toml:"-"` // Password file used for non-interactive account unlock.
+	AllowInsecureUnlock bool               `toml:"-"` // Accepted for private-chain CLI compatibility.
+	SealedBlockHook     func(*types.Block) `toml:"-"` // SealedBlockHook is invoked after locally sealed Clique blocks are inserted.
 }
 
 // DefaultConfig contains default settings for miner.
@@ -76,6 +81,10 @@ type Miner struct {
 	chain       *core.BlockChain
 	pending     *pending
 	pendingMu   sync.Mutex // Lock protects the pending block
+
+	sealingMu   sync.Mutex
+	sealingStop chan struct{}
+	sealingDone chan struct{}
 }
 
 // New creates a new miner with provided config.

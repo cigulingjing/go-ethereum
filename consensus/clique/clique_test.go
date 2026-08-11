@@ -17,10 +17,14 @@
 package clique
 
 import (
+	"crypto/ecdsa"
 	"math/big"
 	"testing"
+	"time"
 
+	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/consensus/misc/eip1559"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/rawdb"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -120,5 +124,123 @@ func TestSealHash(t *testing.T) {
 	want := common.HexToHash("0xbd3d1fa43fbc4c5bfcc91b179ec92e2861df3654de60468beb908ff805359e8f")
 	if have != want {
 		t.Errorf("have %x, want %x", have, want)
+	}
+}
+
+func TestSealAuthorizedSigner(t *testing.T) {
+	engine, chain, key, addr := newSealTestChain(t)
+	engine.Authorize(addr, testSignerFn(key))
+
+	block := newSealTestBlock(t, engine, chain)
+	results := make(chan *types.Block, 1)
+	if err := engine.Seal(chain, block, results, make(chan struct{})); err != nil {
+		t.Fatalf("Seal failed: %v", err)
+	}
+	select {
+	case sealed := <-results:
+		if err := engine.VerifyHeader(chain, sealed.Header()); err != nil {
+			t.Fatalf("sealed header failed verification: %v", err)
+		}
+		signer, err := engine.Author(sealed.Header())
+		if err != nil {
+			t.Fatalf("failed to recover signer: %v", err)
+		}
+		if signer != addr {
+			t.Fatalf("signer mismatch: have %s want %s", signer, addr)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for sealed block")
+	}
+}
+
+func TestSealRejectsUnauthorizedSigner(t *testing.T) {
+	engine, chain, _, _ := newSealTestChain(t)
+	key, _ := crypto.GenerateKey()
+	engine.Authorize(crypto.PubkeyToAddress(key.PublicKey), testSignerFn(key))
+
+	err := engine.Seal(chain, newSealTestBlock(t, engine, chain), make(chan *types.Block, 1), make(chan struct{}))
+	if err != errUnauthorizedSigner {
+		t.Fatalf("unexpected error: have %v want %v", err, errUnauthorizedSigner)
+	}
+}
+
+func TestSealRejectsMissingSignerFn(t *testing.T) {
+	engine, chain, _, addr := newSealTestChain(t)
+	engine.Authorize(addr, nil)
+
+	err := engine.Seal(chain, newSealTestBlock(t, engine, chain), make(chan *types.Block, 1), make(chan struct{}))
+	if err != errMissingSignerFn {
+		t.Fatalf("unexpected error: have %v want %v", err, errMissingSignerFn)
+	}
+}
+
+func TestSealStopChannelInterruptsResult(t *testing.T) {
+	engine, chain, key, addr := newSealTestChain(t)
+	engine.Authorize(addr, testSignerFn(key))
+
+	block := newSealTestBlock(t, engine, chain)
+	header := block.Header()
+	header.Time = uint64(time.Now().Add(time.Second).Unix())
+	block = block.WithSeal(header)
+
+	results := make(chan *types.Block, 1)
+	stop := make(chan struct{})
+	if err := engine.Seal(chain, block, results, stop); err != nil {
+		t.Fatalf("Seal failed: %v", err)
+	}
+	close(stop)
+	select {
+	case sealed := <-results:
+		t.Fatalf("unexpected sealed block after stop: %v", sealed.Hash())
+	case <-time.After(100 * time.Millisecond):
+	}
+}
+
+func newSealTestChain(t *testing.T) (*Clique, *core.BlockChain, *ecdsa.PrivateKey, common.Address) {
+	t.Helper()
+	key, err := crypto.GenerateKey()
+	if err != nil {
+		t.Fatal(err)
+	}
+	addr := crypto.PubkeyToAddress(key.PublicKey)
+	db := rawdb.NewMemoryDatabase()
+	engine := New(params.AllCliqueProtocolChanges.Clique, db)
+	genspec := &core.Genesis{
+		Config:     params.AllCliqueProtocolChanges,
+		Difficulty: diffInTurn,
+		GasLimit:   8000000,
+		ExtraData:  make([]byte, extraVanity+common.AddressLength+extraSeal),
+		Alloc:      types.GenesisAlloc{addr: {Balance: big.NewInt(10000000000000000)}},
+		BaseFee:    big.NewInt(params.InitialBaseFee),
+	}
+	copy(genspec.ExtraData[extraVanity:], addr[:])
+	chain, err := core.NewBlockChain(db, genspec, engine, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(chain.Stop)
+	return engine, chain, key, addr
+}
+
+func newSealTestBlock(t *testing.T, engine *Clique, chain *core.BlockChain) *types.Block {
+	t.Helper()
+	parent := chain.CurrentHeader()
+	header := &types.Header{
+		ParentHash: parent.Hash(),
+		Number:     new(big.Int).Add(parent.Number, common.Big1),
+		GasLimit:   parent.GasLimit,
+		Time:       uint64(time.Now().Unix()),
+		UncleHash:  uncleHash,
+		BaseFee:    eip1559.CalcBaseFee(chain.Config(), parent),
+	}
+	if err := engine.Prepare(chain, header); err != nil {
+		t.Fatal(err)
+	}
+	return types.NewBlockWithHeader(header)
+}
+
+func testSignerFn(key *ecdsa.PrivateKey) SignerFn {
+	return func(account accounts.Account, mimeType string, data []byte) ([]byte, error) {
+		return crypto.Sign(crypto.Keccak256(data), key)
 	}
 }
