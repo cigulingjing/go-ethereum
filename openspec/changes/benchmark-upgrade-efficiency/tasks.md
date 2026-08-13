@@ -5,7 +5,7 @@
 
 ## 2. Add-only 实验命令
 
-- [x] 2.1 新增独立 `cryptoupgrade/cmd/benchupgradeefficiency` 命令结构和 flags。
+- [x] 2.1 新增独立 `cryptoupgrade/bench/cmd/benchupgradeefficiency` 命令结构和 flags。
 - [x] 2.2 实现按 `chain_setup.md` 命令启动 `geth --dev`、保存日志、等待 RPC ready 和退出清理。
 - [x] 2.3 实现 Add 源码压缩、`uploadCode` calldata 构造、升级交易提交和 receipt 轮询。
 - [x] 2.4 实现 activation observation、`callFunc("Add", encodedInput)` 验证和 Add 返回值校验。

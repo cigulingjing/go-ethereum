@@ -1,23 +1,15 @@
 package cryptoupgrade
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
+
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/repository"
 )
 
-const (
-	// pluginDirEnvVar is read during package initialization to override the
-	// default cryptoupgrade plugin artifact directory.
-	pluginDirEnvVar = "GETH_CRYPTOUPGRADE_PLUGIN_DIR"
-
-	defaultPluginBaseDir      = "./plugin"
-	pluginSourceSubdir        = "src"
-	pluginSharedObjectSubdir  = "so"
-	pluginAlgorithmInfoFile   = "algorithm_info.json"
-	pluginDirectoryPermission = 0755
-)
+// pluginDirEnvVar is read during package initialization to override the
+// default cryptoupgrade plugin artifact directory.
+const pluginDirEnvVar = repository.PluginDirEnvVar
 
 type pluginPaths struct {
 	baseDir           string
@@ -29,40 +21,34 @@ type pluginPaths struct {
 var runtimePluginPaths, runtimePluginPathsErr = resolvePluginPaths(os.Getenv(pluginDirEnvVar), "")
 
 func resolvePluginPaths(configuredDir, cwd string) (pluginPaths, error) {
-	baseDir := strings.TrimSpace(configuredDir)
-	if baseDir == "" {
-		baseDir = defaultPluginBaseDir
-	}
-	if !filepath.IsAbs(baseDir) {
-		if cwd == "" {
-			var err error
-			cwd, err = os.Getwd()
-			if err != nil {
-				return newPluginPaths(baseDir), fmt.Errorf("resolve cryptoupgrade plugin base directory: %w", err)
-			}
-		}
-		baseDir = filepath.Join(cwd, baseDir)
-	}
-	return newPluginPaths(baseDir), nil
+	workspace, err := repository.ResolveWorkspace(configuredDir, cwd)
+	return pluginPathsFromWorkspace(workspace), err
 }
 
 func newPluginPaths(baseDir string) pluginPaths {
-	baseDir = filepath.Clean(baseDir)
+	return pluginPathsFromWorkspace(repository.NewWorkspace(baseDir))
+}
+
+func pluginPathsFromWorkspace(workspace repository.Workspace) pluginPaths {
 	return pluginPaths{
-		baseDir:           baseDir,
-		sourceDir:         filepath.Join(baseDir, pluginSourceSubdir),
-		sharedObjectDir:   filepath.Join(baseDir, pluginSharedObjectSubdir),
-		algorithmInfoPath: filepath.Join(baseDir, pluginAlgorithmInfoFile),
+		baseDir:           workspace.BaseDir,
+		sourceDir:         workspace.SourceDir,
+		sharedObjectDir:   workspace.SharedObjectDir,
+		algorithmInfoPath: workspace.AlgorithmInfoPath,
 	}
 }
 
 func (paths pluginPaths) ensureDirs() error {
-	for _, dir := range []string{paths.sourceDir, paths.sharedObjectDir} {
-		if err := os.MkdirAll(dir, pluginDirectoryPermission); err != nil {
-			return fmt.Errorf("create cryptoupgrade plugin directory %s: %w", dir, err)
-		}
+	return paths.workspace().EnsureDirs()
+}
+
+func (paths pluginPaths) workspace() repository.Workspace {
+	return repository.Workspace{
+		BaseDir:           paths.baseDir,
+		SourceDir:         paths.sourceDir,
+		SharedObjectDir:   paths.sharedObjectDir,
+		AlgorithmInfoPath: paths.algorithmInfoPath,
 	}
-	return nil
 }
 
 func pluginBaseDir() string {

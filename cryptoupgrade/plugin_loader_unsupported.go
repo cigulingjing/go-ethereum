@@ -2,8 +2,8 @@
 
 package cryptoupgrade
 
-import "fmt"
+import "github.com/ethereum/go-ethereum/cryptoupgrade/internal/pluginruntime"
 
-func lookupPluginFunction(_, _ string) (interface{}, error) {
-	return nil, fmt.Errorf("go plugins are not supported on this platform")
+func lookupPluginFunction(pluginPath, funName string) (interface{}, error) {
+	return pluginruntime.Default.LookupActive(pluginPath, funName)
 }

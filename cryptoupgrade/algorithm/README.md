@@ -20,8 +20,14 @@ Solidity 合约只保留一个 external/public 算法入口。
 | `sha256.go` | `Sha256` | `Sha256.sol` | `Sha256` | 匹配 |
 | `archive/shamir.go` | `ShamirRecover` | - | - | 仅保留 Go 实现 |
 
-运行静态一致性检查：
+运行静态一致性检查（同时验证 `cryptoupgrade/builtin` 不依赖动态候选源码）：
 
 ```shell
 bash cryptoupgrade/algorithm/check_interfaces.sh
+```
+
+运行 cryptoupgrade 源码布局检查：
+
+```shell
+bash cryptoupgrade/check_layout.sh
 ```

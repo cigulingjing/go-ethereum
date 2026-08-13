@@ -9,6 +9,20 @@ schema: spec-driven
 #     使用 conventional commits
 #     领域：电商平台
 
+context: |
+  技术栈:Go、ethereum/go-ethereum
+  使用conventional commits规范commit message
+  领域: geth客户端修改
+
+rules:
+  proposal:
+    - proposal 控制在 500 字以内
+    - 始终包含“非目标”章节
+  design:
+    - 设计必须给出明确的技术栈
+  tasks:
+    - 将任务拆分为最多 2 小时的工作块
+
 # 单类制品规则（可选）
 # 可为特定制品添加自定义规则。
 # 示例：

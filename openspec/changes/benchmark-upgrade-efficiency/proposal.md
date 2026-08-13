@@ -26,7 +26,7 @@
 
 ## Impact
 
-- Affected code: `cryptoupgrade/cmd/` 下新增或扩展实验 tooling；必要时新增 `cryptoupgrade/docs/` 下的实验说明和原始结果目录。
+- Affected code: `cryptoupgrade/bench/cmd/` 下新增或扩展实验 tooling；必要时新增 `cryptoupgrade/docs/` 下的实验说明和原始结果目录。
 - Affected runtime: 本地 `build/bin/chain/geth --dev` 节点，RPC 默认使用 `http://127.0.0.1:8666`。
 - Affected artifacts: OpenSpec change、Add 单次 JSON 原始结果、对应 Geth 日志。
 - No breaking changes to Geth consensus, EVM semantics, native precompile registration, or existing benchmark commands.

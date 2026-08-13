@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/repository"
 )
 
 func TestResolvePluginPathsDefault(t *testing.T) {
@@ -125,10 +127,13 @@ func withRuntimePluginPaths(t *testing.T, paths pluginPaths, pathErr error) {
 
 	oldPaths := runtimePluginPaths
 	oldErr := runtimePluginPathsErr
+	oldRepository := runtimeAlgorithmRepository
 	runtimePluginPaths = paths
 	runtimePluginPathsErr = pathErr
+	runtimeAlgorithmRepository = repository.New(paths.workspace())
 	t.Cleanup(func() {
 		runtimePluginPaths = oldPaths
 		runtimePluginPathsErr = oldErr
+		runtimeAlgorithmRepository = oldRepository
 	})
 }

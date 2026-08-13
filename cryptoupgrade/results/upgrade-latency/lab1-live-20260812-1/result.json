@@ -1,0 +1,120 @@
+{
+  "experiment": "multi-node-upgrade-latency",
+  "change": "lab1-upgrade-latency",
+  "timestamp": "2026-08-12T09:45:26.977937732+08:00",
+  "command": [
+    "/tmp/go-build3347664637/b001/exe/benchupgradelatency",
+    "-config",
+    "cryptoupgrade/examples/networks/local-2nodes.yaml",
+    "-out",
+    "cryptoupgrade/results/upgrade-latency/lab1-live-20260812-1",
+    "-rounds",
+    "1",
+    "-timeout",
+    "2m",
+    "-poll-interval",
+    "200ms"
+  ],
+  "config": {
+    "configPath": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/examples/networks/local-2nodes.yaml",
+    "chainId": 11223344,
+    "networkId": 11223344,
+    "consensusType": "clique",
+    "consensusPeriod": 5,
+    "nodeCount": 2,
+    "targetNodeIds": [
+      "node1",
+      "node2"
+    ],
+    "senderNodeId": "node1",
+    "senderRpc": "http://127.0.0.1:8661",
+    "from": "0xF5F871aA6Bd253914705898c66251f994aa426FA",
+    "rounds": 1,
+    "pollIntervalMillis": 200,
+    "timeoutMillis": 120000,
+    "preflight": true,
+    "preflightTimeoutMillis": 30000,
+    "algorithmBase": "Add",
+    "inputType": "uint256,uint256",
+    "outputType": "uint256",
+    "algoGas": 1,
+    "transactionGasLimit": 5000000,
+    "callGas": 5000000
+  },
+  "artifacts": {
+    "resultDir": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-live-20260812-1",
+    "resultJson": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-live-20260812-1/result.json",
+    "roundCsv": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-live-20260812-1/rounds.csv",
+    "nodeCsv": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-live-20260812-1/nodes.csv",
+    "sourcePath": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/algorithm/go/add.go",
+    "generatedSourceDir": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-live-20260812-1/sources"
+  },
+  "preflight": {
+    "startedAt": "2026-08-12T09:45:26.979230161+08:00",
+    "finishedAt": "2026-08-12T09:45:33.0171743+08:00",
+    "durationMillis": 6037.944119,
+    "expectedPeerCount": 1,
+    "nodes": [
+      {
+        "id": "node1",
+        "role": "signer",
+        "rpcURL": "http://127.0.0.1:8661",
+        "chainId": 11223344,
+        "peerCount": 1,
+        "startBlock": 11,
+        "endBlock": 12
+      },
+      {
+        "id": "node2",
+        "role": "observer",
+        "rpcURL": "http://127.0.0.1:8662",
+        "chainId": 11223344,
+        "peerCount": 1,
+        "startBlock": 5,
+        "endBlock": 12
+      }
+    ],
+    "ok": true
+  },
+  "rounds": [
+    {
+      "index": 1,
+      "algorithm": "Add",
+      "sourcePath": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/algorithm/go/add.go",
+      "senderNodeId": "node1",
+      "senderRpc": "http://127.0.0.1:8661",
+      "from": "0xF5F871aA6Bd253914705898c66251f994aa426FA",
+      "startedAt": "2026-08-12T09:45:33.017182525+08:00",
+      "finishedAt": "2026-08-12T09:45:33.026206014+08:00",
+      "payload": {
+        "sourceBytes": 0,
+        "compressedGzipBytes": 0,
+        "compressedBase64Bytes": 0,
+        "uploadCalldataBytes": 0,
+        "uploadCalldataSha256": ""
+      },
+      "nodes": null,
+      "summary": {
+        "targetNodeCount": 0,
+        "completedNodeCount": 0,
+        "completed": false
+      },
+      "completed": false,
+      "error": "algorithm Add is already callable on node node1 before upgrade, output=200"
+    }
+  ],
+  "summary": {
+    "roundCount": 1,
+    "completedRoundCount": 0,
+    "targetNodeCount": 2,
+    "completed": false
+  },
+  "limitations": [
+    "升级耗时由实验控制端通过 JSON-RPC 轮询观测，包含 RPC 往返和 poll interval 带来的观测误差。",
+    "节点 completed 判据为该节点 eth_call CodeStorage.callFunc 返回期望结果，说明该节点本地算法信息和 plugin 已可用于调用。",
+    "节点日志仅用于排查，不作为跨节点耗时计算的权威时间源。",
+    "preflight 阶段不执行 cryptoupgrade smoke test，避免在正式测量前上传同名算法污染结果。"
+  ],
+  "completed": false,
+  "error": "algorithm Add is already callable on node node1 before upgrade, output=200"
+}

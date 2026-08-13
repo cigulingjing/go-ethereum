@@ -1,0 +1,2 @@
+round,algorithm,upgrade_name,node_id,role,rpc_url,receipt_block,completion_block,submit_to_receipt_ms,tx_hash_to_receipt_ms,sender_receipt_to_receipt_ms,receipt_to_complete_ms,submit_to_complete_ms,tx_hash_to_complete_ms,sender_receipt_to_complete_ms,event_to_complete_ms,validation_call_ms,decoded_result,expected_result,completed,timed_out,error
+1,Add,AddLatency001,node1,signer,http://127.0.0.1:8781,8,10,7635.143602,7633.807893,-0.059362,10440.385870,18075.529472,18074.193763,10440.326508,10440.326508,13.706337,200,200,true,false,

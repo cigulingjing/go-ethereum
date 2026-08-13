@@ -1,0 +1,186 @@
+{
+  "experiment": "multi-node-upgrade-latency",
+  "change": "lab1-upgrade-latency",
+  "timestamp": "2026-08-12T20:34:22.873417788+08:00",
+  "command": [
+    "/home/liuqi/.cache/go-build/da/dabf6510df682270f76362df2f3dd81bf1d79a3ca7ba23cda60f85b2362ddac5-d/benchupgradelatency",
+    "-config",
+    "build/cryptoupgrade-networks/lab1-add-1node-bind-event-clean-20260812-203312/network.yaml",
+    "-out",
+    "cryptoupgrade/results/upgrade-latency/lab1-add-1node-bind-event-clean-20260812-203312",
+    "-algorithms",
+    "Add",
+    "-rounds",
+    "1",
+    "-timeout",
+    "3m",
+    "-preflight-timeout",
+    "1m",
+    "-poll-interval",
+    "100ms"
+  ],
+  "config": {
+    "configPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-add-1node-bind-event-clean-20260812-203312/network.yaml",
+    "chainId": 11223344,
+    "networkId": 11223344,
+    "consensusType": "clique",
+    "consensusPeriod": 5,
+    "nodeCount": 1,
+    "targetNodeIds": [
+      "node1"
+    ],
+    "senderNodeId": "node1",
+    "senderRpc": "http://127.0.0.1:8781",
+    "from": "0xF5F871aA6Bd253914705898c66251f994aa426FA",
+    "rounds": 1,
+    "pollIntervalMillis": 100,
+    "timeoutMillis": 180000,
+    "preflight": true,
+    "preflightTimeoutMillis": 60000,
+    "algorithmBase": "Add",
+    "algorithms": [
+      "Add"
+    ],
+    "uniqueNames": true,
+    "inputType": "uint256,uint256",
+    "outputType": "uint256",
+    "algoGas": 1,
+    "transactionGasLimit": 5000000,
+    "callGas": 5000000
+  },
+  "artifacts": {
+    "resultDir": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-add-1node-bind-event-clean-20260812-203312",
+    "resultJson": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-add-1node-bind-event-clean-20260812-203312/result.json",
+    "roundCsv": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-add-1node-bind-event-clean-20260812-203312/rounds.csv",
+    "nodeCsv": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-add-1node-bind-event-clean-20260812-203312/nodes.csv",
+    "sourcePath": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/algorithm/go/add.go",
+    "generatedSourceDir": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-add-1node-bind-event-clean-20260812-203312/sources"
+  },
+  "preflight": {
+    "startedAt": "2026-08-12T20:34:22.874114251+08:00",
+    "finishedAt": "2026-08-12T20:34:28.885780205+08:00",
+    "durationMillis": 6011.665943,
+    "expectedPeerCount": 0,
+    "nodes": [
+      {
+        "id": "node1",
+        "role": "signer",
+        "rpcURL": "http://127.0.0.1:8781",
+        "chainId": 11223344,
+        "startBlock": 9,
+        "endBlock": 10
+      }
+    ],
+    "ok": true
+  },
+  "rounds": [
+    {
+      "index": 1,
+      "algorithm": "Add",
+      "upgradeName": "AddLatency001",
+      "sourcePath": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-add-1node-bind-event-clean-20260812-203312/sources/addlatency001.go",
+      "abiInputTypes": [
+        "uint256",
+        "uint256"
+      ],
+      "abiOutputTypes": [
+        "uint256"
+      ],
+      "algoGas": 3000,
+      "inputSummary": {
+        "a": "100",
+        "b": "100",
+        "expected": "200"
+      },
+      "expectedOutput": "200",
+      "senderNodeId": "node1",
+      "senderRpc": "http://127.0.0.1:8781",
+      "from": "0xF5F871aA6Bd253914705898c66251f994aa426FA",
+      "startedAt": "2026-08-12T20:34:28.885877791+08:00",
+      "finishedAt": "2026-08-12T20:34:43.867220274+08:00",
+      "submissionStartedAt": "2026-08-12T20:34:28.890775143+08:00",
+      "submissionReturnedAt": "2026-08-12T20:34:28.892445858+08:00",
+      "submitBlockNumber": 10,
+      "transactionHash": "0x3f475203a91061e19a57ad33d9c7a2cf626f771f2b737957dc4a7aad6a891860",
+      "receiptStatus": 1,
+      "receiptGasUsed": 86300,
+      "receiptLogCount": 1,
+      "receiptBlockNumber": 12,
+      "receiptObservedAt": "2026-08-12T20:34:36.01573661+08:00",
+      "payload": {
+        "sourceBytes": 166,
+        "compressedGzipBytes": 153,
+        "compressedBase64Bytes": 204,
+        "uploadCalldataBytes": 612,
+        "uploadCalldataSha256": "247729b3ae845e6346a7b063c077ec22b087dce40eba034826d1abb4723ff5d2"
+      },
+      "nodes": [
+        {
+          "id": "node1",
+          "role": "signer",
+          "rpcURL": "http://127.0.0.1:8781",
+          "preflightBlock": 10,
+          "receiptObservedAt": "2026-08-12T20:34:36.015736784+08:00",
+          "receiptBlockNumber": 12,
+          "receiptLatestBlockNumber": 12,
+          "completionBlockNumber": 13,
+          "completedAt": "2026-08-12T20:34:43.867187201+08:00",
+          "validationStartedAt": "2026-08-12T20:34:43.856439198+08:00",
+          "validationFinishedAt": "2026-08-12T20:34:43.867174817+08:00",
+          "validationLatencyMillis": 10.735619,
+          "validationOutputHex": "0x00000000000000000000000000000000000000000000000000000000000000c8",
+          "decodedResult": "200",
+          "expectedResult": "200",
+          "submitToReceiptMillis": 7124.961651,
+          "txHashToReceiptMillis": 7123.290926,
+          "senderReceiptToReceiptMillis": 0.000174,
+          "receiptToCompleteMillis": 7851.450397,
+          "submitToCompleteMillis": 14976.412048,
+          "txHashToCompleteMillis": 14974.741323,
+          "senderReceiptToCompleteMillis": 7851.450571,
+          "completed": true
+        }
+      ],
+      "summary": {
+        "targetNodeCount": 1,
+        "completedNodeCount": 1,
+        "submitToTxHashMillis": 1.670725,
+        "submitToSenderReceiptMillis": 7124.961477,
+        "txHashToSenderReceiptMillis": 7123.290752,
+        "submitToAllReceiptMillis": 7124.961651,
+        "txHashToAllReceiptMillis": 7123.290926,
+        "senderReceiptToAllReceiptMillis": 0.000174,
+        "submitToAllCompleteMillis": 14976.412048,
+        "txHashToAllCompleteMillis": 14974.741323,
+        "senderReceiptToAllCompleteMillis": 7851.450571,
+        "allReceiptToAllCompleteMillis": 7851.450397,
+        "meanNodeSubmitToReceiptMillis": 7124.961651,
+        "meanNodeTxHashToReceiptMillis": 7123.290926,
+        "meanNodeSenderReceiptToReceiptMillis": 0.000174,
+        "meanNodeReceiptToCompleteMillis": 7851.450397,
+        "meanNodeSubmitToCompleteMillis": 14976.412048,
+        "meanNodeTxHashToCompleteMillis": 14974.741323,
+        "meanNodeSenderReceiptToCompleteMillis": 7851.450571,
+        "slowestNodeId": "node1",
+        "completed": true
+      },
+      "completed": true
+    }
+  ],
+  "summary": {
+    "roundCount": 1,
+    "completedRoundCount": 1,
+    "targetNodeCount": 1,
+    "completed": true,
+    "meanAllCompleteMillis": 14976.412048,
+    "maxAllCompleteMillis": 14976.412048,
+    "minAllCompleteMillis": 14976.412048
+  },
+  "limitations": [
+    "升级耗时由实验控制端通过 JSON-RPC 轮询观测，包含 RPC 往返和 poll interval 带来的观测误差。",
+    "节点 completed 判据为该节点 eth_call CodeStorage.callFunc 返回期望结果，说明该节点本地算法信息和 plugin 已可用于调用。",
+    "节点日志仅用于排查，不作为跨节点耗时计算的权威时间源。",
+    "preflight 阶段不执行 cryptoupgrade smoke test，避免在正式测量前上传同名算法污染结果。"
+  ],
+  "completed": true
+}

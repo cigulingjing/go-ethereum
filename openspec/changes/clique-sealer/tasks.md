@@ -37,7 +37,7 @@
 
 ## 6. Docker Multi-Node Smoke Test
 
-- [x] 6.1 使用 `cryptoupgrade/cmd/multinode -mode render` 生成 `local-2nodes.yaml` 的 genesis、static peers、start scripts 和 Docker Compose。
+- [x] 6.1 使用 `cryptoupgrade/bench/cmd/multinode -mode render` 生成 `local-2nodes.yaml` 的 genesis、static peers、start scripts 和 Docker Compose。
 - [x] 6.2 使用生成的 node1 command 验证 signer 节点可解锁账户并持续出块。
 - [x] 6.3 使用生成的 node2 command 验证 observer 节点不解锁账户且能同步 node1 新区块。
 - [x] 6.4 在可用 Docker 环境中运行 compose 双节点网络，确认 node1 持续出块、node2 同步、`clique_getSigners` 返回授权 signer。（当前环境有 Docker daemon 但无 `docker compose` 插件，已使用等价的 `sudo docker run` 双容器验证）
@@ -46,5 +46,5 @@
 ## 7. Verification
 
 - [x] 7.1 运行 `go test ./consensus/clique ./miner ./eth/... ./cryptoupgrade/network` 或更小的相关包测试，并记录结果。
-- [x] 7.2 运行 `go run ./cryptoupgrade/cmd/multinode -mode validate`，记录 node1/node2 高度变化和 signer 查询结果。
+- [x] 7.2 运行 `go run ./cryptoupgrade/bench/cmd/multinode -mode validate`，记录 node1/node2 高度变化和 signer 查询结果。
 - [x] 7.3 运行 `openspec validate clique-sealer` 和 `openspec validate add-multi-node-network`，根据结果修正文档、spec 或 tasks。

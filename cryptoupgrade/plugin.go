@@ -1,34 +1,18 @@
 package cryptoupgrade
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"reflect"
 	"runtime"
 
-	"github.com/ethereum/go-ethereum/cryptoupgrade/preload"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/builtin"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/compiler"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/pluginruntime"
 	"github.com/ethereum/go-ethereum/log"
 )
-
-// Compile source go file to .sp file, only approve run. Below one only approve debug
-func compilePlugin(src string, outputPath string) error {
-	cmd := exec.Command("go", "build", "-buildmode=plugin", "-tags=urfave_cli_no_docs,ckzg", "-trimpath", "-o", outputPath, src)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	// fmt.Printf("go version: %v\n", runtime.Version())
-	return cmd.Run()
-}
-
-// ! There may be conflicts between the go version and the go compiler version, so If you choose a plugin that supports dbg, it can only support debugging but not normal execution.
-func compileModulePlugin(src string, outputPath string) error {
-	cmd := exec.Command("go", "build", "-buildmode=plugin", "-gcflags=all=-N -l", "-o", outputPath, src)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
-}
 
 // Convert str's first char to capital
 func capitalString(str string) string {
@@ -47,9 +31,9 @@ func CallProcessor(algoName string, gas uint64, encodedInput []byte) ([]byte, ui
 
 	log.Info("Call upgrade algorithm", "name", algoName, "input", encodedInput)
 
-	p, ok := preload.IsPreLoad(algoName)
+	p, ok := builtin.Lookup(algoName)
 	if ok {
-		return callPreloadAlgo(p, gas, encodedInput)
+		return callBuiltinAlgorithm(p, gas, encodedInput)
 	} else {
 		pluginPath := sofilePath(algoName)
 		return callUpgradeAlgo(algoName, pluginPath, gas, encodedInput)
@@ -60,14 +44,14 @@ func CallProcessor(algoName string, gas uint64, encodedInput []byte) ([]byte, ui
 func RequiredGas(algoName string) (uint64, error) {
 	algoName = capitalString(algoName)
 
-	if p, ok := preload.IsPreLoad(algoName); ok {
+	if p, ok := builtin.Lookup(algoName); ok {
 		return p.RequiredGas(), nil
 	}
 	funcInfo, ok := getAlgorithmInfo(algoName)
 	if !ok {
 		return 0, fmt.Errorf("algorithm %s is not loaded", algoName)
 	}
-	return funcInfo.gas, nil
+	return funcInfo.Gas, nil
 }
 
 func RequiredGasForCall(input []byte) (uint64, error) {
@@ -93,11 +77,11 @@ func callUpgradeAlgo(funcName string, pluginPath string, gas uint64, encodedInpu
 	if !ok {
 		return nil, gas, fmt.Errorf("algorithm %s is not loaded", funcName)
 	}
-	inputType, outputType := funcInfo.getTypeList()
+	inputType, outputType := funcInfo.InputTypes(), funcInfo.OutputTypes()
 	log.Info("Loaded upgrade algorithm ABI types", "input", inputType, "output", outputType)
 
 	// Gas sufficient check
-	if gas < funcInfo.gas {
+	if gas < funcInfo.Gas {
 		return nil, gas, errors.New("out of gas")
 	}
 
@@ -126,12 +110,12 @@ func callUpgradeAlgo(funcName string, pluginPath string, gas uint64, encodedInpu
 	}
 
 	// Gas deduction and return output
-	remainGas := gas - uint64(funcInfo.gas)
+	remainGas := gas - funcInfo.Gas
 	log.Info("Successfully called upgrade algorithm", "gas", gas, "output", encodedOutput)
 	return encodedOutput, remainGas, nil
 }
 
-func callPreloadAlgo(algo preload.PreLoadAlgorithm, gas uint64, encodedInput []byte) ([]byte, uint64, error) {
+func callBuiltinAlgorithm(algo builtin.Algorithm, gas uint64, encodedInput []byte) ([]byte, uint64, error) {
 	// Gas sufficient check
 	if gas < algo.RequiredGas() {
 		return nil, gas, errors.New("out of gas")
@@ -151,20 +135,20 @@ func callPreloadAlgo(algo preload.PreLoadAlgorithm, gas uint64, encodedInput []b
 	p := algo.TargetFunc()
 	output, err := callFunction(p, input)
 	if err != nil {
-		log.Error("Failed to call preload algorithm", "err", err)
+		log.Error("Failed to call builtin algorithm", "err", err)
 		return nil, gas, err
 	}
 
 	// Decode output
 	encodedOutput, err := PackOutput(output, otype)
 	if err != nil {
-		log.Error("Failed to pack preload output", "err", err)
+		log.Error("Failed to pack builtin output", "err", err)
 		return nil, gas, err
 	}
 
 	// Gas deduction
 	remainGas := gas - algo.RequiredGas()
-	log.Info("Successfully called preload algorithm", "gas", gas, "output", encodedOutput)
+	log.Info("Successfully called builtin algorithm", "gas", gas, "output", encodedOutput)
 	return encodedOutput, remainGas, err
 }
 
@@ -188,35 +172,7 @@ func callPlugin(pluginPath string, funName string, args []interface{}) ([]interf
 
 // Provide a unified calling entry. Return fn's return as an interface{} list
 func callFunction(fn interface{}, args []interface{}) (ret []interface{}, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			ret = nil
-			err = fmt.Errorf("cryptoupgrade function panic: %v", r)
-		}
-	}()
-
-	v := reflect.ValueOf(fn)
-
-	// Chech whether fn is function type
-	if v.Kind() != reflect.Func {
-		return nil, fmt.Errorf("provided value is not a function")
-	}
-
-	// Construct parameters to input
-	in := make([]reflect.Value, len(args))
-	for i, arg := range args {
-		in[i] = reflect.ValueOf(arg)
-	}
-
-	// Reflect Call
-	result := v.Call(in)
-	out := make([]interface{}, len(result))
-
-	for i, r := range result {
-		// Convert reflect.Value to interface{}
-		out[i] = r.Interface()
-	}
-	return out, nil
+	return pluginruntime.CallFunction(fn, args)
 }
 
 // Go plugin compile
@@ -224,21 +180,19 @@ func PluginCompile(srcPath string, outputPath string) error {
 	if err := directoryInit(); err != nil {
 		return err
 	}
-	goBin := pluginGoBinary()
-	if abs, err := filepath.Abs(srcPath); err == nil {
-		srcPath = abs
-	}
-	if abs, err := filepath.Abs(outputPath); err == nil {
-		outputPath = abs
-	}
-	cmd := exec.Command(goBin, "build", "-buildmode=plugin", "-tags=urfave_cli_no_docs,ckzg", "-trimpath", "-o", outputPath, srcPath)
-	if buildDir := pluginBuildDir(); buildDir != "" {
-		cmd.Dir = buildDir
-	}
-	cmd.Env = append(os.Environ(), "CGO_ENABLED=1")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	return compilePlugin(context.Background(), srcPath, outputPath)
+}
+
+func compilePlugin(ctx context.Context, srcPath, outputPath string) error {
+	return compiler.Compile(ctx, srcPath, outputPath, compiler.BuildContext{
+		GoBinary:   pluginGoBinary(),
+		WorkingDir: pluginBuildDir(),
+		BuildTags:  []string{"urfave_cli_no_docs", "ckzg"},
+		Trimpath:   true,
+		CGOEnabled: true,
+		Stdout:     os.Stdout,
+		Stderr:     os.Stderr,
+	})
 }
 
 func pluginGoBinary() string {

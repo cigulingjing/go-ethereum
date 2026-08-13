@@ -68,6 +68,10 @@
 
 系统 SHALL 保留可复现实验结果文档。
 
+实验命令、部署输入和当前文档 SHALL 位于 `experiments/cryptoupgrade`；历史
+`cryptoupgrade/results` SHALL 原地只读保留，新运行未显式指定输出位置时 SHALL 写入
+`experiments/cryptoupgrade/results/<experiment>/<run-id>`。
+
 #### Scenario: 记录结果表
 
 - **WHEN** 完成一轮基准实验

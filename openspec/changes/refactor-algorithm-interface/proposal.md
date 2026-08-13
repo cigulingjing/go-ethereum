@@ -25,7 +25,7 @@
 
 ## 影响
 
-- 影响代码：`cryptoupgrade/algorithm/go/*.go`、`cryptoupgrade/algorithm/go/archive/*.go`、`cryptoupgrade/algorithm/contracts/*.sol`、`cryptoupgrade/cmd/*` 中的默认路径。
+- 影响代码：`cryptoupgrade/algorithm/go/*.go`、`cryptoupgrade/algorithm/go/archive/*.go`、`cryptoupgrade/algorithm/contracts/*.sol`、`cryptoupgrade/bench/cmd/*` 中的默认路径。
 - 影响文档：`cryptoupgrade/docs/` 中引用旧算法路径的命令示例和结果说明。
 - 影响 OpenSpec：新增算法接口规范，并更新 benchmark 相关 delta spec。
 - 不新增外部依赖。

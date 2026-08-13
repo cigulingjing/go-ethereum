@@ -5,6 +5,7 @@ ROOT="${ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 GO_DIR="$ROOT/cryptoupgrade/algorithm/go"
 GO_ARCHIVE_DIR="$GO_DIR/archive"
 SOL_DIR="$ROOT/cryptoupgrade/algorithm/contracts"
+BUILTIN_DIR="$ROOT/cryptoupgrade/builtin"
 
 status=0
 
@@ -115,6 +116,11 @@ if [[ ! -d "$GO_ARCHIVE_DIR" ]]; then
 fi
 if [[ ! -d "$SOL_DIR" ]]; then
     fail "Solidity algorithm directory not found: $SOL_DIR"
+fi
+if [[ ! -d "$BUILTIN_DIR" ]]; then
+    fail "builtin algorithm directory not found: $BUILTIN_DIR"
+elif rg -n 'cryptoupgrade/algorithm/go' "$BUILTIN_DIR" -g '*.go' >/dev/null; then
+    fail "builtin algorithms must not import dynamic candidate source assets"
 fi
 
 declare -A seen_go=()

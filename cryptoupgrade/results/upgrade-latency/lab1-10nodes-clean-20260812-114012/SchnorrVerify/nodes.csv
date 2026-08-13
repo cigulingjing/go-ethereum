@@ -1,0 +1,11 @@
+round,algorithm,upgrade_name,node_id,role,rpc_url,receipt_block,completion_block,submit_to_receipt_ms,receipt_to_complete_ms,submit_to_complete_ms,validation_call_ms,decoded_result,expected_result,completed,timed_out,error
+1,SchnorrVerify,SchnorrVerifyLatency001,node1,signer,http://127.0.0.1:8761,8,8,10723.456007,57.037029,10780.493036,44.632209,true,true,true,false,
+1,SchnorrVerify,SchnorrVerifyLatency001,node2,observer,http://127.0.0.1:8762,8,8,87175.232438,39.310691,87214.543129,35.488895,true,true,true,false,
+1,SchnorrVerify,SchnorrVerifyLatency001,node3,observer,http://127.0.0.1:8763,8,8,85970.523299,95.731723,86066.255022,82.365065,true,true,true,false,
+1,SchnorrVerify,SchnorrVerifyLatency001,node4,observer,http://127.0.0.1:8764,8,8,87190.780008,35.770625,87226.550633,31.953363,true,true,true,false,
+1,SchnorrVerify,SchnorrVerifyLatency001,node5,observer,http://127.0.0.1:8765,8,8,84096.916135,456.410596,84553.326731,440.455764,true,true,true,false,
+1,SchnorrVerify,SchnorrVerifyLatency001,node6,observer,http://127.0.0.1:8766,8,8,87090.004892,35.201069,87125.205961,31.599559,true,true,true,false,
+1,SchnorrVerify,SchnorrVerifyLatency001,node7,observer,http://127.0.0.1:8767,8,8,86751.057225,54.012446,86805.069671,44.101491,true,true,true,false,
+1,SchnorrVerify,SchnorrVerifyLatency001,node8,observer,http://127.0.0.1:8768,8,8,85664.527202,255.483317,85920.010519,246.948865,true,true,true,false,
+1,SchnorrVerify,SchnorrVerifyLatency001,node9,observer,http://127.0.0.1:8769,8,8,87071.682496,43.104581,87114.787077,29.558109,true,true,true,false,
+1,SchnorrVerify,SchnorrVerifyLatency001,node10,observer,http://127.0.0.1:8770,8,8,87693.052929,33.277057,87726.329986,31.007219,true,true,true,false,

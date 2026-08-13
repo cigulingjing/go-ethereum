@@ -2,7 +2,7 @@
 
 当前 cryptoupgrade 功能已经可以在本地 `geth --dev` 或单节点私链上完成动态算法上传、调用和实验数据收集。这个环境足以验证 EVM 调用边界和算法实现成本，但缺少多节点部署、节点互联、共识出块和服务器复现实验能力。
 
-现有代码中，cryptoupgrade 插件目录已经支持通过 `GETH_CRYPTOUPGRADE_PLUGIN_DIR` 做进程级隔离；实验命令集中在 `cryptoupgrade/cmd/`；仓库已有通用 `Dockerfile` 和 `Dockerfile.alltools`。需要注意的是，Go plugin 动态编译依赖 Go toolchain、CGO 和与 geth 兼容的源码模块环境，最小运行时镜像不能直接满足升级实验。另一个约束是当前 `consensus/clique.Seal` 标记为不再支持出块，多节点 Clique 方案必须先验证或恢复实验用 signer 路径。
+现有代码中，cryptoupgrade 插件目录已经支持通过 `GETH_CRYPTOUPGRADE_PLUGIN_DIR` 做进程级隔离；实验命令集中在 `cryptoupgrade/bench/cmd/`；仓库已有通用 `Dockerfile` 和 `Dockerfile.alltools`。需要注意的是，Go plugin 动态编译依赖 Go toolchain、CGO 和与 geth 兼容的源码模块环境，最小运行时镜像不能直接满足升级实验。另一个约束是当前 `consensus/clique.Seal` 标记为不再支持出块，多节点 Clique 方案必须先验证或恢复实验用 signer 路径。
 
 ## Goals / Non-Goals
 
@@ -25,7 +25,7 @@
 
 1. 新增独立的私链网络辅助命令和配置包
 
-   在 `cryptoupgrade/cmd/` 下新增多节点网络辅助命令，并在 `cryptoupgrade/network` 或同级内部包中实现 YAML 解析、校验和 artifact 渲染。这样可以复用现有实验命令组织方式，同时避免把实验部署逻辑塞入 `cmd/geth` 主入口。
+   在 `cryptoupgrade/bench/cmd/` 下新增多节点网络辅助命令，并在 `cryptoupgrade/network` 或同级内部包中实现 YAML 解析、校验和 artifact 渲染。这样可以复用现有实验命令组织方式，同时避免把实验部署逻辑塞入 `cmd/geth` 主入口。
 
    Alternative considered: 直接给 `geth` 增加 `--network-config`。该方案会侵入 Geth 原有 CLI 和节点启动路径，不符合最小侵入原则。
 

@@ -15,6 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto/blake2b"
+	evmadapter "github.com/ethereum/go-ethereum/cryptoupgrade/internal/evm"
 )
 
 // precompile 计费规则保持独立，避免影响动态升级路径的 gas 元数据。
@@ -209,6 +210,12 @@ var precompiles = mustPrecompiles([]precompileSpec{
 	},
 })
 
+var precompileRegistry = evmadapter.MustRegistry(
+	precompiles,
+	func(precompile Precompile) common.Address { return precompile.address },
+	func(precompile Precompile) string { return precompile.name },
+)
+
 func mustPrecompiles(specs []precompileSpec) []Precompile {
 	out := make([]Precompile, len(specs))
 	for i, spec := range specs {
@@ -248,26 +255,15 @@ func mustABIArguments(types []string) {
 
 // Core包调用的入口
 func Precompiles() []Precompile {
-	out := make([]Precompile, len(precompiles))
-	copy(out, precompiles)
-	return out
+	return precompileRegistry.Entries()
 }
 
 func PrecompileAddresses() []common.Address {
-	out := make([]common.Address, len(precompiles))
-	for i, p := range precompiles {
-		out[i] = p.address
-	}
-	return out
+	return precompileRegistry.Addresses()
 }
 
 func PrecompileByName(name string) (Precompile, bool) {
-	for _, p := range precompiles {
-		if p.name == name {
-			return p, true
-		}
-	}
-	return Precompile{}, false
+	return precompileRegistry.ByName(name)
 }
 
 func (p Precompile) Address() common.Address {

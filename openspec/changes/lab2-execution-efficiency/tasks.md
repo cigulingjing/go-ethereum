@@ -6,7 +6,7 @@
 
 ## 2. 三组调用路径实现
 
-- [x] 2.1 新增 `cryptoupgrade/cmd/benchexecutionefficiency` 命令和 Add-only flags。
+- [x] 2.1 新增 `cryptoupgrade/bench/cmd/benchexecutionefficiency` 命令和 Add-only flags。
 - [x] 2.2 实现动态升级路径 setup，并在升级完成后构造 `CodeStorage.callFunc("Add", encodedInput)` calldata。
 - [x] 2.3 实现 contract Add 合约编译、部署或复用地址，并构造 `Add(int256,int256)` calldata。
 - [x] 2.4 实现 precompile Add 地址解析，并构造 `uint256,uint256` ABI calldata。

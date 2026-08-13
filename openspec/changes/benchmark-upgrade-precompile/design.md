@@ -1,6 +1,6 @@
 ## 上下文
 
-仓库中已经有 `cryptoupgrade/cmd/` 下的 benchmark tooling 和性能基准 spec。现有工具覆盖 upgrade 调用、Solidity 对比，以及至少一个 Blake2b precompile 对比，但还缺少一个聚焦实验：在运行中的本地 geth 链上，只比较当前升级方案和新增 cryptoupgrade native precompile 路径。
+仓库中已经有 `cryptoupgrade/bench/cmd/` 下的 benchmark tooling 和性能基准 spec。现有工具覆盖 upgrade 调用、Solidity 对比，以及至少一个 Blake2b precompile 对比，但还缺少一个聚焦实验：在运行中的本地 geth 链上，只比较当前升级方案和新增 cryptoupgrade native precompile 路径。
 
 目标测试链是 geth 执行 RPC 端点 `http://127.0.0.1:8666`。benchmark 必须使用真实 RPC 调用，以便测量调用方看到的客户端侧 EVM 执行、升级 setup 的交易提交/receipt timing，以及 `eth_call`/`eth_estimateGas` 行为。
 
@@ -27,7 +27,7 @@
 
 1. 增加或改造一个专用 benchmark 命令。
 
-   benchmark 应位于 `cryptoupgrade/cmd/` 下，可以扩展 `benchcandidate` 的 precompile mode，也可以新增聚焦命令，例如 `benchrealchain`。如果扩展 `benchcandidate` 会让既有 Solidity 相关 flags 变得含糊，则优先使用独立命令。
+   benchmark 应位于 `cryptoupgrade/bench/cmd/` 下，可以扩展 `benchcandidate` 的 precompile mode，也可以新增聚焦命令，例如 `benchrealchain`。如果扩展 `benchcandidate` 会让既有 Solidity 相关 flags 变得含糊，则优先使用独立命令。
 
 2. 默认 RPC 目标为 `http://127.0.0.1:8666`。
 

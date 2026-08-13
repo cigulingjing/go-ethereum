@@ -1,6 +1,6 @@
 ## 1. Benchmark 命令结构
 
-- [x] 1.1 决定扩展 `cryptoupgrade/cmd/benchcandidate`，或新增聚焦命令 `cryptoupgrade/cmd/benchrealchain`。
+- [x] 1.1 决定扩展 `cryptoupgrade/bench/cmd/benchcandidate`，或新增聚焦命令 `cryptoupgrade/bench/cmd/benchrealchain`。
 - [x] 1.2 增加默认 RPC 端点 `http://127.0.0.1:8666`，并提供可覆盖的 `-rpc` flag。
 - [x] 1.3 增加算法名、源码文件、输入 ABI 类型、输出 ABI 类型、ABI 编码输入、期望输出、native precompile 地址、sender、warmup 数量、样本数量和输出 JSON 路径等 flags。
 - [x] 1.4 增加 supported mode 和 required parameter 校验，并不改变现有 benchmark 命令。

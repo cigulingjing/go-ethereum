@@ -1,113 +1,49 @@
 package cryptoupgrade
 
 import (
-	"encoding/json"
-	"os"
-	"strings"
-	"sync"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/model"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/repository"
 )
 
-var (
-	algoInfoMap = make(map[string]algoInfo)
-	algoInfoMu  sync.RWMutex
-)
+type algoInfo = model.AlgorithmInfo
 
-type algoInfo struct {
-	code  string
-	gas   uint64
-	itype string
-	otype string
-}
-
-type diskAlgoInfo struct {
-	Code  string `json:"code"`
-	Gas   uint64 `json:"gas"`
-	IType string `json:"itype"`
-	OType string `json:"otype"`
-}
-
-func (c algoInfo) MarshalJSON() ([]byte, error) {
-	return json.Marshal(diskAlgoInfo{
-		Code:  c.code,
-		Gas:   c.gas,
-		IType: c.itype,
-		OType: c.otype,
-	})
-}
-
-func (c *algoInfo) UnmarshalJSON(data []byte) error {
-	var disk diskAlgoInfo
-	if err := json.Unmarshal(data, &disk); err != nil {
-		return err
-	}
-	c.code = disk.Code
-	c.gas = disk.Gas
-	c.itype = disk.IType
-	c.otype = disk.OType
-	return nil
-}
-
-func (c *algoInfo) getTypeList() ([]string, []string) {
-	return splitTypeList(c.itype), splitTypeList(c.otype)
-}
-
-func splitTypeList(types string) []string {
-	if strings.TrimSpace(types) == "" {
-		return nil
-	}
-	parts := strings.Split(types, ",")
-	for i := range parts {
-		parts[i] = strings.TrimSpace(parts[i])
-	}
-	return parts
-}
+var runtimeAlgorithmRepository = repository.New(runtimePluginPaths.workspace())
 
 // When geth exit, need to store @algoInfoMap
 func Store() error {
+	if runtimePluginPathsErr != nil {
+		return runtimePluginPathsErr
+	}
 	if err := directoryInit(); err != nil {
 		return err
 	}
-	return storeAlgoMap(algorithmInfoPath())
+	return runtimeAlgorithmRepository.Save()
 }
 
 func getAlgorithmInfo(name string) (algoInfo, bool) {
-	algoInfoMu.RLock()
-	defer algoInfoMu.RUnlock()
+	return runtimeAlgorithmRepository.Active(name)
+}
 
-	info, ok := algoInfoMap[name]
-	return info, ok
+func getUploadedAlgorithmInfo(name string) (algoInfo, bool) {
+	return runtimeAlgorithmRepository.Uploaded(name)
 }
 
 func setAlgorithmInfo(name string, info algoInfo) {
-	algoInfoMu.Lock()
-	defer algoInfoMu.Unlock()
+	runtimeAlgorithmRepository.SetActive(name, info)
+}
 
-	algoInfoMap[name] = info
+func setUploadedAlgorithmInfo(name string, info algoInfo) {
+	runtimeAlgorithmRepository.SetUploaded(name, info)
+}
+
+func updateCodeStorageAlgorithmGas(name string, gas uint64) (bool, bool) {
+	return runtimeAlgorithmRepository.UpdateGas(name, gas)
 }
 
 func storeAlgoMap(filename string) error {
-	algoInfoMu.RLock()
-	defer algoInfoMu.RUnlock()
-
-	data, err := json.MarshalIndent(algoInfoMap, "", "  ")
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(filename, data, 0644)
+	return runtimeAlgorithmRepository.SaveTo(filename)
 }
 
 func loadFromFile(filename string) error {
-	file, err := os.ReadFile(filename)
-	if err != nil {
-		if os.IsNotExist(err) {
-			// File does not exist yet, ignore this error.
-			return nil
-		}
-		return err
-	}
-
-	algoInfoMu.Lock()
-	defer algoInfoMu.Unlock()
-
-	return json.Unmarshal(file, &algoInfoMap)
+	return runtimeAlgorithmRepository.LoadFrom(filename)
 }

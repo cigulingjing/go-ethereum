@@ -24,7 +24,7 @@
 
 ## 影响
 
-- 影响代码：`cryptoupgrade/cmd/benchcandidate` 或 `cryptoupgrade/cmd/` 下新的 benchmark 命令。
+- 影响代码：`cryptoupgrade/bench/cmd/benchcandidate` 或 `cryptoupgrade/bench/cmd/` 下新的 benchmark 命令。
 - 影响文档/结果：`cryptoupgrade/docs/` 下的 benchmark 命令示例和结果文件。
 - 影响规格：`openspec/specs/cryptoupgrade-performance-benchmarks/spec.md`。
 - 不新增依赖。

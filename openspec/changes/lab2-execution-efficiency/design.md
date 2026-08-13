@@ -28,7 +28,7 @@
 
 ## Decisions
 
-1. 新增独立命令 `cryptoupgrade/cmd/benchexecutionefficiency`。
+1. 新增独立命令 `cryptoupgrade/bench/cmd/benchexecutionefficiency`。
 
    该命令专门表达“升级后执行效率实验”，避免继续扩大 `benchcall` 的历史 Add/traditional-contract 语义，也避免把 `benchrealchain` 的 upgrade-vs-precompile 两组实验扩展成含 contract 的混合入口。命令内部可以复用或局部抽取现有 helper，但对外输出保持三组统一结构。
 

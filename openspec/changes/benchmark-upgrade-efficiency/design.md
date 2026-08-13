@@ -29,7 +29,7 @@
 
 ## Decisions
 
-1. 新增独立命令 `cryptoupgrade/cmd/benchupgradeefficiency`。
+1. 新增独立命令 `cryptoupgrade/bench/cmd/benchupgradeefficiency`。
 
    该命令聚焦实验二的升级效率指标，避免把“自动启动 geth”和“分阶段升级测量”混入已有 `benchcandidate`、`benchrealchain` 和 `upgradeflow`。已有命令仍保留，用于部署/调用成本对比。
 

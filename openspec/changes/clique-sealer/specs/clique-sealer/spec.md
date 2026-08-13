@@ -112,6 +112,6 @@
 
 #### Scenario: 双节点验证结果可复现
 
-- **WHEN** 执行 `cryptoupgrade/cmd/multinode -mode validate` 或等价 Clique 双节点验证入口
+- **WHEN** 执行 `cryptoupgrade/bench/cmd/multinode -mode validate` 或等价 Clique 双节点验证入口
 - **THEN** 输出结果 SHALL 记录 node1 起止高度、node2 起止高度、peer 数量、chain ID 和验证耗时
 - **AND** 验证结果 SHALL 能明确表示 node1 出块和 node2 同步是否通过

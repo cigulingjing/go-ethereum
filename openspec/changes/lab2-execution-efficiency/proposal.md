@@ -26,7 +26,7 @@
 
 ## Impact
 
-- Affected code: `cryptoupgrade/cmd/` 下新增或扩展实验命令；同步将项目内实验和 precompile 相关的 `native` 命名改为 `precompile`。
+- Affected code: `cryptoupgrade/bench/cmd/` 下新增或扩展实验命令；同步将项目内实验和 precompile 相关的 `native` 命名改为 `precompile`。
 - Affected inputs: 已有 Go 算法源码、Solidity contract 算法、precompile 地址、测试输入和期望输出。
 - Affected artifacts: OpenSpec change、批量算法 JSON 原始结果、文本摘要和必要的实验说明。
 - No breaking changes to Geth consensus, EVM semantics, dynamic crypto upgrade activation, Solidity algorithm contracts, or precompile behavior.

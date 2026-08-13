@@ -10,7 +10,7 @@
 - 将 signer 节点已解锁账户接入 Clique 签名流程，避免单独维护与节点账户状态脱节的签名入口。
 - 兼容 `add-multi-node-network` 的 YAML 和渲染接口，包括 `consensus.type/period/epoch/signers`、节点 `role/account/keystore/password`、Docker 启动命令和必要 RPC namespace。
 - 恢复或补齐 multi-node 生成命令需要的 geth 启动契约，使 signer 节点可以通过渲染出的 Docker Compose 或 `start.sh` 直接启动出块。
-- 提供可复现的双节点验证流程，确认 node1 能持续出块，node2 能同步到 node1 产生的区块，并与 `cryptoupgrade/cmd/multinode validate` 输出兼容。
+- 提供可复现的双节点验证流程，确认 node1 能持续出块，node2 能同步到 node1 产生的区块，并与 `cryptoupgrade/bench/cmd/multinode validate` 输出兼容。
 - 保持非 Clique 链、非 signer 节点、EVM 执行语义和 cryptoupgrade 现有行为不变。
 
 ## Capabilities

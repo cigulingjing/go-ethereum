@@ -1,0 +1,11 @@
+round,algorithm,upgrade_name,node_id,role,rpc_url,receipt_block,completion_block,submit_to_receipt_ms,receipt_to_complete_ms,submit_to_complete_ms,validation_call_ms,decoded_result,expected_result,completed,timed_out,error
+1,Add,AddLatency001,node1,signer,http://127.0.0.1:8761,9,9,11724.817510,35.181973,11759.999483,33.162049,200,200,true,false,
+1,Add,AddLatency001,node2,observer,http://127.0.0.1:8762,9,9,65214.546138,16.115808,65230.661946,13.240804,200,200,true,false,
+1,Add,AddLatency001,node3,observer,http://127.0.0.1:8763,9,9,64198.634497,31.509349,64230.143846,23.920663,200,200,true,false,
+1,Add,AddLatency001,node4,observer,http://127.0.0.1:8764,9,9,65328.881313,14.837922,65343.719235,13.196823,200,200,true,false,
+1,Add,AddLatency001,node5,observer,http://127.0.0.1:8765,9,9,63345.680706,49.097404,63394.778110,46.852267,200,200,true,false,
+1,Add,AddLatency001,node6,observer,http://127.0.0.1:8766,9,9,65459.051946,12.857401,65471.909347,11.177523,200,200,true,false,
+1,Add,AddLatency001,node7,observer,http://127.0.0.1:8767,9,9,65510.478132,11.115951,65521.594083,9.600263,200,200,true,false,
+1,Add,AddLatency001,node8,observer,http://127.0.0.1:8768,9,9,64792.018025,42.692348,64834.710373,38.943463,200,200,true,false,
+1,Add,AddLatency001,node9,observer,http://127.0.0.1:8769,9,9,65200.526207,18.629996,65219.156203,15.974665,200,200,true,false,
+1,Add,AddLatency001,node10,observer,http://127.0.0.1:8770,9,9,64811.783994,33.126397,64844.910391,29.916584,200,200,true,false,

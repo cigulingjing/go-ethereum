@@ -1,0 +1,253 @@
+WARN [08-12|14:30:10.747] Unknown config environment variable      envvar=GETH_CRYPTOUPGRADE_PLUGIN_DIR
+INFO [08-12|14:30:10.765] Maximum peer count                       ETH=50 total=50
+INFO [08-12|14:30:10.769] Smartcard socket not found, disabling    err="stat /run/pcscd/pcscd.comm: no such file or directory"
+WARN [08-12|14:30:10.774] Sanitizing cache to Go's GC limits       source=system provided=4096 updated=2530
+INFO [08-12|14:30:10.776] Set global gas cap                       cap=50,000,000
+INFO [08-12|14:30:10.777] Initializing the KZG library             backend=gokzg
+INFO [08-12|14:30:10.780] Defaulting to pebble as the backing database
+INFO [08-12|14:30:10.780] Allocated cache and file handles         database=/data/geth/chaindata cache=1.24GiB handles=524,288 version=v2
+INFO [08-12|14:30:10.923] Opened ancient database                  database=/data/geth/chaindata/ancient/chain readonly=false
+INFO [08-12|14:30:10.923] Opened Era store                         datadir=/data/geth/chaindata/ancient/chain/era
+INFO [08-12|14:30:10.924] State schema set to default              scheme=path
+INFO [08-12|14:30:10.924] Load database journal from disk
+WARN [08-12|14:30:10.924] Head block is not reachable
+INFO [08-12|14:30:10.981] Opened ancient database                  database=/data/geth/chaindata/ancient/state readonly=false
+INFO [08-12|14:30:10.981] State snapshot generator is not found
+INFO [08-12|14:30:10.981] Starting snapshot generation             root=56e81f..63b421 accounts=0 slots=0 storage=0.00B dangling=0 elapsed="4.548µs"
+INFO [08-12|14:30:10.982] Initialized path database                triecache=16.00MiB statecache=16.00MiB buffer=64.00MiB state-history="last 90000 blocks" journal-dir=/data/geth/triedb
+INFO [08-12|14:30:10.982] Writing custom genesis block
+INFO [08-12|14:30:10.982] Resuming snapshot generation             root=56e81f..63b421 accounts=0 slots=0 storage=0.00B dangling=0 elapsed="361.846µs"
+INFO [08-12|14:30:10.982] Generated snapshot                       accounts=0 slots=0 storage=0.00B dangling=0 elapsed="605.429µs"
+INFO [08-12|14:30:10.984] Successfully wrote genesis state         database=chaindata                          hash=cd6845..872147
+WARN [08-12|14:30:11.109] Unknown config environment variable      envvar=GETH_CRYPTOUPGRADE_PLUGIN_DIR
+INFO [08-12|14:30:11.120] Maximum peer count                       ETH=50 total=50
+INFO [08-12|14:30:11.121] Smartcard socket not found, disabling    err="stat /run/pcscd/pcscd.comm: no such file or directory"
+WARN [08-12|14:30:11.123] Sanitizing cache to Go's GC limits       source=system provided=4096 updated=2530
+INFO [08-12|14:30:11.125] Set global gas cap                       cap=50,000,000
+WARN [08-12|14:30:11.125] Setting network ID with command-line flag id=11,223,344
+INFO [08-12|14:30:11.125] Initializing the KZG library             backend=gokzg
+INFO [08-12|14:30:11.127] Allocated trie memory caches             clean=379.00MiB dirty=632.00MiB
+INFO [08-12|14:30:11.128] Using pebble as the backing database
+INFO [08-12|14:30:11.128] Allocated cache and file handles         database=/data/geth/chaindata cache=1.24GiB handles=524,288 version=v2
+INFO [08-12|14:30:11.192] Opened ancient database                  database=/data/geth/chaindata/ancient/chain readonly=false
+INFO [08-12|14:30:11.192] Opened Era store                         datadir=/data/geth/chaindata/ancient/chain/era
+INFO [08-12|14:30:11.192] State scheme set to already existing     scheme=path
+INFO [08-12|14:30:11.192] Initialising Ethereum protocol           network=11,223,344 dbversion=<nil>
+WARN [08-12|14:30:11.193] Sanitizing invalid node buffer size      provided=632.00MiB updated=256.00MiB
+INFO [08-12|14:30:11.193] Load database journal from disk
+INFO [08-12|14:30:11.193] Failed to load journal, discard it       err="journal not found"
+INFO [08-12|14:30:11.213] Opened ancient database                  database=/data/geth/chaindata/ancient/state readonly=false
+INFO [08-12|14:30:11.213] Initialized path database                triecache=379.00MiB statecache=253.00MiB buffer=256.00MiB state-history="last 90000 blocks" journal-dir=/data/geth/triedb
+INFO [08-12|14:30:11.213] 
+INFO [08-12|14:30:11.213] ---------------------------------------------------------------------------------------------------------------------------------------------------------
+INFO [08-12|14:30:11.213] Chain ID:  11223344 (unknown)
+INFO [08-12|14:30:11.213] Consensus: Beacon (proof-of-stake), merged from Clique (proof-of-authority)
+INFO [08-12|14:30:11.213] 
+INFO [08-12|14:30:11.213] Pre-Merge hard forks (block based):
+INFO [08-12|14:30:11.213]  - Homestead:                   #0       
+INFO [08-12|14:30:11.213]  - Tangerine Whistle (EIP 150): #0       
+INFO [08-12|14:30:11.213]  - Spurious Dragon/1 (EIP 155): #0       
+INFO [08-12|14:30:11.213]  - Spurious Dragon/2 (EIP 158): #0       
+INFO [08-12|14:30:11.213]  - Byzantium:                   #0       
+INFO [08-12|14:30:11.213]  - Constantinople:              #0       
+INFO [08-12|14:30:11.213]  - Petersburg:                  #0       
+INFO [08-12|14:30:11.213]  - Istanbul:                    #0       
+INFO [08-12|14:30:11.213]  - Berlin:                      #0       
+INFO [08-12|14:30:11.213]  - London:                      #0       
+INFO [08-12|14:30:11.213] 
+INFO [08-12|14:30:11.213] Merge configured:
+INFO [08-12|14:30:11.213]  - Total terminal difficulty:  9223372036854775807
+INFO [08-12|14:30:11.213] 
+INFO [08-12|14:30:11.213] Post-Merge hard forks (timestamp based):
+INFO [08-12|14:30:11.213] 
+INFO [08-12|14:30:11.213] All fork specifications can be found at https://ethereum.github.io/execution-specs/src/ethereum/forks/
+INFO [08-12|14:30:11.213] 
+INFO [08-12|14:30:11.213] ---------------------------------------------------------------------------------------------------------------------------------------------------------
+INFO [08-12|14:30:11.213] 
+INFO [08-12|14:30:11.214] Loaded most recent local block           number=0 hash=cd6845..872147 age=57y5mo1w
+INFO [08-12|14:30:11.214] Initialized transaction indexer          range="last 2350000 blocks"
+INFO [08-12|14:30:11.342] Enabled full-sync                        head=0 hash=cd6845..872147
+INFO [08-12|14:30:11.395] Unlocked account for local Clique network address=0xF5F871aA6Bd253914705898c66251f994aa426FA
+INFO [08-12|14:30:11.395] Authorized local Clique signer           address=0xF5F871aA6Bd253914705898c66251f994aa426FA
+INFO [08-12|14:30:11.395] Gasprice oracle is ignoring threshold set threshold=2
+INFO [08-12|14:30:11.396] Registered sync override service
+INFO [08-12|14:30:11.396] Starting peer-to-peer node               instance=Geth/v1.17.5-unstable-28e1e3ba-20260811/linux-amd64/go1.26.5
+INFO [08-12|14:30:11.433] New local node record                    seq=1,786,545,011,410 id=da9aadefbad5f7d6 ip=127.0.0.1 udp=30303 tcp=30303
+INFO [08-12|14:30:11.434] Started P2P networking                   self=enode://dc7e47b20c7f0de16e1579b012d0fd4555cd4a271357e5cb84bd72786002b982f017c2151b75c4da0956b8f88f0bf5b81c5690032b93e7ae5d7c4eeec2291f1a@127.0.0.1:30303
+INFO [08-12|14:30:11.434] Generated JWT secret                     path=/data/geth/jwtsecret
+INFO [08-12|14:30:11.435] HTTP server started                      endpoint=[::]:8545 auth=false prefix= cors=* vhosts=*
+INFO [08-12|14:30:11.436] WebSocket enabled                        url=ws://127.0.0.1:8551
+INFO [08-12|14:30:11.437] HTTP server started                      endpoint=127.0.0.1:8551 auth=true  prefix= cors=localhost vhosts=localhost
+INFO [08-12|14:30:11.437] Started log indexer
+INFO [08-12|14:30:11.437] Starting local Clique sealer
+INFO [08-12|14:30:11.437] Stored checkpoint snapshot to disk       number=0 hash=cd6845..872147
+INFO [08-12|14:30:11.438] Imported new chain segment               number=1 hash=e6bd06..5578da blocks=1 txs=0 mgas=0.000 elapsed="413.327µs" mgasps=0.000 triedirty=0.00B
+INFO [08-12|14:30:11.438] Sealed Clique block                      number=1 hash=e6bd06..5578da txs=0
+INFO [08-12|14:30:11.441] Indexed transactions                     blocks=2 txs=0 tail=0 elapsed=2.072ms
+INFO [08-12|14:30:16.001] Imported new chain segment               number=2 hash=7321b3..1c3a4b blocks=1 txs=0 mgas=0.000 elapsed="830.87µs"  mgasps=0.000 triedirty=0.00B
+INFO [08-12|14:30:16.002] Sealed Clique block                      number=2 hash=7321b3..1c3a4b txs=0
+INFO [08-12|14:30:18.415] New local node record                    seq=1,786,545,011,411 id=da9aadefbad5f7d6 ip=141.11.146.65 udp=56169 tcp=30303
+INFO [08-12|14:30:21.001] Imported new chain segment               number=3 hash=8547cb..930960 blocks=1 txs=0 mgas=0.000 elapsed="697.226µs" mgasps=0.000 triedirty=0.00B
+INFO [08-12|14:30:21.002] Sealed Clique block                      number=3 hash=8547cb..930960 txs=0
+INFO [08-12|14:30:26.000] Imported new chain segment               number=4 hash=95244e..0a6d1c blocks=1 txs=0 mgas=0.000 elapsed="638.584µs" mgasps=0.000 triedirty=0.00B
+INFO [08-12|14:30:26.000] Sealed Clique block                      number=4 hash=95244e..0a6d1c txs=0
+INFO [08-12|14:30:31.001] Imported new chain segment               number=5 hash=d4fc59..584afd blocks=1 txs=0 mgas=0.000 elapsed="608.337µs" mgasps=0.000 triedirty=0.00B
+INFO [08-12|14:30:31.001] Sealed Clique block                      number=5 hash=d4fc59..584afd txs=0
+INFO [08-12|14:30:36.000] Imported new chain segment               number=6 hash=89e760..0ad0fd blocks=1 txs=0 mgas=0.000 elapsed="648.373µs" mgasps=0.000 triedirty=0.00B
+INFO [08-12|14:30:36.001] Sealed Clique block                      number=6 hash=89e760..0ad0fd txs=0
+WARN [08-12|14:30:38.411] Served eth_call                          conn=172.19.0.1:41366 reqid=2 duration="567.91µs" err="algorithm AddLatency001 is not loaded"
+INFO [08-12|14:30:38.413] Submitted transaction                    hash=0x9a930aeedfc83184c76468c7e0db01180320e97707ab5c70234216c91b1ced22 from=0xF5F871aA6Bd253914705898c66251f994aa426FA nonce=0 recipient=0x0000000000000000000000000000000000000043 value=0
+INFO [08-12|14:30:41.001] Imported new chain segment               number=7 hash=810666..4dbf67 blocks=1 txs=0 mgas=0.000 elapsed="575.234µs" mgasps=0.000 triedirty=0.00B
+INFO [08-12|14:30:41.001] Sealed Clique block                      number=7 hash=810666..4dbf67 txs=0
+INFO [08-12|14:30:46.001] Imported new chain segment               number=8 hash=116c59..37be7c blocks=1 txs=1 mgas=0.086 elapsed="693.839µs" mgasps=124.380 triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:30:46.001] Sealed Clique block                      number=8 hash=116c59..37be7c txs=1
+INFO [08-12|14:30:46.001] Catch codeUploaded event
+INFO [08-12|14:30:46.002] Loaded upgrade algorithm info            name=AddLatency001
+WARN [08-12|14:30:46.051] Served eth_call                          conn=172.19.0.1:41366 reqid=80 duration="667.328µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:46.154] Served eth_call                          conn=172.19.0.1:41366 reqid=82 duration="211.111µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:46.258] Served eth_call                          conn=172.19.0.1:41366 reqid=84 duration="408.547µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:46.365] Served eth_call                          conn=172.19.0.1:41366 reqid=86 duration="499.479µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:46.397] Beacon client online, but no consensus updates received in a while. Please fix your beacon client to follow the chain!
+WARN [08-12|14:30:46.471] Served eth_call                          conn=172.19.0.1:41366 reqid=88 duration=3.313426ms err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:46.575] Served eth_call                          conn=172.19.0.1:41366 reqid=90 duration="331.61µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:46.678] Served eth_call                          conn=172.19.0.1:41366 reqid=92 duration="357.58µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:46.781] Served eth_call                          conn=172.19.0.1:41366 reqid=94 duration="297.194µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:46.884] Served eth_call                          conn=172.19.0.1:41366 reqid=96 duration="429.116µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:46.987] Served eth_call                          conn=172.19.0.1:41366 reqid=98 duration="234.396µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:47.091] Served eth_call                          conn=172.19.0.1:41366 reqid=100 duration="327.713µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:47.194] Served eth_call                          conn=172.19.0.1:41366 reqid=102 duration="281.235µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:47.297] Served eth_call                          conn=172.19.0.1:41366 reqid=104 duration="724.542µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:47.400] Served eth_call                          conn=172.19.0.1:41366 reqid=106 duration="274.963µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:47.503] Served eth_call                          conn=172.19.0.1:41366 reqid=108 duration="318.105µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:47.606] Served eth_call                          conn=172.19.0.1:41366 reqid=110 duration="413.806µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:47.709] Served eth_call                          conn=172.19.0.1:41366 reqid=112 duration="359.544µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:47.812] Served eth_call                          conn=172.19.0.1:41366 reqid=114 duration="202.355µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:47.915] Served eth_call                          conn=172.19.0.1:41366 reqid=116 duration="232.572µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:48.018] Served eth_call                          conn=172.19.0.1:41366 reqid=118 duration="204.558µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:48.121] Served eth_call                          conn=172.19.0.1:41366 reqid=120 duration="418.786µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:48.225] Served eth_call                          conn=172.19.0.1:41366 reqid=122 duration="281.946µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:48.327] Served eth_call                          conn=172.19.0.1:41366 reqid=124 duration="279.031µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:48.430] Served eth_call                          conn=172.19.0.1:41366 reqid=126 duration="324.506µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:48.533] Served eth_call                          conn=172.19.0.1:41366 reqid=128 duration="251.238µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:48.636] Served eth_call                          conn=172.19.0.1:41366 reqid=130 duration="314.507µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:48.738] Served eth_call                          conn=172.19.0.1:41366 reqid=132 duration="214.126µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:48.841] Served eth_call                          conn=172.19.0.1:41366 reqid=134 duration="178.51µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:48.943] Served eth_call                          conn=172.19.0.1:41366 reqid=136 duration="251.799µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:49.046] Served eth_call                          conn=172.19.0.1:41366 reqid=138 duration="289.801µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:49.149] Served eth_call                          conn=172.19.0.1:41366 reqid=140 duration="241.409µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:49.252] Served eth_call                          conn=172.19.0.1:41366 reqid=142 duration="247.921µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:49.355] Served eth_call                          conn=172.19.0.1:41366 reqid=144 duration="315.209µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:49.457] Served eth_call                          conn=172.19.0.1:41366 reqid=146 duration="268.019µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:49.560] Served eth_call                          conn=172.19.0.1:41366 reqid=148 duration="256.948µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:49.663] Served eth_call                          conn=172.19.0.1:41366 reqid=150 duration="273.88µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:49.765] Served eth_call                          conn=172.19.0.1:41366 reqid=152 duration="317.974µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:49.868] Served eth_call                          conn=172.19.0.1:41366 reqid=154 duration="253.512µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:49.971] Served eth_call                          conn=172.19.0.1:41366 reqid=156 duration="277.016µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:50.074] Served eth_call                          conn=172.19.0.1:41366 reqid=158 duration="253.392µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:50.178] Served eth_call                          conn=172.19.0.1:41366 reqid=160 duration="490.542µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:50.281] Served eth_call                          conn=172.19.0.1:41366 reqid=162 duration="281.836µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:50.384] Served eth_call                          conn=172.19.0.1:41366 reqid=164 duration="243.212µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:50.488] Served eth_call                          conn=172.19.0.1:41366 reqid=166 duration="794.5µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:50.592] Served eth_call                          conn=172.19.0.1:41366 reqid=168 duration="239.335µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:50.696] Served eth_call                          conn=172.19.0.1:41366 reqid=170 duration="403.937µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:50.799] Served eth_call                          conn=172.19.0.1:41366 reqid=172 duration="443.653µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:50.902] Served eth_call                          conn=172.19.0.1:41366 reqid=174 duration="305.982µs" err="algorithm AddLatency001 is not loaded"
+INFO [08-12|14:30:51.001] Imported new chain segment               number=9 hash=5261f1..2d2ac7 blocks=1 txs=0 mgas=0.000 elapsed="854.676µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:30:51.001] Sealed Clique block                      number=9 hash=5261f1..2d2ac7 txs=0
+WARN [08-12|14:30:51.005] Served eth_call                          conn=172.19.0.1:41366 reqid=176 duration="325.078µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:51.108] Served eth_call                          conn=172.19.0.1:41366 reqid=178 duration="263.621µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:51.211] Served eth_call                          conn=172.19.0.1:41366 reqid=180 duration="271.116µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:51.313] Served eth_call                          conn=172.19.0.1:41366 reqid=182 duration="268.129µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:51.416] Served eth_call                          conn=172.19.0.1:41366 reqid=184 duration="530.232µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:51.522] Served eth_call                          conn=172.19.0.1:41366 reqid=186 duration="453.432µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:51.625] Served eth_call                          conn=172.19.0.1:41366 reqid=188 duration="306.963µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:51.728] Served eth_call                          conn=172.19.0.1:41366 reqid=190 duration="224.557µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:51.831] Served eth_call                          conn=172.19.0.1:41366 reqid=192 duration="226.17µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:51.939] Served eth_call                          conn=172.19.0.1:41366 reqid=194 duration=1.062063ms err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:52.044] Served eth_call                          conn=172.19.0.1:41366 reqid=196 duration="489.631µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:52.148] Served eth_call                          conn=172.19.0.1:41366 reqid=198 duration="378.319µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:52.251] Served eth_call                          conn=172.19.0.1:41366 reqid=200 duration="248.943µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:52.353] Served eth_call                          conn=172.19.0.1:41366 reqid=202 duration="227.402µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:52.456] Served eth_call                          conn=172.19.0.1:41366 reqid=204 duration="213.465µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:52.559] Served eth_call                          conn=172.19.0.1:41366 reqid=206 duration="292.085µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:52.662] Served eth_call                          conn=172.19.0.1:41366 reqid=208 duration="196.774µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:52.764] Served eth_call                          conn=172.19.0.1:41366 reqid=210 duration="215.5µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:52.867] Served eth_call                          conn=172.19.0.1:41366 reqid=212 duration="255.605µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:52.970] Served eth_call                          conn=172.19.0.1:41366 reqid=214 duration="380.984µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:53.073] Served eth_call                          conn=172.19.0.1:41366 reqid=216 duration="386.395µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:53.177] Served eth_call                          conn=172.19.0.1:41366 reqid=218 duration="232.842µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:53.281] Served eth_call                          conn=172.19.0.1:41366 reqid=220 duration="445.787µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:53.385] Served eth_call                          conn=172.19.0.1:41366 reqid=222 duration="316.982µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:53.488] Served eth_call                          conn=172.19.0.1:41366 reqid=224 duration="365.886µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:53.592] Served eth_call                          conn=172.19.0.1:41366 reqid=226 duration="407.404µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:53.696] Served eth_call                          conn=172.19.0.1:41366 reqid=228 duration="280.884µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:53.799] Served eth_call                          conn=172.19.0.1:41366 reqid=230 duration="386.876µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:53.903] Served eth_call                          conn=172.19.0.1:41366 reqid=232 duration="395.752µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:54.005] Served eth_call                          conn=172.19.0.1:41366 reqid=234 duration="282.728µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:54.108] Served eth_call                          conn=172.19.0.1:41366 reqid=236 duration="231.58µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:54.211] Served eth_call                          conn=172.19.0.1:41366 reqid=238 duration="232.142µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:54.314] Served eth_call                          conn=172.19.0.1:41366 reqid=240 duration="257.569µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:54.421] Served eth_call                          conn=172.19.0.1:41366 reqid=242 duration="560.311µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:54.524] Served eth_call                          conn=172.19.0.1:41366 reqid=244 duration="239.175µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:54.627] Served eth_call                          conn=172.19.0.1:41366 reqid=246 duration="420.74µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:54.729] Served eth_call                          conn=172.19.0.1:41366 reqid=248 duration="258.341µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:54.832] Served eth_call                          conn=172.19.0.1:41366 reqid=250 duration="351.327µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:54.935] Served eth_call                          conn=172.19.0.1:41366 reqid=252 duration="214.377µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:55.037] Served eth_call                          conn=172.19.0.1:41366 reqid=254 duration="292.215µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:55.140] Served eth_call                          conn=172.19.0.1:41366 reqid=256 duration="227.682µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:55.242] Served eth_call                          conn=172.19.0.1:41366 reqid=258 duration="209.087µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:55.345] Served eth_call                          conn=172.19.0.1:41366 reqid=260 duration="269.031µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:55.448] Served eth_call                          conn=172.19.0.1:41366 reqid=262 duration="317.263µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:55.551] Served eth_call                          conn=172.19.0.1:41366 reqid=264 duration="312.634µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:55.653] Served eth_call                          conn=172.19.0.1:41366 reqid=266 duration="288.097µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:55.756] Served eth_call                          conn=172.19.0.1:41366 reqid=268 duration="253.541µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:55.858] Served eth_call                          conn=172.19.0.1:41366 reqid=270 duration="195.702µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:55.961] Served eth_call                          conn=172.19.0.1:41366 reqid=272 duration="261.337µs" err="algorithm AddLatency001 is not loaded"
+INFO [08-12|14:30:56.001] Imported new chain segment               number=10 hash=1b6a28..0e3c16 blocks=1 txs=0 mgas=0.000 elapsed="582.007µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:30:56.001] Sealed Clique block                      number=10 hash=1b6a28..0e3c16 txs=0
+WARN [08-12|14:30:56.064] Served eth_call                          conn=172.19.0.1:41366 reqid=274 duration="260.365µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:56.167] Served eth_call                          conn=172.19.0.1:41366 reqid=276 duration="241.188µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:56.270] Served eth_call                          conn=172.19.0.1:41366 reqid=278 duration="224.917µs" err="algorithm AddLatency001 is not loaded"
+WARN [08-12|14:30:56.372] Served eth_call                          conn=172.19.0.1:41366 reqid=280 duration="232.692µs" err="algorithm AddLatency001 is not loaded"
+INFO [08-12|14:30:56.393] Activated upgrade algorithm              name=AddLatency001 go=go1.26.5
+INFO [08-12|14:30:56.475] Call upgrade algorithm                   name=AddLatency001 input="[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 100 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 100]"
+INFO [08-12|14:30:56.475] Loaded upgrade algorithm ABI types       input="[uint256 uint256]" output=[uint256]
+INFO [08-12|14:30:56.487] Successfully called upgrade algorithm    gas=18,446,744,073,709,551,615 output="[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 200]"
+INFO [08-12|14:31:01.000] Imported new chain segment               number=11 hash=69757e..050de4 blocks=1 txs=0 mgas=0.000 elapsed="685.253µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:31:01.001] Sealed Clique block                      number=11 hash=69757e..050de4 txs=0
+INFO [08-12|14:31:06.001] Imported new chain segment               number=12 hash=cccba1..9cc649 blocks=1 txs=0 mgas=0.000 elapsed="575.395µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:31:06.001] Sealed Clique block                      number=12 hash=cccba1..9cc649 txs=0
+INFO [08-12|14:31:11.001] Imported new chain segment               number=13 hash=3ad48c..903c8c blocks=1 txs=0 mgas=0.000 elapsed="411.773µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:31:11.001] Sealed Clique block                      number=13 hash=3ad48c..903c8c txs=0
+INFO [08-12|14:31:16.001] Imported new chain segment               number=14 hash=3487c7..155a1a blocks=1 txs=0 mgas=0.000 elapsed="385.453µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:31:16.001] Sealed Clique block                      number=14 hash=3487c7..155a1a txs=0
+INFO [08-12|14:31:21.001] Imported new chain segment               number=15 hash=789886..ad4fd8 blocks=1 txs=0 mgas=0.000 elapsed="678.441µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:31:21.002] Sealed Clique block                      number=15 hash=789886..ad4fd8 txs=0
+INFO [08-12|14:31:26.001] Imported new chain segment               number=16 hash=b1c729..8da75c blocks=1 txs=0 mgas=0.000 elapsed="939.847µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:31:26.002] Sealed Clique block                      number=16 hash=b1c729..8da75c txs=0
+INFO [08-12|14:31:31.000] Imported new chain segment               number=17 hash=df73f6..da4d4a blocks=1 txs=0 mgas=0.000 elapsed="486.175µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:31:31.000] Sealed Clique block                      number=17 hash=df73f6..da4d4a txs=0
+INFO [08-12|14:31:36.000] Imported new chain segment               number=18 hash=7ca362..ab5b50 blocks=1 txs=0 mgas=0.000 elapsed="432.453µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:31:36.001] Sealed Clique block                      number=18 hash=7ca362..ab5b50 txs=0
+INFO [08-12|14:31:41.001] Imported new chain segment               number=19 hash=00086b..3e8778 blocks=1 txs=0 mgas=0.000 elapsed="651.99µs"  mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:31:41.001] Sealed Clique block                      number=19 hash=00086b..3e8778 txs=0
+INFO [08-12|14:31:46.000] Imported new chain segment               number=20 hash=38d577..4ac6c1 blocks=1 txs=0 mgas=0.000 elapsed="453.072µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:31:46.001] Sealed Clique block                      number=20 hash=38d577..4ac6c1 txs=0
+INFO [08-12|14:31:51.000] Imported new chain segment               number=21 hash=f13487..e8682e blocks=1 txs=0 mgas=0.000 elapsed="565.806µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:31:51.000] Sealed Clique block                      number=21 hash=f13487..e8682e txs=0
+INFO [08-12|14:31:56.001] Imported new chain segment               number=22 hash=bed92e..f0969d blocks=1 txs=0 mgas=0.000 elapsed="617.745µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:31:56.001] Sealed Clique block                      number=22 hash=bed92e..f0969d txs=0
+INFO [08-12|14:32:01.001] Imported new chain segment               number=23 hash=45fc3b..1f86b6 blocks=1 txs=0 mgas=0.000 elapsed="569.383µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:32:01.001] Sealed Clique block                      number=23 hash=45fc3b..1f86b6 txs=0
+INFO [08-12|14:32:06.001] Imported new chain segment               number=24 hash=d5d766..e66829 blocks=1 txs=0 mgas=0.000 elapsed="510.441µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:32:06.001] Sealed Clique block                      number=24 hash=d5d766..e66829 txs=0
+INFO [08-12|14:32:11.001] Imported new chain segment               number=25 hash=7d70a8..fd1deb blocks=1 txs=0 mgas=0.000 elapsed="658.622µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:32:11.001] Sealed Clique block                      number=25 hash=7d70a8..fd1deb txs=0
+INFO [08-12|14:32:16.001] Imported new chain segment               number=26 hash=75de5f..a821a4 blocks=1 txs=0 mgas=0.000 elapsed="387.227µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:32:16.001] Sealed Clique block                      number=26 hash=75de5f..a821a4 txs=0
+INFO [08-12|14:32:21.001] Imported new chain segment               number=27 hash=3b0d8f..2b1828 blocks=1 txs=0 mgas=0.000 elapsed="557.921µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:32:21.001] Sealed Clique block                      number=27 hash=3b0d8f..2b1828 txs=0
+INFO [08-12|14:32:26.001] Imported new chain segment               number=28 hash=0a64ab..e166a6 blocks=1 txs=0 mgas=0.000 elapsed="443.083µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:32:26.001] Sealed Clique block                      number=28 hash=0a64ab..e166a6 txs=0
+INFO [08-12|14:32:31.000] Imported new chain segment               number=29 hash=f7c770..63ad58 blocks=1 txs=0 mgas=0.000 elapsed="369.563µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-12|14:32:31.001] Sealed Clique block                      number=29 hash=f7c770..63ad58 txs=0

@@ -13,7 +13,7 @@
 - 支持 multi-node render/compose 生成的 signer 启动命令，使 `role: signer` 节点启动后自动提供 Clique 出块服务。
 - 保证 `role: observer` 和 `role: rpc` 节点不解锁 signer 账户，仅通过 P2P 同步并验证 Clique 区块。
 - 提供 `clique_getSigners` 等 validate 需要的最小 Clique RPC 查询接口。
-- 让 `cryptoupgrade/cmd/multinode validate` 能验证 node1 出块、node2 同步、peer count、chain ID 和 signer 状态。
+- 让 `cryptoupgrade/bench/cmd/multinode validate` 能验证 node1 出块、node2 同步、peer count、chain ID 和 signer 状态。
 
 **Non-Goals:**
 
@@ -60,7 +60,7 @@
 
 7. 双节点验证复用 multi-node 工具
 
-   验证不再维护独立脚本为主，而是优先使用 `cryptoupgrade/cmd/multinode -mode render/init/validate` 和 `cryptoupgrade/examples/networks/local-2nodes.yaml`。通过条件为：node1 在两个以上 Clique period 内高度增长；node2 peer count 非零；node2 高度最终等于或接近 node1；`clique_getSigners` 返回 genesis signer；可选 Add smoke test 仍能通过 signer RPC 发送交易。
+   验证不再维护独立脚本为主，而是优先使用 `cryptoupgrade/bench/cmd/multinode -mode render/init/validate` 和 `cryptoupgrade/examples/networks/local-2nodes.yaml`。通过条件为：node1 在两个以上 Clique period 内高度增长；node2 peer count 非零；node2 高度最终等于或接近 node1；`clique_getSigners` 返回 genesis signer；可选 Add smoke test 仍能通过 signer RPC 发送交易。
 
 ## Risks / Trade-offs
 
@@ -76,7 +76,7 @@
 2. 补齐 geth 账户解锁、signer 授权和 CLI/render 参数契约，使 multi-node signer command 能直接启动。
 3. 增加本地 sealing driver，并用短周期 Clique genesis 测试连续出块。
 4. 注册最小 Clique RPC，确保 `clique_getSigners` 满足 validate。
-5. 使用 `cryptoupgrade/cmd/multinode` 的 render/init/validate 流程验证 Docker 双节点网络。
+5. 使用 `cryptoupgrade/bench/cmd/multinode` 的 render/init/validate 流程验证 Docker 双节点网络。
 
 Rollback 策略：不启用 signer/mine 模式时节点仍作为普通 observer/full node 运行；render 输出可移除 signer flags 回到只同步网络。
 

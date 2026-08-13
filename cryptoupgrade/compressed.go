@@ -1,55 +1,13 @@
 package cryptoupgrade
 
-import (
-	"bytes"
-	"compress/gzip"
-	"encoding/base64"
-	"io"
-	"os"
-)
+import "github.com/ethereum/go-ethereum/cryptoupgrade/internal/sourcecodec"
 
-// * Serialize .go file to string
-func compressFileToString(filePath string) (string, error) {
-	fileData, err := os.ReadFile(filePath)
-	if err != nil {
-		return "", err
-	}
-	// use gzip to compress
-	var buffer bytes.Buffer
-	writer := gzip.NewWriter(&buffer)
-	_, err = writer.Write(fileData)
-	if err != nil {
-		return "", err
-	}
-	writer.Close()
-	// Use base64 encoding
-	compressedData := base64.StdEncoding.EncodeToString(buffer.Bytes())
-
-	return compressedData, nil
+// EncodeSource 将 Go 源码编码为 CodeStorage uploadCode 使用的 gzip/base64 文本。
+func EncodeSource(source []byte) (string, error) {
+	return sourcecodec.Encode(source)
 }
 
-// * Deserialize string to .go file
-func decompressStringToFile(compressedString string, outputPath string) error {
-	// Decode base64
-	compressedData, err := base64.StdEncoding.DecodeString(compressedString)
-	if err != nil {
-		return err
-	}
-	// Use gzip to zip
-	reader, err := gzip.NewReader(bytes.NewReader(compressedData))
-	if err != nil {
-		return err
-	}
-	defer reader.Close()
-
-	decodedData, err := io.ReadAll(reader)
-	if err != nil {
-		return err
-	}
-	// Output
-	err = os.WriteFile(outputPath, decodedData, 0644)
-	if err != nil {
-		return err
-	}
-	return nil
+// EncodeSourceFile 读取并编码 Go 源码文件，供实验工具通过稳定 facade 复用传输格式。
+func EncodeSourceFile(filePath string) (string, error) {
+	return sourcecodec.EncodeFile(filePath)
 }
