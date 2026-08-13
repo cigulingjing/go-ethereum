@@ -1,0 +1,293 @@
+WARN [08-13|02:00:45.391] Unknown config environment variable      envvar=GETH_CRYPTOUPGRADE_PLUGIN_DIR
+INFO [08-13|02:00:45.405] Maximum peer count                       ETH=50 total=50
+INFO [08-13|02:00:45.408] Smartcard socket not found, disabling    err="stat /run/pcscd/pcscd.comm: no such file or directory"
+WARN [08-13|02:00:45.413] Sanitizing cache to Go's GC limits       source=system provided=4096 updated=2530
+INFO [08-13|02:00:45.414] Set global gas cap                       cap=50,000,000
+INFO [08-13|02:00:45.415] Initializing the KZG library             backend=gokzg
+INFO [08-13|02:00:45.418] Defaulting to pebble as the backing database
+INFO [08-13|02:00:45.418] Allocated cache and file handles         database=/data/geth/chaindata cache=1.24GiB handles=524,288 version=v2
+INFO [08-13|02:00:45.616] Opened ancient database                  database=/data/geth/chaindata/ancient/chain readonly=false
+INFO [08-13|02:00:45.616] Opened Era store                         datadir=/data/geth/chaindata/ancient/chain/era
+INFO [08-13|02:00:45.616] State schema set to default              scheme=path
+INFO [08-13|02:00:45.616] Load database journal from disk
+WARN [08-13|02:00:45.616] Head block is not reachable
+INFO [08-13|02:00:45.753] Opened ancient database                  database=/data/geth/chaindata/ancient/state readonly=false
+INFO [08-13|02:00:45.753] State snapshot generator is not found
+INFO [08-13|02:00:45.753] Starting snapshot generation             root=56e81f..63b421 accounts=0 slots=0 storage=0.00B dangling=0 elapsed="10.65µs"
+INFO [08-13|02:00:45.753] Resuming snapshot generation             root=56e81f..63b421 accounts=0 slots=0 storage=0.00B dangling=0 elapsed="554.974µs"
+INFO [08-13|02:00:45.753] Initialized path database                triecache=16.00MiB statecache=16.00MiB buffer=64.00MiB state-history="last 90000 blocks" journal-dir=/data/geth/triedb
+INFO [08-13|02:00:45.754] Writing custom genesis block
+INFO [08-13|02:00:45.754] Generated snapshot                       accounts=0 slots=0 storage=0.00B dangling=0 elapsed=1.587ms
+INFO [08-13|02:00:45.759] Successfully wrote genesis state         database=chaindata                          hash=cd6845..872147
+WARN [08-13|02:00:46.037] Unknown config environment variable      envvar=GETH_CRYPTOUPGRADE_PLUGIN_DIR
+INFO [08-13|02:00:46.074] Maximum peer count                       ETH=50 total=50
+INFO [08-13|02:00:46.078] Smartcard socket not found, disabling    err="stat /run/pcscd/pcscd.comm: no such file or directory"
+WARN [08-13|02:00:46.084] Sanitizing cache to Go's GC limits       source=system provided=4096 updated=2530
+INFO [08-13|02:00:46.087] Set global gas cap                       cap=50,000,000
+WARN [08-13|02:00:46.088] Setting network ID with command-line flag id=11,223,344
+INFO [08-13|02:00:46.089] Initializing the KZG library             backend=gokzg
+INFO [08-13|02:00:46.093] Allocated trie memory caches             clean=379.00MiB dirty=632.00MiB
+INFO [08-13|02:00:46.093] Using pebble as the backing database
+INFO [08-13|02:00:46.094] Allocated cache and file handles         database=/data/geth/chaindata cache=1.24GiB handles=524,288 version=v2
+INFO [08-13|02:00:46.265] Opened ancient database                  database=/data/geth/chaindata/ancient/chain readonly=false
+INFO [08-13|02:00:46.265] Opened Era store                         datadir=/data/geth/chaindata/ancient/chain/era
+INFO [08-13|02:00:46.266] State scheme set to already existing     scheme=path
+INFO [08-13|02:00:46.266] Initialising Ethereum protocol           network=11,223,344 dbversion=<nil>
+WARN [08-13|02:00:46.266] Sanitizing invalid node buffer size      provided=632.00MiB updated=256.00MiB
+INFO [08-13|02:00:46.266] Load database journal from disk
+INFO [08-13|02:00:46.266] Failed to load journal, discard it       err="journal not found"
+INFO [08-13|02:00:46.317] Opened ancient database                  database=/data/geth/chaindata/ancient/state readonly=false
+INFO [08-13|02:00:46.317] Initialized path database                triecache=379.00MiB statecache=253.00MiB buffer=256.00MiB state-history="last 90000 blocks" journal-dir=/data/geth/triedb
+INFO [08-13|02:00:46.318] 
+INFO [08-13|02:00:46.318] ---------------------------------------------------------------------------------------------------------------------------------------------------------
+INFO [08-13|02:00:46.318] Chain ID:  11223344 (unknown)
+INFO [08-13|02:00:46.318] Consensus: Beacon (proof-of-stake), merged from Clique (proof-of-authority)
+INFO [08-13|02:00:46.318] 
+INFO [08-13|02:00:46.318] Pre-Merge hard forks (block based):
+INFO [08-13|02:00:46.318]  - Homestead:                   #0       
+INFO [08-13|02:00:46.318]  - Tangerine Whistle (EIP 150): #0       
+INFO [08-13|02:00:46.318]  - Spurious Dragon/1 (EIP 155): #0       
+INFO [08-13|02:00:46.318]  - Spurious Dragon/2 (EIP 158): #0       
+INFO [08-13|02:00:46.318]  - Byzantium:                   #0       
+INFO [08-13|02:00:46.318]  - Constantinople:              #0       
+INFO [08-13|02:00:46.318]  - Petersburg:                  #0       
+INFO [08-13|02:00:46.318]  - Istanbul:                    #0       
+INFO [08-13|02:00:46.318]  - Berlin:                      #0       
+INFO [08-13|02:00:46.318]  - London:                      #0       
+INFO [08-13|02:00:46.318] 
+INFO [08-13|02:00:46.318] Merge configured:
+INFO [08-13|02:00:46.318]  - Total terminal difficulty:  9223372036854775807
+INFO [08-13|02:00:46.318] 
+INFO [08-13|02:00:46.318] Post-Merge hard forks (timestamp based):
+INFO [08-13|02:00:46.318] 
+INFO [08-13|02:00:46.318] All fork specifications can be found at https://ethereum.github.io/execution-specs/src/ethereum/forks/
+INFO [08-13|02:00:46.318] 
+INFO [08-13|02:00:46.318] ---------------------------------------------------------------------------------------------------------------------------------------------------------
+INFO [08-13|02:00:46.318] 
+INFO [08-13|02:00:46.318] Loaded most recent local block           number=0 hash=cd6845..872147 age=57y5mo1w
+INFO [08-13|02:00:46.318] Initialized transaction indexer          range="last 2350000 blocks"
+INFO [08-13|02:00:46.624] Enabled full-sync                        head=0 hash=cd6845..872147
+INFO [08-13|02:00:46.743] Unlocked account for local Clique network address=0xF5F871aA6Bd253914705898c66251f994aa426FA
+INFO [08-13|02:00:46.743] Authorized local Clique signer           address=0xF5F871aA6Bd253914705898c66251f994aa426FA
+INFO [08-13|02:00:46.743] Gasprice oracle is ignoring threshold set threshold=2
+INFO [08-13|02:00:46.744] Registered sync override service
+INFO [08-13|02:00:46.744] Starting peer-to-peer node               instance=Geth/v1.17.5-unstable-28e1e3ba-20260811/linux-amd64/go1.26.5
+INFO [08-13|02:00:46.804] New local node record                    seq=1,786,586,446,797 id=da9aadefbad5f7d6 ip=127.0.0.1 udp=30303 tcp=30303
+INFO [08-13|02:00:46.805] Started P2P networking                   self=enode://dc7e47b20c7f0de16e1579b012d0fd4555cd4a271357e5cb84bd72786002b982f017c2151b75c4da0956b8f88f0bf5b81c5690032b93e7ae5d7c4eeec2291f1a@127.0.0.1:30303
+INFO [08-13|02:00:46.806] Generated JWT secret                     path=/data/geth/jwtsecret
+INFO [08-13|02:00:46.808] HTTP server started                      endpoint=[::]:8545 auth=false prefix= cors=* vhosts=*
+INFO [08-13|02:00:46.808] WebSocket enabled                        url=ws://127.0.0.1:8551
+INFO [08-13|02:00:46.808] HTTP server started                      endpoint=127.0.0.1:8551 auth=true  prefix= cors=localhost vhosts=localhost
+INFO [08-13|02:00:46.811] Started log indexer
+INFO [08-13|02:00:46.811] Starting local Clique sealer
+INFO [08-13|02:00:46.812] Stored checkpoint snapshot to disk       number=0 hash=cd6845..872147
+INFO [08-13|02:00:46.813] Imported new chain segment               number=1 hash=d4185f..a86fb7 blocks=1 txs=0 mgas=0.000 elapsed="577.147µs" mgasps=0.000 triedirty=0.00B
+INFO [08-13|02:00:46.813] Sealed Clique block                      number=1 hash=d4185f..a86fb7 txs=0
+INFO [08-13|02:00:46.824] Indexed transactions                     blocks=2 txs=0 tail=0 elapsed=8.739ms
+INFO [08-13|02:00:51.001] Imported new chain segment               number=2 hash=7b6da2..f2da71 blocks=1 txs=0 mgas=0.000 elapsed="449.375µs" mgasps=0.000 triedirty=0.00B
+INFO [08-13|02:00:51.001] Sealed Clique block                      number=2 hash=7b6da2..f2da71 txs=0
+INFO [08-13|02:00:56.001] Imported new chain segment               number=3 hash=7fcd20..6014a0 blocks=1 txs=0 mgas=0.000 elapsed="533.074µs" mgasps=0.000 triedirty=0.00B
+INFO [08-13|02:00:56.001] Sealed Clique block                      number=3 hash=7fcd20..6014a0 txs=0
+INFO [08-13|02:01:01.001] Imported new chain segment               number=4 hash=a74961..1d9eaf blocks=1 txs=0 mgas=0.000 elapsed="609.219µs" mgasps=0.000 triedirty=0.00B
+INFO [08-13|02:01:01.001] Sealed Clique block                      number=4 hash=a74961..1d9eaf txs=0
+WARN [08-13|02:01:04.267] Served eth_call                          conn=172.19.0.1:50136 reqid=2 duration="731.269µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+INFO [08-13|02:01:04.282] Submitted transaction                    hash=0x7740218a195a20746b3756ba1c7b75a3cc6b4f100433011f2393916d2559a1e6 from=0xF5F871aA6Bd253914705898c66251f994aa426FA nonce=0 recipient=0x0000000000000000000000000000000000000043 value=0
+INFO [08-13|02:01:06.001] Imported new chain segment               number=5 hash=e2fad6..07d923 blocks=1 txs=0 mgas=0.000 elapsed="577.618µs" mgasps=0.000 triedirty=0.00B
+INFO [08-13|02:01:06.001] Sealed Clique block                      number=5 hash=e2fad6..07d923 txs=0
+INFO [08-13|02:01:11.001] Imported new chain segment               number=6 hash=a84dc1..143c6d blocks=1 txs=1 mgas=0.125 elapsed="771.728µs" mgasps=162.264 triediffs=332.00B triedirty=0.00B
+INFO [08-13|02:01:11.001] Sealed Clique block                      number=6 hash=a84dc1..143c6d txs=1
+INFO [08-13|02:01:11.002] Catch codeUploaded event
+INFO [08-13|02:01:11.002] Loaded upgrade algorithm info            name=SchnorrVerifyLatency001
+WARN [08-13|02:01:11.026] Served eth_call                          conn=172.19.0.1:50142 reqid=71 duration="355.726µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:11.128] Served eth_call                          conn=172.19.0.1:50142 reqid=73 duration="361.037µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:11.235] Served eth_call                          conn=172.19.0.1:50142 reqid=75 duration="406.072µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:11.338] Served eth_call                          conn=172.19.0.1:50142 reqid=77 duration="395.03µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:11.442] Served eth_call                          conn=172.19.0.1:50142 reqid=79 duration="246.137µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:11.562] Served eth_call                          conn=172.19.0.1:50142 reqid=81 duration="491.995µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:11.693] Served eth_call                          conn=172.19.0.1:50142 reqid=83 duration="724.136µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:11.813] Served eth_call                          conn=172.19.0.1:50142 reqid=85 duration="647.37µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:11.953] Served eth_call                          conn=172.19.0.1:50142 reqid=87 duration=1.576626ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:12.068] Served eth_call                          conn=172.19.0.1:50142 reqid=89 duration=2.650526ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:12.177] Served eth_call                          conn=172.19.0.1:50142 reqid=91 duration=1.518066ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:12.283] Served eth_call                          conn=172.19.0.1:50142 reqid=93 duration=1.193568ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:12.389] Served eth_call                          conn=172.19.0.1:50142 reqid=95 duration="403.897µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:12.547] Served eth_call                          conn=172.19.0.1:50142 reqid=97 duration=1.500031ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:12.718] Served eth_call                          conn=172.19.0.1:50142 reqid=99 duration=1.398887ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:12.876] Served eth_call                          conn=172.19.0.1:50142 reqid=101 duration="450.486µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:12.981] Served eth_call                          conn=172.19.0.1:50142 reqid=103 duration="440.297µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:13.098] Served eth_call                          conn=172.19.0.1:50142 reqid=105 duration="426.139µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:13.207] Served eth_call                          conn=172.19.0.1:50142 reqid=107 duration="695.522µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:13.313] Served eth_call                          conn=172.19.0.1:50142 reqid=109 duration="685.042µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:13.419] Served eth_call                          conn=172.19.0.1:50142 reqid=111 duration="803.046µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+INFO [08-13|02:01:13.445] New local node record                    seq=1,786,586,446,798 id=da9aadefbad5f7d6 ip=141.11.146.64 udp=6858  tcp=30303
+WARN [08-13|02:01:13.528] Served eth_call                          conn=172.19.0.1:50142 reqid=113 duration="597.907µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:13.633] Served eth_call                          conn=172.19.0.1:50142 reqid=115 duration="429.497µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:13.738] Served eth_call                          conn=172.19.0.1:50142 reqid=117 duration="401.072µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:13.843] Served eth_call                          conn=172.19.0.1:50142 reqid=119 duration="477.387µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:13.949] Served eth_call                          conn=172.19.0.1:50142 reqid=121 duration="419.808µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:14.063] Served eth_call                          conn=172.19.0.1:50142 reqid=123 duration="453.752µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:14.167] Served eth_call                          conn=172.19.0.1:50142 reqid=125 duration="353.542µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:14.272] Served eth_call                          conn=172.19.0.1:50142 reqid=127 duration="464.963µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:14.375] Served eth_call                          conn=172.19.0.1:50142 reqid=129 duration="210.32µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:14.479] Served eth_call                          conn=172.19.0.1:50142 reqid=131 duration="399.479µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:14.583] Served eth_call                          conn=172.19.0.1:50142 reqid=133 duration="416.08µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:14.690] Served eth_call                          conn=172.19.0.1:50142 reqid=135 duration="507.384µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:14.794] Served eth_call                          conn=172.19.0.1:50142 reqid=137 duration="328.595µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:14.899] Served eth_call                          conn=172.19.0.1:50142 reqid=139 duration="481.004µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:15.002] Served eth_call                          conn=172.19.0.1:50142 reqid=141 duration="594.36µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:15.106] Served eth_call                          conn=172.19.0.1:50142 reqid=143 duration="328.574µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:15.210] Served eth_call                          conn=172.19.0.1:50142 reqid=145 duration="403.116µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:15.314] Served eth_call                          conn=172.19.0.1:50142 reqid=147 duration="340.196µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:15.418] Served eth_call                          conn=172.19.0.1:50142 reqid=149 duration="353.264µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:15.522] Served eth_call                          conn=172.19.0.1:50142 reqid=151 duration="336.119µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:15.625] Served eth_call                          conn=172.19.0.1:50142 reqid=153 duration="344.665µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:15.729] Served eth_call                          conn=172.19.0.1:50142 reqid=155 duration="271.756µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:15.833] Served eth_call                          conn=172.19.0.1:50142 reqid=157 duration="391.604µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:15.937] Served eth_call                          conn=172.19.0.1:50142 reqid=159 duration="337.832µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+INFO [08-13|02:01:16.001] Imported new chain segment               number=7 hash=0f6c44..a93892 blocks=1 txs=0 mgas=0.000 elapsed="767.078µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-13|02:01:16.001] Sealed Clique block                      number=7 hash=0f6c44..a93892 txs=0
+WARN [08-13|02:01:16.041] Served eth_call                          conn=172.19.0.1:50142 reqid=161 duration="375.714µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:16.146] Served eth_call                          conn=172.19.0.1:50142 reqid=163 duration="394.028µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:16.250] Served eth_call                          conn=172.19.0.1:50142 reqid=165 duration="314.147µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:16.355] Served eth_call                          conn=172.19.0.1:50142 reqid=167 duration="371.766µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:16.459] Served eth_call                          conn=172.19.0.1:50142 reqid=169 duration="309.318µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:16.563] Served eth_call                          conn=172.19.0.1:50142 reqid=171 duration="373.129µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:16.667] Served eth_call                          conn=172.19.0.1:50142 reqid=173 duration="351.989µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:16.772] Served eth_call                          conn=172.19.0.1:50142 reqid=175 duration="464.773µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:16.875] Served eth_call                          conn=172.19.0.1:50142 reqid=177 duration="298.397µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:16.980] Served eth_call                          conn=172.19.0.1:50142 reqid=179 duration="568.149µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:17.083] Served eth_call                          conn=172.19.0.1:50142 reqid=181 duration="418.085µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:17.188] Served eth_call                          conn=172.19.0.1:50142 reqid=183 duration="385.513µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:17.292] Served eth_call                          conn=172.19.0.1:50142 reqid=185 duration="381.895µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:17.396] Served eth_call                          conn=172.19.0.1:50142 reqid=187 duration="398.878µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:17.504] Served eth_call                          conn=172.19.0.1:50142 reqid=189 duration="580.643µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:17.615] Served eth_call                          conn=172.19.0.1:50142 reqid=191 duration="488.288µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:17.719] Served eth_call                          conn=172.19.0.1:50142 reqid=193 duration="426.591µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:17.823] Served eth_call                          conn=172.19.0.1:50142 reqid=195 duration="562.99µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:17.928] Served eth_call                          conn=172.19.0.1:50142 reqid=197 duration="290.161µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:18.032] Served eth_call                          conn=172.19.0.1:50142 reqid=199 duration="484.401µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:18.136] Served eth_call                          conn=172.19.0.1:50142 reqid=201 duration="339.685µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:18.241] Served eth_call                          conn=172.19.0.1:50142 reqid=203 duration="488.99µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:18.345] Served eth_call                          conn=172.19.0.1:50142 reqid=205 duration="281.765µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:18.449] Served eth_call                          conn=172.19.0.1:50142 reqid=207 duration="254.534µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:18.553] Served eth_call                          conn=172.19.0.1:50142 reqid=209 duration="449.424µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:18.660] Served eth_call                          conn=172.19.0.1:50142 reqid=211 duration="413.335µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:18.764] Served eth_call                          conn=172.19.0.1:50142 reqid=213 duration="290.792µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:18.868] Served eth_call                          conn=172.19.0.1:50142 reqid=215 duration="472.417µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:18.972] Served eth_call                          conn=172.19.0.1:50142 reqid=217 duration="385.743µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:19.076] Served eth_call                          conn=172.19.0.1:50142 reqid=219 duration="277.567µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:19.180] Served eth_call                          conn=172.19.0.1:50142 reqid=221 duration="297.105µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:19.284] Served eth_call                          conn=172.19.0.1:50142 reqid=223 duration="549.815µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:19.388] Served eth_call                          conn=172.19.0.1:50142 reqid=225 duration="306.913µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:19.492] Served eth_call                          conn=172.19.0.1:50142 reqid=227 duration="460.275µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:19.595] Served eth_call                          conn=172.19.0.1:50142 reqid=229 duration="365.054µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:19.700] Served eth_call                          conn=172.19.0.1:50142 reqid=231 duration="474.662µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:19.804] Served eth_call                          conn=172.19.0.1:50142 reqid=233 duration="436.209µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:19.909] Served eth_call                          conn=172.19.0.1:50142 reqid=235 duration="457.469µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:20.025] Served eth_call                          conn=172.19.0.1:50142 reqid=237 duration="372.237µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:20.128] Served eth_call                          conn=172.19.0.1:50142 reqid=239 duration="351.849µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:20.232] Served eth_call                          conn=172.19.0.1:50142 reqid=241 duration="340.077µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:20.335] Served eth_call                          conn=172.19.0.1:50142 reqid=243 duration="293.087µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:20.439] Served eth_call                          conn=172.19.0.1:50142 reqid=245 duration="401.753µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:20.543] Served eth_call                          conn=172.19.0.1:50142 reqid=247 duration="363.671µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:20.648] Served eth_call                          conn=172.19.0.1:50142 reqid=249 duration="493.758µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:20.754] Served eth_call                          conn=172.19.0.1:50142 reqid=251 duration="409.188µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:20.866] Served eth_call                          conn=172.19.0.1:50142 reqid=253 duration="429.306µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:20.974] Served eth_call                          conn=172.19.0.1:50142 reqid=255 duration="523.545µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+INFO [08-13|02:01:21.007] Imported new chain segment               number=8 hash=e025d8..323e73 blocks=1 txs=0 mgas=0.000 elapsed="873.461µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-13|02:01:21.007] Sealed Clique block                      number=8 hash=e025d8..323e73 txs=0
+WARN [08-13|02:01:21.088] Served eth_call                          conn=172.19.0.1:50142 reqid=257 duration="643.943µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:21.196] Served eth_call                          conn=172.19.0.1:50142 reqid=259 duration="431.731µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:21.305] Served eth_call                          conn=172.19.0.1:50142 reqid=261 duration="558.512µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:21.423] Served eth_call                          conn=172.19.0.1:50142 reqid=263 duration="497.165µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:21.547] Served eth_call                          conn=172.19.0.1:50142 reqid=265 duration="721.882µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:21.702] Served eth_call                          conn=172.19.0.1:50142 reqid=267 duration="392.315µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:21.778] Beacon client online, but no consensus updates received in a while. Please fix your beacon client to follow the chain!
+INFO [08-13|02:01:21.820] Looking for peers                        peercount=4 tried=4 static=4
+WARN [08-13|02:01:21.882] Served eth_call                          conn=172.19.0.1:50142 reqid=269 duration=25.94107ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:22.118] Served eth_call                          conn=172.19.0.1:50142 reqid=271 duration="481.144µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:22.237] Served eth_call                          conn=172.19.0.1:50142 reqid=273 duration=2.033925ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:22.344] Served eth_call                          conn=172.19.0.1:50142 reqid=275 duration="528.414µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:22.558] Served eth_call                          conn=172.19.0.1:50142 reqid=277 duration="481.024µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:22.677] Served eth_call                          conn=172.19.0.1:50142 reqid=279 duration="421.37µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:22.872] Served eth_call                          conn=172.19.0.1:50142 reqid=281 duration="485.844µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:22.985] Served eth_call                          conn=172.19.0.1:50142 reqid=283 duration="366.677µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:23.105] Served eth_call                          conn=172.19.0.1:50142 reqid=285 duration=8.755914ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:23.227] Served eth_call                          conn=172.19.0.1:50142 reqid=287 duration="888.528µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:23.344] Served eth_call                          conn=172.19.0.1:50142 reqid=289 duration="464.182µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:23.466] Served eth_call                          conn=172.19.0.1:50142 reqid=291 duration=14.828616ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:23.602] Served eth_call                          conn=172.19.0.1:50142 reqid=293 duration="385.021µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:23.740] Served eth_call                          conn=172.19.0.1:50142 reqid=295 duration="395.121µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:23.863] Served eth_call                          conn=172.19.0.1:50142 reqid=297 duration="716.592µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:23.976] Served eth_call                          conn=172.19.0.1:50142 reqid=299 duration="450.286µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:24.084] Served eth_call                          conn=172.19.0.1:50142 reqid=301 duration="432.883µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:24.192] Served eth_call                          conn=172.19.0.1:50142 reqid=303 duration=3.160492ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:24.310] Served eth_call                          conn=172.19.0.1:50142 reqid=305 duration="491.935µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:24.414] Served eth_call                          conn=172.19.0.1:50142 reqid=307 duration="848.512µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:24.533] Served eth_call                          conn=172.19.0.1:50142 reqid=309 duration="459.884µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:24.637] Served eth_call                          conn=172.19.0.1:50142 reqid=311 duration="460.986µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:24.745] Served eth_call                          conn=172.19.0.1:50142 reqid=313 duration=2.653402ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:24.867] Served eth_call                          conn=172.19.0.1:50142 reqid=315 duration=3.373206ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:24.973] Served eth_call                          conn=172.19.0.1:50142 reqid=317 duration="527.703µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:25.078] Served eth_call                          conn=172.19.0.1:50142 reqid=319 duration="879.612µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:25.187] Served eth_call                          conn=172.19.0.1:50142 reqid=321 duration=4.946399ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:25.297] Served eth_call                          conn=172.19.0.1:50142 reqid=323 duration="382.737µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:25.404] Served eth_call                          conn=172.19.0.1:50142 reqid=325 duration="489.741µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:25.509] Served eth_call                          conn=172.19.0.1:50142 reqid=327 duration="661.917µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:25.614] Served eth_call                          conn=172.19.0.1:50142 reqid=329 duration="985.492µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:25.720] Served eth_call                          conn=172.19.0.1:50142 reqid=331 duration="958.102µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:25.831] Served eth_call                          conn=172.19.0.1:50142 reqid=333 duration=3.525514ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:25.948] Served eth_call                          conn=172.19.0.1:50142 reqid=335 duration="397.546µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+INFO [08-13|02:01:26.002] Imported new chain segment               number=9 hash=151825..938a90 blocks=1 txs=0 mgas=0.000 elapsed="951.078µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-13|02:01:26.002] Sealed Clique block                      number=9 hash=151825..938a90 txs=0
+WARN [08-13|02:01:26.054] Served eth_call                          conn=172.19.0.1:50142 reqid=337 duration="451.118µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:26.176] Served eth_call                          conn=172.19.0.1:50142 reqid=339 duration=5.813883ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:26.285] Served eth_call                          conn=172.19.0.1:50142 reqid=341 duration="670.321µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:26.392] Served eth_call                          conn=172.19.0.1:50142 reqid=343 duration="482.197µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:26.503] Served eth_call                          conn=172.19.0.1:50142 reqid=345 duration=1.241104ms err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:26.607] Served eth_call                          conn=172.19.0.1:50142 reqid=347 duration="296.985µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:26.717] Served eth_call                          conn=172.19.0.1:50142 reqid=349 duration="414.538µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:26.823] Served eth_call                          conn=172.19.0.1:50142 reqid=351 duration="455.916µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:26.927] Served eth_call                          conn=172.19.0.1:50142 reqid=353 duration="667.849µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:27.031] Served eth_call                          conn=172.19.0.1:50142 reqid=355 duration="447.18µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:27.136] Served eth_call                          conn=172.19.0.1:50142 reqid=357 duration="445.016µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:27.241] Served eth_call                          conn=172.19.0.1:50142 reqid=359 duration="393.297µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:27.348] Served eth_call                          conn=172.19.0.1:50142 reqid=361 duration="304.959µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:27.452] Served eth_call                          conn=172.19.0.1:50142 reqid=363 duration="400.682µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:27.555] Served eth_call                          conn=172.19.0.1:50142 reqid=365 duration="274.501µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:27.658] Served eth_call                          conn=172.19.0.1:50142 reqid=367 duration="441.629µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:27.762] Served eth_call                          conn=172.19.0.1:50142 reqid=369 duration="290.311µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:27.866] Served eth_call                          conn=172.19.0.1:50142 reqid=371 duration="544.154µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:27.971] Served eth_call                          conn=172.19.0.1:50142 reqid=373 duration="327.061µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:28.076] Served eth_call                          conn=172.19.0.1:50142 reqid=375 duration="526.761µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:28.181] Served eth_call                          conn=172.19.0.1:50142 reqid=377 duration="501.428µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:28.285] Served eth_call                          conn=172.19.0.1:50142 reqid=379 duration="480.092µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:28.393] Served eth_call                          conn=172.19.0.1:50142 reqid=381 duration="499.229µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:28.498] Served eth_call                          conn=172.19.0.1:50142 reqid=383 duration="388.649µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:28.602] Served eth_call                          conn=172.19.0.1:50142 reqid=385 duration="436.93µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:28.706] Served eth_call                          conn=172.19.0.1:50142 reqid=387 duration="452.921µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:28.810] Served eth_call                          conn=172.19.0.1:50142 reqid=389 duration="331.379µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:28.915] Served eth_call                          conn=172.19.0.1:50142 reqid=391 duration="422.734µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:29.019] Served eth_call                          conn=172.19.0.1:50142 reqid=393 duration="461.517µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:29.123] Served eth_call                          conn=172.19.0.1:50142 reqid=395 duration="478.719µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:29.226] Served eth_call                          conn=172.19.0.1:50142 reqid=397 duration="307.664µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:29.330] Served eth_call                          conn=172.19.0.1:50142 reqid=399 duration="459.463µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:29.434] Served eth_call                          conn=172.19.0.1:50142 reqid=401 duration="349.884µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:29.537] Served eth_call                          conn=172.19.0.1:50142 reqid=403 duration="280.072µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:29.641] Served eth_call                          conn=172.19.0.1:50142 reqid=405 duration="386.183µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:29.746] Served eth_call                          conn=172.19.0.1:50142 reqid=407 duration="424.636µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:29.850] Served eth_call                          conn=172.19.0.1:50142 reqid=409 duration="326.18µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:29.955] Served eth_call                          conn=172.19.0.1:50142 reqid=411 duration="452.1µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:30.058] Served eth_call                          conn=172.19.0.1:50142 reqid=413 duration="305.651µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:30.163] Served eth_call                          conn=172.19.0.1:50142 reqid=415 duration="402.264µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:30.267] Served eth_call                          conn=172.19.0.1:50142 reqid=417 duration="428.494µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:30.371] Served eth_call                          conn=172.19.0.1:50142 reqid=419 duration="297.675µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:30.475] Served eth_call                          conn=172.19.0.1:50142 reqid=421 duration="428.494µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:30.578] Served eth_call                          conn=172.19.0.1:50142 reqid=423 duration="254.394µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+WARN [08-13|02:01:30.681] Served eth_call                          conn=172.19.0.1:50142 reqid=425 duration="237.131µs" err="algorithm SchnorrVerifyLatency001 is not loaded"
+INFO [08-13|02:01:30.686] Activated upgrade algorithm              name=SchnorrVerifyLatency001 go=go1.26.5
+INFO [08-13|02:01:30.784] Call upgrade algorithm                   name=SchnorrVerifyLatency001 input="[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 64 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 128 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 31 99 114 121 112 116 111 117 112 103 114 97 100 101 32 115 99 104 110 111 114 114 32 98 101 110 99 104 109 97 114 107 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 64 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 14 110 122 108 26 170 60 125 125 229 174 3 214 151 76 151 92 126 187 251 25 42 60 171 17 245 105 199 248 51 252 229 64]"
+INFO [08-13|02:01:30.784] Loaded upgrade algorithm ABI types       input="[bytes bytes]" output=[bool]
+INFO [08-13|02:01:30.794] Successfully called upgrade algorithm    gas=18,446,744,073,709,551,615 output="[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1]"
+INFO [08-13|02:01:31.001] Imported new chain segment               number=10 hash=cdda67..ef1e01 blocks=1 txs=0 mgas=0.000 elapsed="903.542µs" mgasps=0.000   triediffs=332.00B triedirty=0.00B
+INFO [08-13|02:01:31.001] Sealed Clique block                      number=10 hash=cdda67..ef1e01 txs=0

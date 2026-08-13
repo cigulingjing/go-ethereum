@@ -1,0 +1,260 @@
+WARN [08-13|01:55:51.613] Unknown config environment variable      envvar=GETH_CRYPTOUPGRADE_PLUGIN_DIR
+INFO [08-13|01:55:51.627] Maximum peer count                       ETH=50 total=50
+INFO [08-13|01:55:51.631] Smartcard socket not found, disabling    err="stat /run/pcscd/pcscd.comm: no such file or directory"
+WARN [08-13|01:55:51.638] Sanitizing cache to Go's GC limits       source=system provided=4096 updated=2530
+INFO [08-13|01:55:51.640] Set global gas cap                       cap=50,000,000
+INFO [08-13|01:55:51.640] Initializing the KZG library             backend=gokzg
+INFO [08-13|01:55:51.644] Defaulting to pebble as the backing database
+INFO [08-13|01:55:51.644] Allocated cache and file handles         database=/data/geth/chaindata cache=1.24GiB handles=524,288 version=v2
+INFO [08-13|01:55:51.989] Opened ancient database                  database=/data/geth/chaindata/ancient/chain readonly=false
+INFO [08-13|01:55:51.989] Opened Era store                         datadir=/data/geth/chaindata/ancient/chain/era
+INFO [08-13|01:55:51.990] State schema set to default              scheme=path
+WARN [08-13|01:55:51.990] Head block is not reachable
+INFO [08-13|01:55:51.990] Load database journal from disk
+INFO [08-13|01:55:52.141] Opened ancient database                  database=/data/geth/chaindata/ancient/state readonly=false
+INFO [08-13|01:55:52.141] State snapshot generator is not found
+INFO [08-13|01:55:52.141] Starting snapshot generation             root=56e81f..63b421 accounts=0 slots=0 storage=0.00B dangling=0 elapsed="6.522µs"
+INFO [08-13|01:55:52.141] Initialized path database                triecache=16.00MiB statecache=16.00MiB buffer=64.00MiB state-history="last 90000 blocks" journal-dir=/data/geth/triedb
+INFO [08-13|01:55:52.141] Writing custom genesis block
+INFO [08-13|01:55:52.141] Resuming snapshot generation             root=56e81f..63b421 accounts=0 slots=0 storage=0.00B dangling=0 elapsed="601.763µs"
+INFO [08-13|01:55:52.142] Generated snapshot                       accounts=0 slots=0 storage=0.00B dangling=0 elapsed="886.745µs"
+INFO [08-13|01:55:52.142] Successfully wrote genesis state         database=chaindata                          hash=cd6845..872147
+WARN [08-13|01:55:52.379] Unknown config environment variable      envvar=GETH_CRYPTOUPGRADE_PLUGIN_DIR
+INFO [08-13|01:55:52.395] Maximum peer count                       ETH=50 total=50
+INFO [08-13|01:55:52.396] Smartcard socket not found, disabling    err="stat /run/pcscd/pcscd.comm: no such file or directory"
+WARN [08-13|01:55:52.401] Sanitizing cache to Go's GC limits       source=system provided=4096 updated=2530
+INFO [08-13|01:55:52.404] Set global gas cap                       cap=50,000,000
+WARN [08-13|01:55:52.405] Setting network ID with command-line flag id=11,223,344
+INFO [08-13|01:55:52.405] Initializing the KZG library             backend=gokzg
+INFO [08-13|01:55:52.410] Allocated trie memory caches             clean=379.00MiB dirty=632.00MiB
+INFO [08-13|01:55:52.410] Using pebble as the backing database
+INFO [08-13|01:55:52.410] Allocated cache and file handles         database=/data/geth/chaindata cache=1.24GiB handles=524,288 version=v2
+INFO [08-13|01:55:52.564] Opened ancient database                  database=/data/geth/chaindata/ancient/chain readonly=false
+INFO [08-13|01:55:52.564] Opened Era store                         datadir=/data/geth/chaindata/ancient/chain/era
+INFO [08-13|01:55:52.566] State scheme set to already existing     scheme=path
+INFO [08-13|01:55:52.566] Initialising Ethereum protocol           network=11,223,344 dbversion=<nil>
+WARN [08-13|01:55:52.566] Sanitizing invalid node buffer size      provided=632.00MiB updated=256.00MiB
+INFO [08-13|01:55:52.566] Load database journal from disk
+INFO [08-13|01:55:52.566] Failed to load journal, discard it       err="journal not found"
+INFO [08-13|01:55:52.606] Opened ancient database                  database=/data/geth/chaindata/ancient/state readonly=false
+INFO [08-13|01:55:52.607] Initialized path database                triecache=379.00MiB statecache=253.00MiB buffer=256.00MiB state-history="last 90000 blocks" journal-dir=/data/geth/triedb
+INFO [08-13|01:55:52.607] 
+INFO [08-13|01:55:52.607] ---------------------------------------------------------------------------------------------------------------------------------------------------------
+INFO [08-13|01:55:52.607] Chain ID:  11223344 (unknown)
+INFO [08-13|01:55:52.607] Consensus: Beacon (proof-of-stake), merged from Clique (proof-of-authority)
+INFO [08-13|01:55:52.607] 
+INFO [08-13|01:55:52.607] Pre-Merge hard forks (block based):
+INFO [08-13|01:55:52.607]  - Homestead:                   #0       
+INFO [08-13|01:55:52.607]  - Tangerine Whistle (EIP 150): #0       
+INFO [08-13|01:55:52.607]  - Spurious Dragon/1 (EIP 155): #0       
+INFO [08-13|01:55:52.607]  - Spurious Dragon/2 (EIP 158): #0       
+INFO [08-13|01:55:52.607]  - Byzantium:                   #0       
+INFO [08-13|01:55:52.607]  - Constantinople:              #0       
+INFO [08-13|01:55:52.607]  - Petersburg:                  #0       
+INFO [08-13|01:55:52.607]  - Istanbul:                    #0       
+INFO [08-13|01:55:52.607]  - Berlin:                      #0       
+INFO [08-13|01:55:52.607]  - London:                      #0       
+INFO [08-13|01:55:52.607] 
+INFO [08-13|01:55:52.607] Merge configured:
+INFO [08-13|01:55:52.607]  - Total terminal difficulty:  9223372036854775807
+INFO [08-13|01:55:52.607] 
+INFO [08-13|01:55:52.607] Post-Merge hard forks (timestamp based):
+INFO [08-13|01:55:52.607] 
+INFO [08-13|01:55:52.607] All fork specifications can be found at https://ethereum.github.io/execution-specs/src/ethereum/forks/
+INFO [08-13|01:55:52.607] 
+INFO [08-13|01:55:52.607] ---------------------------------------------------------------------------------------------------------------------------------------------------------
+INFO [08-13|01:55:52.607] 
+INFO [08-13|01:55:52.609] Loaded most recent local block           number=0 hash=cd6845..872147 age=57y5mo1w
+INFO [08-13|01:55:52.609] Initialized transaction indexer          range="last 2350000 blocks"
+INFO [08-13|01:55:52.845] Enabled full-sync                        head=0 hash=cd6845..872147
+INFO [08-13|01:55:52.845] Gasprice oracle is ignoring threshold set threshold=2
+INFO [08-13|01:55:52.845] Registered sync override service
+INFO [08-13|01:55:52.845] Starting peer-to-peer node               instance=Geth/v1.17.5-unstable-28e1e3ba-20260811/linux-amd64/go1.26.5
+INFO [08-13|01:55:52.871] New local node record                    seq=1,786,586,152,865 id=4d1414946f8bf55e ip=127.0.0.1 udp=30303 tcp=30303
+INFO [08-13|01:55:52.872] Started P2P networking                   self=enode://fb47d27abae566e3b70cfc228e19f01d5b40a084bdfaf6ee68813f69f49ffd1182b0890765f719d6d497efbb0670dbc55adac0f53e8828319922434bd8188711@127.0.0.1:30303
+INFO [08-13|01:55:52.874] Generated JWT secret                     path=/data/geth/jwtsecret
+INFO [08-13|01:55:52.875] HTTP server started                      endpoint=[::]:8545 auth=false prefix= cors=* vhosts=*
+INFO [08-13|01:55:52.875] WebSocket enabled                        url=ws://127.0.0.1:8551
+INFO [08-13|01:55:52.875] HTTP server started                      endpoint=127.0.0.1:8551 auth=true  prefix= cors=localhost vhosts=localhost
+INFO [08-13|01:55:52.876] Started log indexer
+INFO [08-13|01:55:57.003] Syncing beacon headers                   downloaded=1 left=0 eta=0s
+INFO [08-13|01:55:57.005] Block synchronisation started
+INFO [08-13|01:55:57.006] Stored checkpoint snapshot to disk       number=0 hash=cd6845..872147
+INFO [08-13|01:55:57.009] Imported new chain segment               number=2 hash=a53de3..b0f237 blocks=2 txs=0 mgas=0.000 elapsed=3.097ms mgasps=0.000 triedirty=0.00B
+INFO [08-13|01:55:57.010] Indexed transactions                     blocks=3 txs=0 tail=0 elapsed="308.302µs"
+INFO [08-13|01:56:02.005] Imported new chain segment               number=3 hash=d8471f..97b061 blocks=1 txs=0 mgas=0.000 elapsed="581.491µs" mgasps=0.000 triedirty=0.00B ignored=1
+INFO [08-13|01:56:07.003] Imported new chain segment               number=4 hash=2514ee..8ac2e7 blocks=1 txs=0 mgas=0.000 elapsed="493.911µs" mgasps=0.000 triedirty=0.00B ignored=1
+INFO [08-13|01:56:12.003] Imported new chain segment               number=5 hash=deeccf..6b4eac blocks=1 txs=0 mgas=0.000 elapsed="432.739µs" mgasps=0.000 triedirty=0.00B ignored=1
+INFO [08-13|01:56:12.433] New local node record                    seq=1,786,586,152,866 id=4d1414946f8bf55e ip=141.11.146.64 udp=47841 tcp=30303
+INFO [08-13|01:56:17.003] Imported new chain segment               number=6 hash=1017da..1e35c6 blocks=1 txs=0 mgas=0.000 elapsed="426.872µs" mgasps=0.000 triedirty=0.00B ignored=1
+INFO [08-13|01:56:22.003] Imported new chain segment               number=7 hash=7f3260..53aa24 blocks=1 txs=0 mgas=0.000 elapsed="572.609µs" mgasps=0.000 triedirty=0.00B ignored=1
+INFO [08-13|01:56:27.005] Imported new chain segment               number=8 hash=25c70f..2d9ae8 blocks=1 txs=0 mgas=0.000 elapsed="927.689µs" mgasps=0.000 triedirty=0.00B ignored=1
+INFO [08-13|01:56:27.141] Looking for peers                        peercount=2 tried=4 static=4
+WARN [08-13|01:56:27.847] Beacon client online, but no consensus updates received in a while. Please fix your beacon client to follow the chain!
+WARN [08-13|01:56:29.396] Served eth_call                          conn=172.19.0.1:54030 reqid=2 duration="470.293µs" err="algorithm Sha256Latency001 is not loaded"
+INFO [08-13|01:56:32.004] Imported new chain segment               number=9 hash=d0101d..6412c5 blocks=1 txs=0 mgas=0.000 elapsed="629.744µs" mgasps=0.000 triedirty=0.00B ignored=1
+INFO [08-13|01:56:37.005] Imported new chain segment               number=10 hash=424f5f..df19af blocks=1 txs=1 mgas=0.088 elapsed=1.077ms     mgasps=81.812 triediffs=332.00B triedirty=0.00B
+INFO [08-13|01:56:37.005] Catch codeUploaded event
+INFO [08-13|01:56:37.006] Loaded upgrade algorithm info            name=Sha256Latency001
+WARN [08-13|01:56:37.053] Served eth_call                          conn=172.19.0.1:54030 reqid=80 duration="382.566µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:37.156] Served eth_call                          conn=172.19.0.1:54030 reqid=82 duration="302.224µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:37.261] Served eth_call                          conn=172.19.0.1:54030 reqid=84 duration=1.657805ms err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:37.367] Served eth_call                          conn=172.19.0.1:54030 reqid=86 duration="432.848µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:37.470] Served eth_call                          conn=172.19.0.1:54030 reqid=88 duration="336.299µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:37.573] Served eth_call                          conn=172.19.0.1:54030 reqid=90 duration="254.936µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:37.685] Served eth_call                          conn=172.19.0.1:54030 reqid=92 duration="826.761µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:37.793] Served eth_call                          conn=172.19.0.1:54030 reqid=94 duration="956.367µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:37.903] Served eth_call                          conn=172.19.0.1:54030 reqid=96 duration="732.712µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:38.009] Served eth_call                          conn=172.19.0.1:54030 reqid=98 duration="735.297µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:38.154] Served eth_call                          conn=172.19.0.1:54030 reqid=100 duration="382.997µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:38.260] Served eth_call                          conn=172.19.0.1:54030 reqid=102 duration="648.578µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:38.365] Served eth_call                          conn=172.19.0.1:54030 reqid=104 duration="417.504µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:38.540] Served eth_call                          conn=172.19.0.1:54030 reqid=106 duration="862.519µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:38.648] Served eth_call                          conn=172.19.0.1:54030 reqid=108 duration="476.896µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:38.762] Served eth_call                          conn=172.19.0.1:54030 reqid=110 duration="416.902µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:38.935] Served eth_call                          conn=172.19.0.1:54030 reqid=112 duration="346.899µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:39.067] Served eth_call                          conn=172.19.0.1:54030 reqid=114 duration=24.207683ms err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:39.176] Served eth_call                          conn=172.19.0.1:54030 reqid=116 duration="533.454µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:39.317] Served eth_call                          conn=172.19.0.1:54030 reqid=118 duration=8.283934ms err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:39.470] Served eth_call                          conn=172.19.0.1:54030 reqid=120 duration="453.501µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:39.574] Served eth_call                          conn=172.19.0.1:54030 reqid=122 duration="383.389µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:39.694] Served eth_call                          conn=172.19.0.1:54030 reqid=124 duration="644.044µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:39.846] Served eth_call                          conn=172.19.0.1:54030 reqid=126 duration=1.137719ms err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:39.951] Served eth_call                          conn=172.19.0.1:54030 reqid=128 duration="375.303µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:40.064] Served eth_call                          conn=172.19.0.1:54030 reqid=130 duration="393.107µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:40.175] Served eth_call                          conn=172.19.0.1:54030 reqid=132 duration="544.465µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:40.287] Served eth_call                          conn=172.19.0.1:54030 reqid=134 duration="337.441µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:40.394] Served eth_call                          conn=172.19.0.1:54030 reqid=136 duration="472.865µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:40.497] Served eth_call                          conn=172.19.0.1:54030 reqid=138 duration="286.284µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:40.615] Served eth_call                          conn=172.19.0.1:54030 reqid=140 duration="436.981µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:40.719] Served eth_call                          conn=172.19.0.1:54030 reqid=142 duration="663.33µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:40.828] Served eth_call                          conn=172.19.0.1:54030 reqid=144 duration="433.143µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:40.933] Served eth_call                          conn=172.19.0.1:54030 reqid=146 duration="258.762µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:41.039] Served eth_call                          conn=172.19.0.1:54030 reqid=148 duration="575.003µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:41.143] Served eth_call                          conn=172.19.0.1:54030 reqid=150 duration="355.907µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:41.247] Served eth_call                          conn=172.19.0.1:54030 reqid=152 duration="382.006µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:41.350] Served eth_call                          conn=172.19.0.1:54030 reqid=154 duration="436.598µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:41.454] Served eth_call                          conn=172.19.0.1:54030 reqid=156 duration="467.809µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:41.559] Served eth_call                          conn=172.19.0.1:54030 reqid=158 duration="332.842µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:41.663] Served eth_call                          conn=172.19.0.1:54030 reqid=160 duration="415.6µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:41.767] Served eth_call                          conn=172.19.0.1:54030 reqid=162 duration="627.843µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:41.871] Served eth_call                          conn=172.19.0.1:54030 reqid=164 duration="366.547µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:41.974] Served eth_call                          conn=172.19.0.1:54030 reqid=166 duration="269.503µs" err="algorithm Sha256Latency001 is not loaded"
+INFO [08-13|01:56:42.006] Imported new chain segment               number=11 hash=426485..c9cb7b blocks=1 txs=1 mgas=0.000 elapsed="483.986µs" mgasps=0.000  triediffs=332.00B triedirty=0.00B ignored=1
+WARN [08-13|01:56:42.078] Served eth_call                          conn=172.19.0.1:54030 reqid=168 duration="331.4µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:42.184] Served eth_call                          conn=172.19.0.1:54030 reqid=170 duration="363.962µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:42.288] Served eth_call                          conn=172.19.0.1:54030 reqid=172 duration=1.235909ms err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:42.404] Served eth_call                          conn=172.19.0.1:54030 reqid=174 duration="360.015µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:42.508] Served eth_call                          conn=172.19.0.1:54030 reqid=176 duration="385.663µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:42.617] Served eth_call                          conn=172.19.0.1:54030 reqid=178 duration="422.663µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:42.723] Served eth_call                          conn=172.19.0.1:54030 reqid=180 duration="332.692µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:42.829] Served eth_call                          conn=172.19.0.1:54030 reqid=182 duration="402.024µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:42.933] Served eth_call                          conn=172.19.0.1:54030 reqid=184 duration="378.188µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:43.037] Served eth_call                          conn=172.19.0.1:54030 reqid=186 duration="214.297µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:43.141] Served eth_call                          conn=172.19.0.1:54030 reqid=188 duration="289.971µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:43.244] Served eth_call                          conn=172.19.0.1:54030 reqid=190 duration="399.61µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:43.349] Served eth_call                          conn=172.19.0.1:54030 reqid=192 duration="501.803µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:43.453] Served eth_call                          conn=172.19.0.1:54030 reqid=194 duration="403.236µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:43.558] Served eth_call                          conn=172.19.0.1:54030 reqid=196 duration="314.517µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:43.662] Served eth_call                          conn=172.19.0.1:54030 reqid=198 duration="391.103µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:43.779] Served eth_call                          conn=172.19.0.1:54030 reqid=200 duration="465.244µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:43.882] Served eth_call                          conn=172.19.0.1:54030 reqid=202 duration="277.076µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:43.987] Served eth_call                          conn=172.19.0.1:54030 reqid=204 duration="378.379µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:44.093] Served eth_call                          conn=172.19.0.1:54030 reqid=206 duration="583.178µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:44.197] Served eth_call                          conn=172.19.0.1:54030 reqid=208 duration="393.04µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:44.299] Served eth_call                          conn=172.19.0.1:54030 reqid=210 duration="246.509µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:44.403] Served eth_call                          conn=172.19.0.1:54030 reqid=212 duration="336.76µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:44.506] Served eth_call                          conn=172.19.0.1:54030 reqid=214 duration="258.712µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:44.610] Served eth_call                          conn=172.19.0.1:54030 reqid=216 duration="275.884µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:44.713] Served eth_call                          conn=172.19.0.1:54030 reqid=218 duration="232.983µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:44.817] Served eth_call                          conn=172.19.0.1:54030 reqid=220 duration="364.813µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:44.923] Served eth_call                          conn=172.19.0.1:54030 reqid=222 duration="488.187µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:45.027] Served eth_call                          conn=172.19.0.1:54030 reqid=224 duration="407.404µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:45.131] Served eth_call                          conn=172.19.0.1:54030 reqid=226 duration="500.551µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:45.235] Served eth_call                          conn=172.19.0.1:54030 reqid=228 duration="338.273µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:45.340] Served eth_call                          conn=172.19.0.1:54030 reqid=230 duration="340.617µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:45.444] Served eth_call                          conn=172.19.0.1:54030 reqid=232 duration="415.049µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:45.546] Served eth_call                          conn=172.19.0.1:54030 reqid=234 duration="332.632µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:45.650] Served eth_call                          conn=172.19.0.1:54030 reqid=236 duration="345.417µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:45.754] Served eth_call                          conn=172.19.0.1:54030 reqid=238 duration="468.79µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:45.858] Served eth_call                          conn=172.19.0.1:54030 reqid=240 duration="277.567µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:45.975] Served eth_call                          conn=172.19.0.1:54030 reqid=242 duration="561.217µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:46.080] Served eth_call                          conn=172.19.0.1:54030 reqid=244 duration="294.21µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:46.184] Served eth_call                          conn=172.19.0.1:54030 reqid=246 duration="360.485µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:46.287] Served eth_call                          conn=172.19.0.1:54030 reqid=248 duration="507.243µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:46.397] Served eth_call                          conn=172.19.0.1:54030 reqid=250 duration="264.553µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:46.506] Served eth_call                          conn=172.19.0.1:54030 reqid=252 duration=1.279806ms err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:46.612] Served eth_call                          conn=172.19.0.1:54030 reqid=254 duration="417.453µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:46.716] Served eth_call                          conn=172.19.0.1:54030 reqid=256 duration="363.42µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:46.822] Served eth_call                          conn=172.19.0.1:54030 reqid=258 duration="363.611µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:46.927] Served eth_call                          conn=172.19.0.1:54030 reqid=260 duration="446.649µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:47.031] Served eth_call                          conn=172.19.0.1:54030 reqid=262 duration="461.827µs" err="algorithm Sha256Latency001 is not loaded"
+INFO [08-13|01:56:47.044] Imported new chain segment               number=12 hash=03ce97..c1a497 blocks=1 txs=0 mgas=0.000 elapsed="789.582µs" mgasps=0.000  triediffs=332.00B triedirty=0.00B ignored=1
+WARN [08-13|01:56:47.136] Served eth_call                          conn=172.19.0.1:54030 reqid=264 duration="372.087µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:47.243] Served eth_call                          conn=172.19.0.1:54030 reqid=266 duration="440.838µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:47.347] Served eth_call                          conn=172.19.0.1:54030 reqid=268 duration="573.339µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:47.456] Served eth_call                          conn=172.19.0.1:54030 reqid=270 duration="677.588µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:47.562] Served eth_call                          conn=172.19.0.1:54030 reqid=272 duration="758.832µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:47.667] Served eth_call                          conn=172.19.0.1:54030 reqid=274 duration="500.461µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:47.775] Served eth_call                          conn=172.19.0.1:54030 reqid=276 duration="604.539µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:47.882] Served eth_call                          conn=172.19.0.1:54030 reqid=278 duration=1.335097ms err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:48.013] Served eth_call                          conn=172.19.0.1:54030 reqid=280 duration="819.858µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:48.121] Served eth_call                          conn=172.19.0.1:54030 reqid=282 duration="415.409µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:48.236] Served eth_call                          conn=172.19.0.1:54030 reqid=284 duration="456.387µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:48.342] Served eth_call                          conn=172.19.0.1:54030 reqid=286 duration="856.208µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:48.448] Served eth_call                          conn=172.19.0.1:54030 reqid=288 duration="823.865µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:48.560] Served eth_call                          conn=172.19.0.1:54030 reqid=290 duration="459.934µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:48.723] Served eth_call                          conn=172.19.0.1:54030 reqid=292 duration="599.169µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:48.868] Served eth_call                          conn=172.19.0.1:54030 reqid=294 duration="827.453µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:49.000] Served eth_call                          conn=172.19.0.1:54030 reqid=296 duration="459.954µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:49.140] Served eth_call                          conn=172.19.0.1:54030 reqid=298 duration="375.083µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:49.255] Served eth_call                          conn=172.19.0.1:54030 reqid=300 duration="438.213µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:49.363] Served eth_call                          conn=172.19.0.1:54030 reqid=302 duration="741.188µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:49.469] Served eth_call                          conn=172.19.0.1:54030 reqid=304 duration="385.443µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:49.578] Served eth_call                          conn=172.19.0.1:54030 reqid=306 duration="316.372µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:49.682] Served eth_call                          conn=172.19.0.1:54030 reqid=308 duration="583.228µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:49.786] Served eth_call                          conn=172.19.0.1:54030 reqid=310 duration="358.171µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:49.893] Served eth_call                          conn=172.19.0.1:54030 reqid=312 duration="296.353µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:49.998] Served eth_call                          conn=172.19.0.1:54030 reqid=314 duration="363.49µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:50.101] Served eth_call                          conn=172.19.0.1:54030 reqid=316 duration="673.289µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:50.211] Served eth_call                          conn=172.19.0.1:54030 reqid=318 duration="779.031µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:50.321] Served eth_call                          conn=172.19.0.1:54030 reqid=320 duration="307.604µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:50.444] Served eth_call                          conn=172.19.0.1:54030 reqid=322 duration="653.713µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:50.584] Served eth_call                          conn=172.19.0.1:54030 reqid=324 duration="474.822µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:50.700] Served eth_call                          conn=172.19.0.1:54030 reqid=326 duration=1.985964ms err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:50.810] Served eth_call                          conn=172.19.0.1:54030 reqid=328 duration="389.83µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:50.914] Served eth_call                          conn=172.19.0.1:54030 reqid=330 duration="730.999µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:51.019] Served eth_call                          conn=172.19.0.1:54030 reqid=332 duration="489.7µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:51.124] Served eth_call                          conn=172.19.0.1:54030 reqid=334 duration="379.401µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:51.228] Served eth_call                          conn=172.19.0.1:54030 reqid=336 duration="346.338µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:51.332] Served eth_call                          conn=172.19.0.1:54030 reqid=338 duration="416.742µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:51.438] Served eth_call                          conn=172.19.0.1:54030 reqid=340 duration="605.019µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:51.542] Served eth_call                          conn=172.19.0.1:54030 reqid=342 duration="337.952µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:51.648] Served eth_call                          conn=172.19.0.1:54030 reqid=344 duration="375.754µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:51.751] Served eth_call                          conn=172.19.0.1:54030 reqid=346 duration="317.242µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:51.855] Served eth_call                          conn=172.19.0.1:54030 reqid=348 duration="423.645µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:51.958] Served eth_call                          conn=172.19.0.1:54030 reqid=350 duration="358.3µs" err="algorithm Sha256Latency001 is not loaded"
+INFO [08-13|01:56:52.005] Imported new chain segment               number=13 hash=c9caa3..d75e19 blocks=1 txs=0 mgas=0.000 elapsed="695.828µs" mgasps=0.000  triediffs=332.00B triedirty=0.00B ignored=1
+WARN [08-13|01:56:52.061] Served eth_call                          conn=172.19.0.1:54030 reqid=352 duration="332.261µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:52.165] Served eth_call                          conn=172.19.0.1:54030 reqid=354 duration="461.978µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:52.270] Served eth_call                          conn=172.19.0.1:54030 reqid=356 duration="389.51µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:52.374] Served eth_call                          conn=172.19.0.1:54030 reqid=358 duration="335.447µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:52.478] Served eth_call                          conn=172.19.0.1:54030 reqid=360 duration="455.306µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:52.581] Served eth_call                          conn=172.19.0.1:54030 reqid=362 duration="242.982µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:52.685] Served eth_call                          conn=172.19.0.1:54030 reqid=364 duration="511.362µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:52.790] Served eth_call                          conn=172.19.0.1:54030 reqid=366 duration=1.360723ms err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:52.894] Served eth_call                          conn=172.19.0.1:54030 reqid=368 duration="436.439µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:52.997] Served eth_call                          conn=172.19.0.1:54030 reqid=370 duration="259.684µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:53.101] Served eth_call                          conn=172.19.0.1:54030 reqid=372 duration="269.301µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:53.205] Served eth_call                          conn=172.19.0.1:54030 reqid=374 duration="375.584µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:53.308] Served eth_call                          conn=172.19.0.1:54030 reqid=376 duration="338.864µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:53.412] Served eth_call                          conn=172.19.0.1:54030 reqid=378 duration="365.624µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:53.516] Served eth_call                          conn=172.19.0.1:54030 reqid=380 duration="317.514µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:53.619] Served eth_call                          conn=172.19.0.1:54030 reqid=382 duration="292.306µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:53.723] Served eth_call                          conn=172.19.0.1:54030 reqid=384 duration="378.068µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:53.827] Served eth_call                          conn=172.19.0.1:54030 reqid=386 duration="261.537µs" err="algorithm Sha256Latency001 is not loaded"
+WARN [08-13|01:56:53.929] Served eth_call                          conn=172.19.0.1:54030 reqid=388 duration="356.227µs" err="algorithm Sha256Latency001 is not loaded"
+INFO [08-13|01:56:53.954] Activated upgrade algorithm              name=Sha256Latency001 go=go1.26.5
+INFO [08-13|01:56:54.033] Call upgrade algorithm                   name=Sha256Latency001 input="[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 19 104 101 108 108 111 32 99 114 121 112 116 111 117 112 103 114 97 100 101 0 0 0 0 0 0 0 0 0 0 0 0 0]"
+INFO [08-13|01:56:54.033] Loaded upgrade algorithm ABI types       input=[bytes] output=[bytes]
+INFO [08-13|01:56:54.102] Successfully called upgrade algorithm    gas=18,446,744,073,709,551,615 output="[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 32 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 32 29 250 48 172 223 72 156 90 106 210 145 144 47 215 197 132 73 253 50 94 142 100 208 212 91 112 78 143 76 69 52 20]"

@@ -1,0 +1,6 @@
+round,algorithm,upgrade_name,node_id,role,rpc_url,receipt_block,completion_block,submit_to_receipt_ms,tx_hash_to_receipt_ms,sender_receipt_to_receipt_ms,receipt_to_complete_ms,submit_to_complete_ms,tx_hash_to_complete_ms,sender_receipt_to_complete_ms,event_to_complete_ms,validation_call_ms,decoded_result,expected_result,completed,timed_out,error
+1,Add,AddLatency001,node1,signer,http://127.0.0.1:8761,16,19,5403.242132,5401.665396,0.035387,17515.636406,22918.878538,22917.301802,17515.671793,17515.671793,11.766854,200,200,true,false,
+1,Add,AddLatency001,node2,observer,http://127.0.0.1:8762,16,19,5403.365014,5401.788278,0.158269,17488.599477,22891.964491,22890.387755,17488.757746,17488.757746,88.138369,200,200,true,false,
+1,Add,AddLatency001,node3,observer,http://127.0.0.1:8763,16,19,5403.273616,5401.696880,0.066871,17488.690576,22891.964192,22890.387456,17488.757447,17488.757447,66.487305,200,200,true,false,
+1,Add,AddLatency001,node4,observer,http://127.0.0.1:8764,16,19,5403.248935,5401.672199,0.042190,17555.780222,22959.029157,22957.452421,17555.822412,17555.822412,16.289703,200,200,true,false,
+1,Add,AddLatency001,node5,observer,http://127.0.0.1:8765,16,19,5403.504912,5401.928176,0.298167,17608.774514,23012.279426,23010.702690,17609.072681,17609.072681,9.791482,200,200,true,false,

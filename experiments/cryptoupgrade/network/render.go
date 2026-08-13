@@ -37,6 +37,7 @@ type NodeArtifact struct {
 }
 
 // Render 生成 genesis、static peers、节点目录、启动脚本和 compose 文件。
+// @file 生成文件放置在 build/cryptoupgrade-networks/ 目录下。
 func Render(cfg *Config, opts RenderOptions) (*Artifacts, error) {
 	if opts.OutputDir == "" {
 		opts.OutputDir = filepath.Join("build", "cryptoupgrade-networks", cfg.Network.Name)

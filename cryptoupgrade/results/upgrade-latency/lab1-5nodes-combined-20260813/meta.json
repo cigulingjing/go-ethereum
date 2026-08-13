@@ -1,0 +1,8 @@
+{
+  "title": "lab1 5-node upgrade latency summary",
+  "sources": [
+    "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-add-5nodes-20260813-092841/result.json",
+    "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-5nodes-other-algos-20260813-095549/summary.csv"
+  ],
+  "rowCount": 7
+}

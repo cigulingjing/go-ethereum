@@ -1,0 +1,132 @@
+{
+  "experiment": "multi-node-upgrade-latency",
+  "change": "lab1-upgrade-latency",
+  "timestamp": "2026-08-13T09:54:31.722077557+08:00",
+  "command": [
+    "/tmp/go-build2324419725/b001/exe/benchupgradelatency",
+    "-config",
+    "build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/network.yaml",
+    "-out",
+    "cryptoupgrade/results/upgrade-latency/lab1-5nodes-other-algos-20260813-095411/Sha256 Blake2bSum256 Pbkdf2Sha256 Dh2048Secret PedersenCommit SchnorrVerify",
+    "-algorithms",
+    "Sha256 Blake2bSum256 Pbkdf2Sha256 Dh2048Secret PedersenCommit SchnorrVerify",
+    "-rounds",
+    "1",
+    "-timeout",
+    "5m",
+    "-preflight-timeout",
+    "2m",
+    "-poll-interval",
+    "100ms"
+  ],
+  "config": {
+    "configPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/network.yaml",
+    "chainId": 11223344,
+    "networkId": 11223344,
+    "consensusType": "clique",
+    "consensusPeriod": 5,
+    "nodeCount": 5,
+    "targetNodeIds": [
+      "node1",
+      "node2",
+      "node3",
+      "node4",
+      "node5"
+    ],
+    "senderNodeId": "node1",
+    "senderRpc": "http://127.0.0.1:8761",
+    "from": "0xF5F871aA6Bd253914705898c66251f994aa426FA",
+    "rounds": 1,
+    "pollIntervalMillis": 100,
+    "timeoutMillis": 300000,
+    "preflight": true,
+    "preflightTimeoutMillis": 120000,
+    "algorithmBase": "Add",
+    "algorithms": [
+      "Sha256 Blake2bSum256 Pbkdf2Sha256 Dh2048Secret PedersenCommit SchnorrVerify"
+    ],
+    "uniqueNames": true,
+    "inputType": "uint256,uint256",
+    "outputType": "uint256",
+    "algoGas": 1,
+    "transactionGasLimit": 5000000,
+    "callGas": 5000000
+  },
+  "artifacts": {
+    "resultDir": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-5nodes-other-algos-20260813-095411/Sha256 Blake2bSum256 Pbkdf2Sha256 Dh2048Secret PedersenCommit SchnorrVerify",
+    "resultJson": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-5nodes-other-algos-20260813-095411/Sha256 Blake2bSum256 Pbkdf2Sha256 Dh2048Secret PedersenCommit SchnorrVerify/result.json",
+    "roundCsv": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-5nodes-other-algos-20260813-095411/Sha256 Blake2bSum256 Pbkdf2Sha256 Dh2048Secret PedersenCommit SchnorrVerify/rounds.csv",
+    "nodeCsv": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-5nodes-other-algos-20260813-095411/Sha256 Blake2bSum256 Pbkdf2Sha256 Dh2048Secret PedersenCommit SchnorrVerify/nodes.csv",
+    "sourcePath": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/algorithm/go/add.go",
+    "generatedSourceDir": "/home/liuqi/project/paper/go-ethereum/cryptoupgrade/results/upgrade-latency/lab1-5nodes-other-algos-20260813-095411/Sha256 Blake2bSum256 Pbkdf2Sha256 Dh2048Secret PedersenCommit SchnorrVerify/sources"
+  },
+  "preflight": {
+    "startedAt": "2026-08-13T09:54:31.722910109+08:00",
+    "finishedAt": "2026-08-13T09:54:57.283991953+08:00",
+    "durationMillis": 25561.081834,
+    "expectedPeerCount": 4,
+    "nodes": [
+      {
+        "id": "node1",
+        "role": "signer",
+        "rpcURL": "http://127.0.0.1:8761",
+        "chainId": 11223344,
+        "peerCount": 4,
+        "startBlock": 3,
+        "endBlock": 4
+      },
+      {
+        "id": "node2",
+        "role": "observer",
+        "rpcURL": "http://127.0.0.1:8762",
+        "chainId": 11223344,
+        "peerCount": 4,
+        "startBlock": 3,
+        "endBlock": 4
+      },
+      {
+        "id": "node3",
+        "role": "observer",
+        "rpcURL": "http://127.0.0.1:8763",
+        "chainId": 11223344,
+        "peerCount": 4,
+        "startBlock": 7,
+        "endBlock": 8
+      },
+      {
+        "id": "node4",
+        "role": "observer",
+        "rpcURL": "http://127.0.0.1:8764",
+        "chainId": 11223344,
+        "peerCount": 4,
+        "startBlock": 7,
+        "endBlock": 8
+      },
+      {
+        "id": "node5",
+        "role": "observer",
+        "rpcURL": "http://127.0.0.1:8765",
+        "chainId": 11223344,
+        "peerCount": 4,
+        "startBlock": 7,
+        "endBlock": 8
+      }
+    ],
+    "ok": true
+  },
+  "rounds": null,
+  "summary": {
+    "roundCount": 0,
+    "completedRoundCount": 0,
+    "targetNodeCount": 0,
+    "completed": false
+  },
+  "limitations": [
+    "升级耗时由实验控制端通过 JSON-RPC 轮询观测，包含 RPC 往返和 poll interval 带来的观测误差。",
+    "节点 completed 判据为该节点 eth_call CodeStorage.callFunc 返回期望结果，说明该节点本地算法信息和 plugin 已可用于调用。",
+    "节点日志仅用于排查，不作为跨节点耗时计算的权威时间源。",
+    "preflight 阶段不执行 cryptoupgrade smoke test，避免在正式测量前上传同名算法污染结果。"
+  ],
+  "completed": false,
+  "error": "unknown algorithm \"Sha256 Blake2bSum256 Pbkdf2Sha256 Dh2048Secret PedersenCommit SchnorrVerify\""
+}

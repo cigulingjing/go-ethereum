@@ -1,0 +1,80 @@
+{
+  "outputDir": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify",
+  "configPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/network.yaml",
+  "genesisPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/genesis.json",
+  "composePath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/docker-compose.yml",
+  "nodes": [
+    {
+      "id": "node1",
+      "datadir": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node1/datadir",
+      "pluginDir": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node1/plugin",
+      "gethConfigPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node1/config.toml",
+      "staticPeersPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node1/static-nodes.json",
+      "startScript": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node1/start.sh"
+    },
+    {
+      "id": "node2",
+      "datadir": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node2/datadir",
+      "pluginDir": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node2/plugin",
+      "gethConfigPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node2/config.toml",
+      "staticPeersPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node2/static-nodes.json",
+      "startScript": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node2/start.sh"
+    },
+    {
+      "id": "node3",
+      "datadir": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node3/datadir",
+      "pluginDir": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node3/plugin",
+      "gethConfigPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node3/config.toml",
+      "staticPeersPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node3/static-nodes.json",
+      "startScript": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node3/start.sh"
+    },
+    {
+      "id": "node4",
+      "datadir": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node4/datadir",
+      "pluginDir": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node4/plugin",
+      "gethConfigPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node4/config.toml",
+      "staticPeersPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node4/static-nodes.json",
+      "startScript": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node4/start.sh"
+    },
+    {
+      "id": "node5",
+      "datadir": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node5/datadir",
+      "pluginDir": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node5/plugin",
+      "gethConfigPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node5/config.toml",
+      "staticPeersPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node5/static-nodes.json",
+      "startScript": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/lab1-5nodes-other-algos-20260813-095411-sha256 blake2bsum256 pbkdf2sha256 dh2048secret pedersencommit schnorrverify/nodes/node5/start.sh"
+    }
+  ],
+  "staticPeers": {
+    "node1": [
+      "enode://7fc43fc4d20ca9f54b58dde2cedfa1f17b2584b7caf010fa421d1992b0a15151cd43f530dcfe22eab44c277ac9138bead2ff01438eb9d444370f27ae4d81af99@node2:30303",
+      "enode://fb47d27abae566e3b70cfc228e19f01d5b40a084bdfaf6ee68813f69f49ffd1182b0890765f719d6d497efbb0670dbc55adac0f53e8828319922434bd8188711@node3:30303",
+      "enode://7addfe97f341068a6978589691d0b1d96af4505f7079c5cdfba794d519e5027af8acc2ea0d8fda050c29bd7e6c82ae4fd96b4ce6711eaccef0c2fa311d077b86@node4:30303",
+      "enode://7e4d5802d0cf8bbf69167d725eee2ff426a0aa3c43eac0ac02e4c08156feb57e9f326b2a40fe69255c68509b1ab56a9fbf1e64f5742f13488cdc69db36573179@node5:30303"
+    ],
+    "node2": [
+      "enode://dc7e47b20c7f0de16e1579b012d0fd4555cd4a271357e5cb84bd72786002b982f017c2151b75c4da0956b8f88f0bf5b81c5690032b93e7ae5d7c4eeec2291f1a@node1:30303",
+      "enode://fb47d27abae566e3b70cfc228e19f01d5b40a084bdfaf6ee68813f69f49ffd1182b0890765f719d6d497efbb0670dbc55adac0f53e8828319922434bd8188711@node3:30303",
+      "enode://7addfe97f341068a6978589691d0b1d96af4505f7079c5cdfba794d519e5027af8acc2ea0d8fda050c29bd7e6c82ae4fd96b4ce6711eaccef0c2fa311d077b86@node4:30303",
+      "enode://7e4d5802d0cf8bbf69167d725eee2ff426a0aa3c43eac0ac02e4c08156feb57e9f326b2a40fe69255c68509b1ab56a9fbf1e64f5742f13488cdc69db36573179@node5:30303"
+    ],
+    "node3": [
+      "enode://dc7e47b20c7f0de16e1579b012d0fd4555cd4a271357e5cb84bd72786002b982f017c2151b75c4da0956b8f88f0bf5b81c5690032b93e7ae5d7c4eeec2291f1a@node1:30303",
+      "enode://7fc43fc4d20ca9f54b58dde2cedfa1f17b2584b7caf010fa421d1992b0a15151cd43f530dcfe22eab44c277ac9138bead2ff01438eb9d444370f27ae4d81af99@node2:30303",
+      "enode://7addfe97f341068a6978589691d0b1d96af4505f7079c5cdfba794d519e5027af8acc2ea0d8fda050c29bd7e6c82ae4fd96b4ce6711eaccef0c2fa311d077b86@node4:30303",
+      "enode://7e4d5802d0cf8bbf69167d725eee2ff426a0aa3c43eac0ac02e4c08156feb57e9f326b2a40fe69255c68509b1ab56a9fbf1e64f5742f13488cdc69db36573179@node5:30303"
+    ],
+    "node4": [
+      "enode://dc7e47b20c7f0de16e1579b012d0fd4555cd4a271357e5cb84bd72786002b982f017c2151b75c4da0956b8f88f0bf5b81c5690032b93e7ae5d7c4eeec2291f1a@node1:30303",
+      "enode://7fc43fc4d20ca9f54b58dde2cedfa1f17b2584b7caf010fa421d1992b0a15151cd43f530dcfe22eab44c277ac9138bead2ff01438eb9d444370f27ae4d81af99@node2:30303",
+      "enode://fb47d27abae566e3b70cfc228e19f01d5b40a084bdfaf6ee68813f69f49ffd1182b0890765f719d6d497efbb0670dbc55adac0f53e8828319922434bd8188711@node3:30303",
+      "enode://7e4d5802d0cf8bbf69167d725eee2ff426a0aa3c43eac0ac02e4c08156feb57e9f326b2a40fe69255c68509b1ab56a9fbf1e64f5742f13488cdc69db36573179@node5:30303"
+    ],
+    "node5": [
+      "enode://dc7e47b20c7f0de16e1579b012d0fd4555cd4a271357e5cb84bd72786002b982f017c2151b75c4da0956b8f88f0bf5b81c5690032b93e7ae5d7c4eeec2291f1a@node1:30303",
+      "enode://7fc43fc4d20ca9f54b58dde2cedfa1f17b2584b7caf010fa421d1992b0a15151cd43f530dcfe22eab44c277ac9138bead2ff01438eb9d444370f27ae4d81af99@node2:30303",
+      "enode://fb47d27abae566e3b70cfc228e19f01d5b40a084bdfaf6ee68813f69f49ffd1182b0890765f719d6d497efbb0670dbc55adac0f53e8828319922434bd8188711@node3:30303",
+      "enode://7addfe97f341068a6978589691d0b1d96af4505f7079c5cdfba794d519e5027af8acc2ea0d8fda050c29bd7e6c82ae4fd96b4ce6711eaccef0c2fa311d077b86@node4:30303"
+    ]
+  }
+}
