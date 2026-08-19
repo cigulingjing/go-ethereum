@@ -6,8 +6,9 @@ import (
 )
 
 var (
-	codeUploaded   = evmadapter.CodeUploadedTopic
-	CodeStorageABI = evmadapter.MustCodeStorageABI()
+	codeUploaded        = evmadapter.CodeUploadedTopic
+	codeVersionUploaded = evmadapter.CodeVersionUploadedTopic
+	CodeStorageABI      = evmadapter.MustCodeStorageABI()
 )
 
 func init() {

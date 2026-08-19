@@ -41,6 +41,36 @@ func CallProcessor(algoName string, gas uint64, encodedInput []byte) ([]byte, ui
 
 }
 
+func CallProcessorAt(algoName string, gas uint64, encodedInput []byte, blockNumber uint64) ([]byte, uint64, error) {
+	algoName = capitalString(algoName)
+
+	log.Info("Call upgrade algorithm", "name", algoName, "block", blockNumber, "input", encodedInput)
+
+	p, ok := builtin.Lookup(algoName)
+	if ok {
+		return callBuiltinAlgorithm(p, gas, encodedInput)
+	}
+	funcInfo, ok := getActiveAlgorithmVersionInfoAt(algoName, blockNumber)
+	if !ok {
+		return nil, gas, fmt.Errorf("algorithm %s is not loaded", algoName)
+	}
+	if _, ok := getUploadedAlgorithmVersionInfo(algoName, funcInfo.Version); ok {
+		if prepared, ok := runtimeAlgorithmRepository.PreparedVersion(algoName, funcInfo.Version); ok {
+			funcInfo = prepared
+		} else {
+			if funcInfo.Version == 1 {
+				return nil, gas, fmt.Errorf("algorithm %s is not loaded", algoName)
+			}
+			return nil, gas, fmt.Errorf("algorithm %s version %d is not loaded", algoName, funcInfo.Version)
+		}
+	}
+	pluginPath := sofilePath(algoName)
+	if funcInfo.Version != 1 {
+		pluginPath = runtimeAlgorithmRepository.VersionPluginPath(algoName, funcInfo.Version)
+	}
+	return callUpgradeAlgoWithInfo(algoName, pluginPath, gas, encodedInput, funcInfo.Base())
+}
+
 func RequiredGas(algoName string) (uint64, error) {
 	algoName = capitalString(algoName)
 
@@ -54,12 +84,42 @@ func RequiredGas(algoName string) (uint64, error) {
 	return funcInfo.Gas, nil
 }
 
+func RequiredGasAt(algoName string, blockNumber uint64) (uint64, error) {
+	algoName = capitalString(algoName)
+
+	if p, ok := builtin.Lookup(algoName); ok {
+		return p.RequiredGas(), nil
+	}
+	funcInfo, ok := getActiveAlgorithmVersionInfoAt(algoName, blockNumber)
+	if !ok {
+		return 0, fmt.Errorf("algorithm %s is not loaded", algoName)
+	}
+	if _, ok := getUploadedAlgorithmVersionInfo(algoName, funcInfo.Version); ok {
+		if prepared, ok := runtimeAlgorithmRepository.PreparedVersion(algoName, funcInfo.Version); ok {
+			return prepared.Gas, nil
+		}
+		if funcInfo.Version == 1 {
+			return 0, fmt.Errorf("algorithm %s is not loaded", algoName)
+		}
+		return 0, fmt.Errorf("algorithm %s version %d is not loaded", algoName, funcInfo.Version)
+	}
+	return funcInfo.Gas, nil
+}
+
 func RequiredGasForCall(input []byte) (uint64, error) {
 	algoName, _, err := ParseCall(input)
 	if err != nil {
 		return 0, err
 	}
 	return RequiredGas(algoName)
+}
+
+func RequiredGasForCallAt(input []byte, blockNumber uint64) (uint64, error) {
+	algoName, _, err := ParseCall(input)
+	if err != nil {
+		return 0, err
+	}
+	return RequiredGasAt(algoName, blockNumber)
 }
 
 func RunCall(input []byte) ([]byte, error) {
@@ -71,12 +131,25 @@ func RunCall(input []byte) ([]byte, error) {
 	return ret, err
 }
 
+func RunCallAt(input []byte, blockNumber uint64) ([]byte, error) {
+	algoName, encodedInput, err := ParseCall(input)
+	if err != nil {
+		return nil, err
+	}
+	ret, _, err := CallProcessorAt(algoName, ^uint64(0), encodedInput, blockNumber)
+	return ret, err
+}
+
 func callUpgradeAlgo(funcName string, pluginPath string, gas uint64, encodedInput []byte) ([]byte, uint64, error) {
 	// Get algorithm info
 	funcInfo, ok := getAlgorithmInfo(funcName)
 	if !ok {
 		return nil, gas, fmt.Errorf("algorithm %s is not loaded", funcName)
 	}
+	return callUpgradeAlgoWithInfo(funcName, pluginPath, gas, encodedInput, funcInfo)
+}
+
+func callUpgradeAlgoWithInfo(funcName string, pluginPath string, gas uint64, encodedInput []byte, funcInfo algoInfo) ([]byte, uint64, error) {
 	inputType, outputType := funcInfo.InputTypes(), funcInfo.OutputTypes()
 	log.Info("Loaded upgrade algorithm ABI types", "input", inputType, "output", outputType)
 

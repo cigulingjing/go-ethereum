@@ -74,6 +74,68 @@ func TestRepositoryMetadataRoundTripPreservesSchema(t *testing.T) {
 	}
 }
 
+func TestRepositoryVersionMetadataAndPathsAreIsolated(t *testing.T) {
+	workspace := NewWorkspace(filepath.Join(t.TempDir(), "plugin"))
+	repo := New(workspace)
+	v1 := model.AlgorithmVersionInfo{
+		AlgorithmInfo:   model.AlgorithmInfo{Code: "v1", Gas: 1, IType: "bytes", OType: "bytes"},
+		Version:         1,
+		ActivationBlock: 0,
+	}
+	v2 := model.AlgorithmVersionInfo{
+		AlgorithmInfo:   model.AlgorithmInfo{Code: "v2", Gas: 2, IType: "bytes", OType: "bytes"},
+		Version:         2,
+		ActivationBlock: 42,
+	}
+	repo.SetUploadedVersion("Add", v1)
+	repo.SetUploadedVersion("Add", v2)
+	repo.SetActiveVersion("Add", v1)
+	repo.SetActiveVersion("Add", v2)
+
+	if repo.VersionSourcePath("Add", 2) == repo.SourcePath("Add") {
+		t.Fatal("versioned source path reused legacy path")
+	}
+	if repo.VersionPluginPath("Add", 2) == repo.PluginPath("Add") {
+		t.Fatal("versioned plugin path reused legacy path")
+	}
+	if got, ok := repo.UploadedVersion("Add", 2); !ok || got != v2 {
+		t.Fatalf("unexpected uploaded version: %#v %t", got, ok)
+	}
+	if got, ok := repo.ActiveVersionAt("Add", 41); !ok || got.Version != 1 {
+		t.Fatalf("unexpected active version before activation: %#v %t", got, ok)
+	}
+	if got, ok := repo.ActiveVersionAt("Add", 42); !ok || got.Version != 2 {
+		t.Fatalf("unexpected active version after activation: %#v %t", got, ok)
+	}
+	if got, ok := repo.PreparedVersion("Add", 2); !ok || got != v2 {
+		t.Fatalf("unexpected prepared version: %#v %t", got, ok)
+	}
+}
+
+func TestRepositoryVersionMetadataRoundTrip(t *testing.T) {
+	workspace := NewWorkspace(filepath.Join(t.TempDir(), "plugin"))
+	repo := New(workspace)
+	want := model.AlgorithmVersionInfo{
+		AlgorithmInfo:   model.AlgorithmInfo{Code: "encoded-source", Gas: 12345, IType: "bytes", OType: "bytes"},
+		Version:         2,
+		ActivationBlock: 42,
+	}
+	repo.SetActiveVersion("Verify", want)
+	if err := repo.Save(); err != nil {
+		t.Fatalf("Save failed: %v", err)
+	}
+	loaded := New(workspace)
+	if err := loaded.Load(); err != nil {
+		t.Fatalf("Load failed: %v", err)
+	}
+	if got, ok := loaded.PreparedVersion("Verify", 2); !ok || got != want {
+		t.Fatalf("unexpected loaded version metadata: %#v, %t", got, ok)
+	}
+	if got, ok := loaded.Active("Verify"); !ok || got != want.Base() {
+		t.Fatalf("unexpected legacy active metadata: %#v, %t", got, ok)
+	}
+}
+
 func TestRepositoryLoadInvalidJSONKeepsState(t *testing.T) {
 	workspace := NewWorkspace(filepath.Join(t.TempDir(), "plugin"))
 	if err := workspace.EnsureDirs(); err != nil {

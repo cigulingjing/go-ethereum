@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 // Encode compresses source with gzip and encodes it as standard base64.
@@ -73,6 +74,9 @@ func DecodeToFile(encoded, path string) error {
 	source, err := Decode(encoded)
 	if err != nil {
 		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return fmt.Errorf("create source directory %s: %w", filepath.Dir(path), err)
 	}
 	if err := os.WriteFile(path, source, 0644); err != nil {
 		return fmt.Errorf("write source file %s: %w", path, err)

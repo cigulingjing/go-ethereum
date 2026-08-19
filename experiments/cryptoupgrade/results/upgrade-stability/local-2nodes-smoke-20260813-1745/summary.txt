@@ -1,0 +1,5 @@
+experiment=multi-node-upgrade-stability change=lab3-upgrade-stability completed=false rounds=0/1
+round=1 mode=scheduled tx= completed=false error=baseline version not callable: node node1 version 1011 not callable at block 37
+json=/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/upgrade-stability/local-2nodes-smoke-20260813-1745/result.json
+csv=/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/upgrade-stability/local-2nodes-smoke-20260813-1745/samples.csv
+summary=/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/upgrade-stability/local-2nodes-smoke-20260813-1745/summary.txt

@@ -1,0 +1,121 @@
+{
+  "experiment": "multi-node-upgrade-stability",
+  "change": "lab3-upgrade-stability",
+  "timestamp": "2026-08-13T17:44:37.430164803+08:00",
+  "command": [
+    "/tmp/go-build4157799775/b001/exe/benchupgradestability",
+    "-config",
+    "experiments/cryptoupgrade/deployments/networks/local-2nodes.yaml",
+    "-mode",
+    "both",
+    "-rounds",
+    "1",
+    "-timeout",
+    "180s",
+    "-out",
+    "experiments/cryptoupgrade/results/upgrade-stability/local-2nodes-smoke-20260813-1745",
+    "-poll-interval",
+    "500ms"
+  ],
+  "config": {
+    "configPath": "/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/deployments/networks/local-2nodes.yaml",
+    "chainId": 11223344,
+    "networkId": 11223344,
+    "consensusType": "clique",
+    "consensusPeriod": 5,
+    "nodeCount": 2,
+    "targetNodeIds": [
+      "node1",
+      "node2"
+    ],
+    "senderNodeId": "node1",
+    "senderRpc": "http://127.0.0.1:8661",
+    "from": "0xF5F871aA6Bd253914705898c66251f994aa426FA",
+    "mode": "both",
+    "algorithm": "Add",
+    "rounds": 1,
+    "activationLag": 2,
+    "pollIntervalMillis": 500,
+    "timeoutMillis": 180000,
+    "preflight": true
+  },
+  "artifacts": {
+    "resultDir": "/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/upgrade-stability/local-2nodes-smoke-20260813-1745",
+    "resultJson": "/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/upgrade-stability/local-2nodes-smoke-20260813-1745/result.json",
+    "resultCsv": "/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/upgrade-stability/local-2nodes-smoke-20260813-1745/samples.csv",
+    "resultSummary": "/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/upgrade-stability/local-2nodes-smoke-20260813-1745/summary.txt"
+  },
+  "preflight": {
+    "nodes": [
+      {
+        "id": "node1",
+        "role": "signer",
+        "rpcURL": "http://127.0.0.1:8661",
+        "chainId": 11223344,
+        "peerCount": 1,
+        "startBlock": 36,
+        "endBlock": 37
+      },
+      {
+        "id": "node2",
+        "role": "observer",
+        "rpcURL": "http://127.0.0.1:8662",
+        "chainId": 11223344,
+        "peerCount": 1,
+        "startBlock": 36,
+        "endBlock": 37
+      }
+    ],
+    "ok": true
+  },
+  "rounds": [
+    {
+      "index": 1,
+      "mode": "scheduled",
+      "algorithm": "Add",
+      "versionPlan": {
+        "oldVersion": 0,
+        "newVersion": 0,
+        "activationBlock": 0,
+        "oldExpectedValue": "",
+        "newExpectedValue": "",
+        "metadataHash": ""
+      },
+      "receipt": {},
+      "event": {
+        "found": false,
+        "consistent": false
+      },
+      "samples": null,
+      "nodes": null,
+      "checks": {
+        "chainViewConsistent": false,
+        "receiptConsistent": false,
+        "eventConsistent": false,
+        "versionConsistent": false,
+        "outputConsistent": false,
+        "passed": false
+      },
+      "completed": false,
+      "error": "baseline version not callable: node node1 version 1011 not callable at block 37"
+    }
+  ],
+  "summary": {
+    "roundCount": 1,
+    "completedRoundCount": 0,
+    "completed": false,
+    "failedRounds": [
+      1
+    ],
+    "failureReasons": [
+      "baseline version not callable: node node1 version 1011 not callable at block 37"
+    ]
+  },
+  "limitations": [
+    "稳定性实验通过 JSON-RPC 从控制端采样，短暂网络传播差异会体现在采样结果中。",
+    "版本选择以指定 block number 的 eth_call 结果为准，不使用节点日志时间作为一致性判据。",
+    "本命令默认使用 Add fixture 的两个版本区分旧输出和新输出，不统计执行效率或 Gas 对比作为主结论。"
+  ],
+  "completed": false,
+  "error": "baseline version not callable: node node1 version 1011 not callable at block 37"
+}

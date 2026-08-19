@@ -8,8 +8,9 @@ import (
 )
 
 type fakeState struct {
-	active   map[string]model.AlgorithmInfo
-	uploaded map[string]model.AlgorithmInfo
+	active           map[string]model.AlgorithmInfo
+	uploaded         map[string]model.AlgorithmInfo
+	uploadedVersions map[string]map[uint64]model.AlgorithmVersionInfo
 }
 
 func (s *fakeState) Active(name string) (model.AlgorithmInfo, bool) {
@@ -27,6 +28,48 @@ func (s *fakeState) Uploaded(name string) (model.AlgorithmInfo, bool) {
 
 func (s *fakeState) SetUploaded(name string, info model.AlgorithmInfo) {
 	s.uploaded[name] = info
+}
+
+func (s *fakeState) UploadedVersion(name string, version uint64) (model.AlgorithmVersionInfo, bool) {
+	if versions := s.uploadedVersions[name]; versions != nil {
+		if info, ok := versions[version]; ok {
+			return info, true
+		}
+	}
+	if version == 1 {
+		if info, ok := s.uploaded[name]; ok {
+			return model.LegacyVersion(info), true
+		}
+	}
+	return model.AlgorithmVersionInfo{}, false
+}
+
+func (s *fakeState) SetUploadedVersion(name string, info model.AlgorithmVersionInfo) {
+	if s.uploadedVersions == nil {
+		s.uploadedVersions = make(map[string]map[uint64]model.AlgorithmVersionInfo)
+	}
+	if s.uploadedVersions[name] == nil {
+		s.uploadedVersions[name] = make(map[uint64]model.AlgorithmVersionInfo)
+	}
+	s.uploadedVersions[name][info.Version] = info
+}
+
+func (s *fakeState) ActiveVersionAt(name string, blockNumber uint64) (model.AlgorithmVersionInfo, bool) {
+	var selected model.AlgorithmVersionInfo
+	var ok bool
+	if info, exists := s.active[name]; exists && blockNumber == 0 {
+		selected = model.LegacyVersion(info)
+		ok = true
+	}
+	if versions := s.uploadedVersions[name]; versions != nil {
+		for _, info := range versions {
+			if info.ActivationBlock <= blockNumber && (!ok || info.Version > selected.Version) {
+				selected = info
+				ok = true
+			}
+		}
+	}
+	return selected, ok
 }
 
 func (s *fakeState) UpdateGas(string, uint64) (bool, bool) { return false, false }
@@ -47,11 +90,20 @@ func (c *fakeCaller) Run([]byte) ([]byte, error) {
 	return nil, nil
 }
 
+func (c *fakeCaller) RequiredGasAt(input []byte, _ uint64) (uint64, error) {
+	return c.RequiredGas(input)
+}
+
+func (c *fakeCaller) RunAt(input []byte, _ uint64) ([]byte, error) {
+	return c.Run(input)
+}
+
 func TestUploadReceiptDoesNotMeanLocalActivation(t *testing.T) {
 	contractABI := MustCodeStorageABI()
 	state := &fakeState{
-		active:   make(map[string]model.AlgorithmInfo),
-		uploaded: make(map[string]model.AlgorithmInfo),
+		active:           make(map[string]model.AlgorithmInfo),
+		uploaded:         make(map[string]model.AlgorithmInfo),
+		uploadedVersions: make(map[string]map[uint64]model.AlgorithmVersionInfo),
 	}
 	caller := new(fakeCaller)
 	dispatcher := NewDispatcher(contractABI, state, caller)
@@ -79,5 +131,89 @@ func TestUploadReceiptDoesNotMeanLocalActivation(t *testing.T) {
 	}
 	if caller.requiredGasCalls != 0 || caller.runCalls != 0 {
 		t.Fatalf("upload synchronously entered runtime call path: gas=%d run=%d", caller.requiredGasCalls, caller.runCalls)
+	}
+}
+
+func TestUploadCodeVersionStoresPlanAndEmitsVersionEvent(t *testing.T) {
+	contractABI := MustCodeStorageABI()
+	state := &fakeState{
+		active:           make(map[string]model.AlgorithmInfo),
+		uploaded:         make(map[string]model.AlgorithmInfo),
+		uploadedVersions: make(map[string]map[uint64]model.AlgorithmVersionInfo),
+	}
+	dispatcher := NewDispatcher(contractABI, state, new(fakeCaller)).WithBlockNumber(10)
+	input, err := contractABI.Pack("uploadCodeVersion", "add", uint64(2), "encoded-v2", uint64(9), "bytes", "bytes", uint64(42))
+	if err != nil {
+		t.Fatalf("pack uploadCodeVersion: %v", err)
+	}
+	var gotName string
+	var gotVersion uint64
+	var gotActivation uint64
+	if _, err := dispatcher.Run(input, false, func(topics []common.Hash, data []byte) {
+		if len(topics) != 1 || topics[0] != CodeVersionUploadedTopic {
+			t.Fatalf("unexpected topics: %v", topics)
+		}
+		values, err := contractABI.Unpack("codeVersionUploaded", data)
+		if err != nil {
+			t.Fatalf("unpack codeVersionUploaded: %v", err)
+		}
+		gotName = values[0].(string)
+		gotVersion = values[1].(uint64)
+		gotActivation = values[2].(uint64)
+	}); err != nil {
+		t.Fatalf("uploadCodeVersion failed: %v", err)
+	}
+	info, ok := state.UploadedVersion("Add", 2)
+	if !ok {
+		t.Fatal("version metadata was not recorded")
+	}
+	if info.Code != "encoded-v2" || info.Gas != 9 || info.Version != 2 || info.ActivationBlock != 42 {
+		t.Fatalf("unexpected version metadata: %#v", info)
+	}
+	if gotName != "Add" || gotVersion != 2 || gotActivation != 42 {
+		t.Fatalf("unexpected version event: %q v%d block %d", gotName, gotVersion, gotActivation)
+	}
+}
+
+func TestActiveVersionUsesDispatcherBlockNumber(t *testing.T) {
+	contractABI := MustCodeStorageABI()
+	state := &fakeState{
+		active:           make(map[string]model.AlgorithmInfo),
+		uploaded:         make(map[string]model.AlgorithmInfo),
+		uploadedVersions: make(map[string]map[uint64]model.AlgorithmVersionInfo),
+	}
+	state.SetUploadedVersion("Add", model.AlgorithmVersionInfo{
+		AlgorithmInfo:   model.AlgorithmInfo{Code: "v1", Gas: 1},
+		Version:         1,
+		ActivationBlock: 0,
+	})
+	state.SetUploadedVersion("Add", model.AlgorithmVersionInfo{
+		AlgorithmInfo:   model.AlgorithmInfo{Code: "v2", Gas: 2},
+		Version:         2,
+		ActivationBlock: 42,
+	})
+	input, err := contractABI.Pack("getActiveVersion", "Add")
+	if err != nil {
+		t.Fatalf("pack getActiveVersion: %v", err)
+	}
+	dispatcher := NewDispatcher(contractABI, state, new(fakeCaller))
+	before, err := dispatcher.WithBlockNumber(41).Run(input, true, nil)
+	if err != nil {
+		t.Fatalf("getActiveVersion before failed: %v", err)
+	}
+	beforeValues, err := contractABI.Unpack("getActiveVersion", before)
+	if err != nil {
+		t.Fatalf("unpack before: %v", err)
+	}
+	after, err := dispatcher.WithBlockNumber(42).Run(input, true, nil)
+	if err != nil {
+		t.Fatalf("getActiveVersion after failed: %v", err)
+	}
+	afterValues, err := contractABI.Unpack("getActiveVersion", after)
+	if err != nil {
+		t.Fatalf("unpack after: %v", err)
+	}
+	if beforeValues[0].(uint64) != 1 || afterValues[0].(uint64) != 2 {
+		t.Fatalf("unexpected active versions before=%v after=%v", beforeValues, afterValues)
 	}
 }

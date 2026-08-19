@@ -11,6 +11,32 @@ type AlgorithmInfo struct {
 	OType string `json:"otype"`
 }
 
+// AlgorithmVersionInfo 描述链上提交的一个算法版本计划。
+type AlgorithmVersionInfo struct {
+	AlgorithmInfo
+	Version         uint64 `json:"version"`
+	ActivationBlock uint64 `json:"activationBlock"`
+}
+
+// Base returns the legacy metadata view used by existing single-version paths.
+func (i AlgorithmVersionInfo) Base() AlgorithmInfo {
+	return i.AlgorithmInfo
+}
+
+// Versioned wraps legacy metadata with explicit version semantics.
+func Versioned(info AlgorithmInfo, version, activationBlock uint64) AlgorithmVersionInfo {
+	return AlgorithmVersionInfo{
+		AlgorithmInfo:   info,
+		Version:         version,
+		ActivationBlock: activationBlock,
+	}
+}
+
+// LegacyVersion wraps metadata in the compatibility version used by uploadCode.
+func LegacyVersion(info AlgorithmInfo) AlgorithmVersionInfo {
+	return Versioned(info, 1, 0)
+}
+
 // InputTypes 返回算法输入参数的 Solidity ABI 类型列表。
 func (i AlgorithmInfo) InputTypes() []string {
 	return splitTypes(i.IType)

@@ -16,6 +16,7 @@ type pluginPaths struct {
 	sourceDir         string
 	sharedObjectDir   string
 	algorithmInfoPath string
+	versionInfoPath   string
 }
 
 var runtimePluginPaths, runtimePluginPathsErr = resolvePluginPaths(os.Getenv(pluginDirEnvVar), "")
@@ -35,6 +36,7 @@ func pluginPathsFromWorkspace(workspace repository.Workspace) pluginPaths {
 		sourceDir:         workspace.SourceDir,
 		sharedObjectDir:   workspace.SharedObjectDir,
 		algorithmInfoPath: workspace.AlgorithmInfoPath,
+		versionInfoPath:   workspace.VersionInfoPath,
 	}
 }
 
@@ -48,6 +50,7 @@ func (paths pluginPaths) workspace() repository.Workspace {
 		SourceDir:         paths.sourceDir,
 		SharedObjectDir:   paths.sharedObjectDir,
 		AlgorithmInfoPath: paths.algorithmInfoPath,
+		VersionInfoPath:   paths.versionInfoPath,
 	}
 }
 

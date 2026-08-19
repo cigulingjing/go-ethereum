@@ -1,3 +1,0 @@
-round,algorithm,upgrade_name,node_id,role,rpc_url,receipt_block,completion_block,submit_to_receipt_ms,receipt_to_complete_ms,submit_to_complete_ms,validation_call_ms,decoded_result,expected_result,completed,timed_out,error
-1,Add,AddLatency001,node1,signer,http://127.0.0.1:8661,0,0,0.000000,0.000000,0.000000,0.000000,,200,false,true,context deadline exceeded
-1,Add,AddLatency001,node2,observer,http://127.0.0.1:8662,0,0,0.000000,0.000000,0.000000,0.000000,,200,false,true,context deadline exceeded

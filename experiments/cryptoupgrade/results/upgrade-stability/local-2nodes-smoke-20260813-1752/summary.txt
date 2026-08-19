@@ -1,0 +1,6 @@
+experiment=multi-node-upgrade-stability change=lab3-upgrade-stability completed=true rounds=2/2
+round=1 mode=scheduled tx=0xc4f5bf4a54dae03f48bb458bb29d80dc082a4647b3a66fb05577f7df2894ef9e completed=true
+round=2 mode=immediate tx=0xa78388d5b852b597a9204c04c2bb52ea079189fcfc2be9eab45067042827cc2a completed=true
+json=/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/upgrade-stability/local-2nodes-smoke-20260813-1752/result.json
+csv=/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/upgrade-stability/local-2nodes-smoke-20260813-1752/samples.csv
+summary=/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/upgrade-stability/local-2nodes-smoke-20260813-1752/summary.txt

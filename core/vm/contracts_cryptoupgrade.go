@@ -41,8 +41,8 @@ func isCryptoUpgradeCall(addr common.Address, input []byte) bool {
 	return cryptoupgrade.IsCodeStorageCall(addr, input)
 }
 
-func runCryptoUpgradeCall(stateDB StateDB, input []byte, gas GasBudget, logger *tracing.Hooks, readOnly bool) (ret []byte, remaining GasBudget, err error) {
-	gasCost, err := cryptoupgrade.RequiredGasForCodeStorageCall(input)
+func runCryptoUpgradeCall(stateDB StateDB, input []byte, blockNumber uint64, gas GasBudget, logger *tracing.Hooks, readOnly bool) (ret []byte, remaining GasBudget, err error) {
+	gasCost, err := cryptoupgrade.RequiredGasForCodeStorageCallAt(input, blockNumber)
 	if err != nil {
 		return nil, gas, err
 	}
@@ -53,7 +53,7 @@ func runCryptoUpgradeCall(stateDB StateDB, input []byte, gas GasBudget, logger *
 	if logger.HasGasHook() {
 		logger.EmitGasChange(prior.AsTracing(), gas.AsTracing(), tracing.GasChangeCallPrecompiledContract)
 	}
-	output, err := cryptoupgrade.RunCodeStorageCall(input, readOnly, func(topics []common.Hash, data []byte) {
+	output, err := cryptoupgrade.RunCodeStorageCallAt(input, blockNumber, readOnly, func(topics []common.Hash, data []byte) {
 		stateDB.AddLog(&types.Log{
 			Address: common.CodeStorageAddress,
 			Topics:  topics,

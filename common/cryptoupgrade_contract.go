@@ -73,124 +73,118 @@ var CodeStorageABI_json = `[
   {
     "anonymous": false,
     "inputs": [
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
-      }
+      {"indexed": false, "internalType": "string", "name": "name", "type": "string"}
     ],
     "name": "codeUploaded",
     "type": "event"
   },
   {
+    "anonymous": false,
     "inputs": [
-      {
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
-      }
+      {"indexed": false, "internalType": "string", "name": "name", "type": "string"},
+      {"indexed": false, "internalType": "uint64", "name": "version", "type": "uint64"},
+      {"indexed": false, "internalType": "uint64", "name": "activationBlock", "type": "uint64"}
+    ],
+    "name": "codeVersionUploaded",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {"internalType": "string", "name": "name", "type": "string"}
     ],
     "name": "getCode",
     "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
+      {"internalType": "string", "name": "", "type": "string"}
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
-      }
+      {"internalType": "string", "name": "name", "type": "string"}
     ],
     "name": "getGas",
     "outputs": [
-      {
-        "internalType": "uint64",
-        "name": "",
-        "type": "uint64"
-      }
+      {"internalType": "uint64", "name": "", "type": "uint64"}
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
-      },
-      {
-        "internalType": "bytes",
-        "name": "input",
-        "type": "bytes"
-      }
+      {"internalType": "string", "name": "name", "type": "string"},
+      {"internalType": "bytes", "name": "input", "type": "bytes"}
     ],
     "name": "callFunc",
     "outputs": [
-      {
-        "internalType": "bytes",
-        "name": "",
-        "type": "bytes"
-      }
+      {"internalType": "bytes", "name": "", "type": "bytes"}
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
-      }
+      {"internalType": "string", "name": "name", "type": "string"}
     ],
     "name": "getInfo",
     "outputs": [
-      {
-        "internalType": "string",
-        "name": "code",
-        "type": "string"
-      },
-      {
-        "internalType": "uint64",
-        "name": "gas",
-        "type": "uint64"
-      },
-      {
-        "internalType": "string",
-        "name": "itype",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "otype",
-        "type": "string"
-      }
+      {"internalType": "string", "name": "code", "type": "string"},
+      {"internalType": "uint64", "name": "gas", "type": "uint64"},
+      {"internalType": "string", "name": "itype", "type": "string"},
+      {"internalType": "string", "name": "otype", "type": "string"}
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
-      },
-      {
-        "internalType": "uint64",
-        "name": "_gas",
-        "type": "uint64"
-      }
+      {"internalType": "string", "name": "name", "type": "string"},
+      {"internalType": "uint64", "name": "version", "type": "uint64"}
+    ],
+    "name": "getVersionInfo",
+    "outputs": [
+      {"internalType": "string", "name": "code", "type": "string"},
+      {"internalType": "uint64", "name": "gas", "type": "uint64"},
+      {"internalType": "string", "name": "itype", "type": "string"},
+      {"internalType": "string", "name": "otype", "type": "string"},
+      {"internalType": "uint64", "name": "storedVersion", "type": "uint64"},
+      {"internalType": "uint64", "name": "activationBlock", "type": "uint64"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "string", "name": "name", "type": "string"}
+    ],
+    "name": "getActiveVersion",
+    "outputs": [
+      {"internalType": "uint64", "name": "version", "type": "uint64"},
+      {"internalType": "uint64", "name": "activationBlock", "type": "uint64"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "string", "name": "name", "type": "string"}
+    ],
+    "name": "getActiveInfo",
+    "outputs": [
+      {"internalType": "string", "name": "code", "type": "string"},
+      {"internalType": "uint64", "name": "gas", "type": "uint64"},
+      {"internalType": "string", "name": "itype", "type": "string"},
+      {"internalType": "string", "name": "otype", "type": "string"},
+      {"internalType": "uint64", "name": "version", "type": "uint64"},
+      {"internalType": "uint64", "name": "activationBlock", "type": "uint64"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "string", "name": "name", "type": "string"},
+      {"internalType": "uint64", "name": "_gas", "type": "uint64"}
     ],
     "name": "updataGas",
     "outputs": [],
@@ -199,33 +193,42 @@ var CodeStorageABI_json = `[
   },
   {
     "inputs": [
-      {
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "code",
-        "type": "string"
-      },
-      {
-        "internalType": "uint64",
-        "name": "gas",
-        "type": "uint64"
-      },
-      {
-        "internalType": "string",
-        "name": "itype",
-        "type": "string"
-      },
-      {
-        "internalType": "string",
-        "name": "otype",
-        "type": "string"
-      }
+      {"internalType": "string", "name": "name", "type": "string"},
+      {"internalType": "string", "name": "code", "type": "string"},
+      {"internalType": "uint64", "name": "gas", "type": "uint64"},
+      {"internalType": "string", "name": "itype", "type": "string"},
+      {"internalType": "string", "name": "otype", "type": "string"}
     ],
     "name": "uploadCode",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "string", "name": "name", "type": "string"},
+      {"internalType": "uint64", "name": "version", "type": "uint64"},
+      {"internalType": "string", "name": "code", "type": "string"},
+      {"internalType": "uint64", "name": "gas", "type": "uint64"},
+      {"internalType": "string", "name": "itype", "type": "string"},
+      {"internalType": "string", "name": "otype", "type": "string"},
+      {"internalType": "uint64", "name": "activationBlock", "type": "uint64"}
+    ],
+    "name": "uploadCodeVersion",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {"internalType": "string", "name": "name", "type": "string"},
+      {"internalType": "uint64", "name": "version", "type": "uint64"},
+      {"internalType": "string", "name": "code", "type": "string"},
+      {"internalType": "uint64", "name": "gas", "type": "uint64"},
+      {"internalType": "string", "name": "itype", "type": "string"},
+      {"internalType": "string", "name": "otype", "type": "string"}
+    ],
+    "name": "uploadCodeImmediate",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

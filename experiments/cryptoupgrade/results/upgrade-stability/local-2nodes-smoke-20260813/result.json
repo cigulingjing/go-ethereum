@@ -1,0 +1,257 @@
+{
+  "experiment": "multi-node-upgrade-stability",
+  "change": "lab3-upgrade-stability",
+  "timestamp": "2026-08-13T17:38:07.271448408+08:00",
+  "command": [
+    "/tmp/go-build2808742746/b001/exe/benchupgradestability",
+    "-config",
+    "experiments/cryptoupgrade/deployments/networks/local-2nodes.yaml",
+    "-mode",
+    "both",
+    "-rounds",
+    "1",
+    "-timeout",
+    "180s",
+    "-out",
+    "experiments/cryptoupgrade/results/upgrade-stability/local-2nodes-smoke-20260813",
+    "-poll-interval",
+    "500ms"
+  ],
+  "config": {
+    "configPath": "/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/deployments/networks/local-2nodes.yaml",
+    "chainId": 11223344,
+    "networkId": 11223344,
+    "consensusType": "clique",
+    "consensusPeriod": 5,
+    "nodeCount": 2,
+    "targetNodeIds": [
+      "node1",
+      "node2"
+    ],
+    "senderNodeId": "node1",
+    "senderRpc": "http://127.0.0.1:8661",
+    "from": "0xF5F871aA6Bd253914705898c66251f994aa426FA",
+    "mode": "both",
+    "algorithm": "Add",
+    "rounds": 1,
+    "activationLag": 2,
+    "pollIntervalMillis": 500,
+    "timeoutMillis": 180000,
+    "preflight": true
+  },
+  "artifacts": {
+    "resultDir": "/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/upgrade-stability/local-2nodes-smoke-20260813",
+    "resultJson": "/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/upgrade-stability/local-2nodes-smoke-20260813/result.json",
+    "resultCsv": "/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/upgrade-stability/local-2nodes-smoke-20260813/samples.csv"
+  },
+  "preflight": {
+    "nodes": [
+      {
+        "id": "node1",
+        "role": "signer",
+        "rpcURL": "http://127.0.0.1:8661",
+        "chainId": 11223344,
+        "peerCount": 1,
+        "startBlock": 17,
+        "endBlock": 18
+      },
+      {
+        "id": "node2",
+        "role": "observer",
+        "rpcURL": "http://127.0.0.1:8662",
+        "chainId": 11223344,
+        "peerCount": 1,
+        "startBlock": 17,
+        "endBlock": 18
+      }
+    ],
+    "ok": true
+  },
+  "rounds": [
+    {
+      "index": 1,
+      "mode": "scheduled",
+      "algorithm": "Add",
+      "versionPlan": {
+        "oldVersion": 1011,
+        "newVersion": 1012,
+        "activationBlock": 20,
+        "oldExpectedValue": "200",
+        "newExpectedValue": "205",
+        "metadataHash": "0xa1bf819dd1c613878213c6809dd6ec66dfaa0cf7433857224b97c1558163d97f"
+      },
+      "submittedAt": "2026-08-13T17:38:21.839769915+08:00",
+      "transactionHash": "0xfbb85785d0907fa44b6db60e88bdff0d8d8b8d5571920740ac2de24246639b15",
+      "receipt": {
+        "status": 1,
+        "gasUsed": 86664,
+        "blockNumber": 21,
+        "blockHash": "0x671c302b51235db537d08bb52b64932dccaa6c67c4467570ffd314cedaf73005",
+        "logCount": 1
+      },
+      "event": {
+        "found": true,
+        "name": "Add",
+        "version": 1012,
+        "activationBlock": 20,
+        "consistent": true
+      },
+      "samples": [
+        {
+          "stage": "before",
+          "blockNumber": 19,
+          "blockHash": "0xf4075829486bb3cec3918b4bb4ee7843e922d7301f97b1546ae750a492d05473",
+          "expectedVersion": 1011,
+          "expectedOutput": "200",
+          "nodes": [
+            {
+              "nodeId": "node1",
+              "role": "signer",
+              "rpcURL": "http://127.0.0.1:8661",
+              "headNumber": 21,
+              "headHash": "0x671c302b51235db537d08bb52b64932dccaa6c67c4467570ffd314cedaf73005",
+              "blockHash": "0xf4075829486bb3cec3918b4bb4ee7843e922d7301f97b1546ae750a492d05473",
+              "receiptVisible": true,
+              "receiptBlock": 21,
+              "receiptBlockHash": "0x671c302b51235db537d08bb52b64932dccaa6c67c4467570ffd314cedaf73005",
+              "version": 1011,
+              "activationBlock": 18,
+              "metadataHash": "0xc60e7d53392e6e8d08bab5cc530026a5e51c642bccc294ddc255a9b8ed8a6f0e",
+              "output": "200",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000c8",
+              "ok": true
+            },
+            {
+              "nodeId": "node2",
+              "role": "observer",
+              "rpcURL": "http://127.0.0.1:8662",
+              "headNumber": 21,
+              "headHash": "0x671c302b51235db537d08bb52b64932dccaa6c67c4467570ffd314cedaf73005",
+              "blockHash": "0xf4075829486bb3cec3918b4bb4ee7843e922d7301f97b1546ae750a492d05473",
+              "receiptVisible": true,
+              "receiptBlock": 21,
+              "receiptBlockHash": "0x671c302b51235db537d08bb52b64932dccaa6c67c4467570ffd314cedaf73005",
+              "version": 1011,
+              "activationBlock": 18,
+              "metadataHash": "0xc60e7d53392e6e8d08bab5cc530026a5e51c642bccc294ddc255a9b8ed8a6f0e",
+              "output": "200",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000c8",
+              "ok": true
+            }
+          ],
+          "checks": {
+            "chainViewConsistent": true,
+            "receiptConsistent": true,
+            "eventConsistent": true,
+            "versionConsistent": true,
+            "outputConsistent": true,
+            "passed": true
+          }
+        },
+        {
+          "stage": "after",
+          "blockNumber": 20,
+          "blockHash": "0x771259f2e270c3dc76ecdbf443e36c2b793d46d9545ffbac7b225a8110759ef9",
+          "expectedVersion": 1012,
+          "expectedOutput": "205",
+          "nodes": [
+            {
+              "nodeId": "node1",
+              "role": "signer",
+              "rpcURL": "http://127.0.0.1:8661",
+              "headNumber": 21,
+              "headHash": "0x671c302b51235db537d08bb52b64932dccaa6c67c4467570ffd314cedaf73005",
+              "blockHash": "0x771259f2e270c3dc76ecdbf443e36c2b793d46d9545ffbac7b225a8110759ef9",
+              "receiptVisible": true,
+              "receiptBlock": 21,
+              "receiptBlockHash": "0x671c302b51235db537d08bb52b64932dccaa6c67c4467570ffd314cedaf73005",
+              "version": 1012,
+              "activationBlock": 20,
+              "metadataHash": "0xa1bf819dd1c613878213c6809dd6ec66dfaa0cf7433857224b97c1558163d97f",
+              "ok": false,
+              "error": "algorithm Add version 1012 is not loaded"
+            },
+            {
+              "nodeId": "node2",
+              "role": "observer",
+              "rpcURL": "http://127.0.0.1:8662",
+              "headNumber": 21,
+              "headHash": "0x671c302b51235db537d08bb52b64932dccaa6c67c4467570ffd314cedaf73005",
+              "blockHash": "0x771259f2e270c3dc76ecdbf443e36c2b793d46d9545ffbac7b225a8110759ef9",
+              "receiptVisible": true,
+              "receiptBlock": 21,
+              "receiptBlockHash": "0x671c302b51235db537d08bb52b64932dccaa6c67c4467570ffd314cedaf73005",
+              "version": 1012,
+              "activationBlock": 20,
+              "metadataHash": "0xa1bf819dd1c613878213c6809dd6ec66dfaa0cf7433857224b97c1558163d97f",
+              "ok": false,
+              "error": "algorithm Add version 1012 is not loaded"
+            }
+          ],
+          "checks": {
+            "chainViewConsistent": true,
+            "receiptConsistent": true,
+            "eventConsistent": true,
+            "versionConsistent": true,
+            "outputConsistent": false,
+            "passed": false,
+            "failures": [
+              "node1: algorithm Add version 1012 is not loaded",
+              "node2: algorithm Add version 1012 is not loaded",
+              "after: output mismatch"
+            ]
+          }
+        }
+      ],
+      "nodes": [
+        {
+          "nodeId": "node1",
+          "role": "signer",
+          "rpcURL": "http://127.0.0.1:8661",
+          "completed": false,
+          "error": "algorithm Add version 1012 is not loaded"
+        },
+        {
+          "nodeId": "node2",
+          "role": "observer",
+          "rpcURL": "http://127.0.0.1:8662",
+          "completed": false,
+          "error": "algorithm Add version 1012 is not loaded"
+        }
+      ],
+      "checks": {
+        "chainViewConsistent": true,
+        "receiptConsistent": true,
+        "eventConsistent": true,
+        "versionConsistent": true,
+        "outputConsistent": false,
+        "passed": false,
+        "failures": [
+          "node1: algorithm Add version 1012 is not loaded",
+          "node2: algorithm Add version 1012 is not loaded",
+          "after: output mismatch"
+        ]
+      },
+      "completed": false,
+      "error": "node1: algorithm Add version 1012 is not loaded; node2: algorithm Add version 1012 is not loaded; after: output mismatch"
+    }
+  ],
+  "summary": {
+    "roundCount": 1,
+    "completedRoundCount": 0,
+    "completed": false,
+    "failedRounds": [
+      1
+    ],
+    "failureReasons": [
+      "node1: algorithm Add version 1012 is not loaded; node2: algorithm Add version 1012 is not loaded; after: output mismatch"
+    ]
+  },
+  "limitations": [
+    "稳定性实验通过 JSON-RPC 从控制端采样，短暂网络传播差异会体现在采样结果中。",
+    "版本选择以指定 block number 的 eth_call 结果为准，不使用节点日志时间作为一致性判据。",
+    "本命令默认使用 Add fixture 的两个版本区分旧输出和新输出，不统计执行效率或 Gas 对比作为主结论。"
+  ],
+  "completed": false,
+  "error": "node1: algorithm Add version 1012 is not loaded; node2: algorithm Add version 1012 is not loaded; after: output mismatch"
+}

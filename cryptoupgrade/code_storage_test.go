@@ -64,6 +64,79 @@ func TestUploadCodeStaticContextDoesNotStoreOrEmit(t *testing.T) {
 	}
 }
 
+func TestUploadCodeVersionStoresMetadataWithoutActivating(t *testing.T) {
+	resetAlgorithmInfoForTest(t)
+	input, err := CodeStorageABI.Pack("uploadCodeVersion", "add", uint64(2), "compressed-source-v2", uint64(17), "bytes", "bytes", uint64(42))
+	if err != nil {
+		t.Fatalf("pack uploadCodeVersion: %v", err)
+	}
+	var gotName string
+	var gotVersion uint64
+	var gotActivation uint64
+	_, err = RunCodeStorageCallAt(input, 10, false, func(_ []common.Hash, data []byte) {
+		values, err := CodeStorageABI.Unpack("codeVersionUploaded", data)
+		if err != nil {
+			t.Fatalf("unpack codeVersionUploaded event: %v", err)
+		}
+		gotName = values[0].(string)
+		gotVersion = values[1].(uint64)
+		gotActivation = values[2].(uint64)
+	})
+	if err != nil {
+		t.Fatalf("RunCodeStorageCall uploadCodeVersion failed: %v", err)
+	}
+	if gotName != "Add" || gotVersion != 2 || gotActivation != 42 {
+		t.Fatalf("unexpected event: %q v%d block %d", gotName, gotVersion, gotActivation)
+	}
+	info, ok := getUploadedAlgorithmVersionInfo("Add", 2)
+	if !ok {
+		t.Fatal("uploadCodeVersion did not store uploaded version metadata")
+	}
+	if info.Code != "compressed-source-v2" || info.Gas != 17 || info.Version != 2 || info.ActivationBlock != 42 {
+		t.Fatalf("unexpected uploaded version metadata: %#v", info)
+	}
+	if _, ok := getActiveAlgorithmVersionInfo("Add"); ok {
+		t.Fatal("uploadCodeVersion should not mark the version locally active")
+	}
+}
+
+func TestGetActiveVersionUsesBlockNumber(t *testing.T) {
+	resetAlgorithmInfoForTest(t)
+	setUploadedAlgorithmVersionInfo("Add", algoVersionInfo{
+		AlgorithmInfo:   algoInfo{Code: "v1", Gas: 7, IType: "bytes", OType: "bytes"},
+		Version:         1,
+		ActivationBlock: 0,
+	})
+	setUploadedAlgorithmVersionInfo("Add", algoVersionInfo{
+		AlgorithmInfo:   algoInfo{Code: "v2", Gas: 9, IType: "bytes", OType: "bytes"},
+		Version:         2,
+		ActivationBlock: 42,
+	})
+	input, err := CodeStorageABI.Pack("getActiveVersion", "Add")
+	if err != nil {
+		t.Fatalf("pack getActiveVersion: %v", err)
+	}
+	before, err := RunCodeStorageCallAt(input, 41, true, nil)
+	if err != nil {
+		t.Fatalf("getActiveVersion before failed: %v", err)
+	}
+	beforeValues, err := CodeStorageABI.Unpack("getActiveVersion", before)
+	if err != nil {
+		t.Fatalf("unpack before: %v", err)
+	}
+	after, err := RunCodeStorageCallAt(input, 42, true, nil)
+	if err != nil {
+		t.Fatalf("getActiveVersion after failed: %v", err)
+	}
+	afterValues, err := CodeStorageABI.Unpack("getActiveVersion", after)
+	if err != nil {
+		t.Fatalf("unpack after: %v", err)
+	}
+	if beforeValues[0].(uint64) != 1 || afterValues[0].(uint64) != 2 {
+		t.Fatalf("unexpected active versions before=%v after=%v", beforeValues, afterValues)
+	}
+}
+
 func TestCallFuncBeforeActivationUsesLocalActiveState(t *testing.T) {
 	resetAlgorithmInfoForTest(t)
 	setUploadedAlgorithmInfo("Add", algoInfo{

@@ -1,3 +1,0 @@
-round,algorithm,node_id,role,rpc_url,receipt_block,completion_block,submit_to_receipt_ms,receipt_to_complete_ms,submit_to_complete_ms,validation_call_ms,decoded_result,expected_result,completed,timed_out,error
-1,LabOneAdd,node1,signer,http://127.0.0.1:8661,21,21,4656.965732,31.218930,4688.184662,28.745466,200,200,true,false,
-1,LabOneAdd,node2,observer,http://127.0.0.1:8662,21,21,5467.228193,14.540321,5481.768514,12.677007,200,200,true,false,

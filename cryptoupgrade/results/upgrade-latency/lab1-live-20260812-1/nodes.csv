@@ -1,1 +1,0 @@
-round,algorithm,node_id,role,rpc_url,receipt_block,completion_block,submit_to_receipt_ms,receipt_to_complete_ms,submit_to_complete_ms,validation_call_ms,decoded_result,expected_result,completed,timed_out,error

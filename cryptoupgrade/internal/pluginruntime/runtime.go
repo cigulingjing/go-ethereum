@@ -78,7 +78,7 @@ func (l *Loader) Activate(pluginPath, symbolName string) error {
 	}
 	// plugin.Open 会按真实路径缓存已加载对象；使用内容寻址快照才能让同名算法升级后加载新二进制。
 	l.mu.Lock()
-	l.active[symbolName] = snapshotPath
+	l.active[activeKey(pluginPath, symbolName)] = snapshotPath
 	l.mu.Unlock()
 	return nil
 }
@@ -86,12 +86,16 @@ func (l *Loader) Activate(pluginPath, symbolName string) error {
 // LookupActive 查询激活阶段选定的不可变制品，进程重启后回退到 canonical 路径。
 func (l *Loader) LookupActive(fallbackPath, symbolName string) (any, error) {
 	l.mu.Lock()
-	pluginPath := l.active[symbolName]
+	pluginPath := l.active[activeKey(fallbackPath, symbolName)]
 	l.mu.Unlock()
 	if pluginPath == "" {
 		pluginPath = fallbackPath
 	}
 	return l.Lookup(pluginPath, symbolName)
+}
+
+func activeKey(pluginPath, symbolName string) string {
+	return filepath.Clean(pluginPath) + "\x00" + symbolName
 }
 
 func snapshotPlugin(pluginPath string) (string, error) {

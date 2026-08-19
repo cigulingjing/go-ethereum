@@ -1,6 +1,7 @@
 package event
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"math/big"
@@ -15,10 +16,13 @@ import (
 )
 
 type fakeActivator struct {
-	calls int
-	name  string
-	info  model.AlgorithmInfo
-	err   error
+	calls        int
+	versionCalls int
+	name         string
+	version      uint64
+	info         model.AlgorithmInfo
+	versionInfo  model.AlgorithmVersionInfo
+	err          error
 }
 
 func (a *fakeActivator) Activate(_ context.Context, name string, info model.AlgorithmInfo) error {
@@ -28,10 +32,20 @@ func (a *fakeActivator) Activate(_ context.Context, name string, info model.Algo
 	return a.err
 }
 
+func (a *fakeActivator) ActivateVersion(_ context.Context, name string, info model.AlgorithmVersionInfo) error {
+	a.versionCalls++
+	a.name = name
+	a.version = info.Version
+	a.versionInfo = info
+	return a.err
+}
+
 type fakeClient struct {
 	contractABI abi.ABI
 	callName    string
+	callVersion uint64
 	info        model.AlgorithmInfo
+	versionInfo model.AlgorithmVersionInfo
 }
 
 func (*fakeClient) SubscribeFilterLogs(context.Context, ethereum.FilterQuery, chan<- types.Log) (ethereum.Subscription, error) {
@@ -39,12 +53,23 @@ func (*fakeClient) SubscribeFilterLogs(context.Context, ethereum.FilterQuery, ch
 }
 
 func (c *fakeClient) CallContract(_ context.Context, msg ethereum.CallMsg, _ *big.Int) ([]byte, error) {
-	values, err := c.contractABI.Methods["getInfo"].Inputs.Unpack(msg.Data[4:])
-	if err != nil {
-		return nil, err
+	for _, methodName := range []string{"getInfo", "getVersionInfo"} {
+		method := c.contractABI.Methods[methodName]
+		if len(msg.Data) >= 4 && bytes.Equal(method.ID, msg.Data[:4]) {
+			values, err := method.Inputs.Unpack(msg.Data[4:])
+			if err != nil {
+				return nil, err
+			}
+			c.callName = values[0].(string)
+			if methodName == "getInfo" {
+				return method.Outputs.Pack(c.info.Code, c.info.Gas, c.info.IType, c.info.OType)
+			}
+			c.callVersion = values[1].(uint64)
+			info := c.versionInfo
+			return method.Outputs.Pack(info.Code, info.Gas, info.IType, info.OType, info.Version, info.ActivationBlock)
+		}
 	}
-	c.callName = values[0].(string)
-	return c.contractABI.Methods["getInfo"].Outputs.Pack(c.info.Code, c.info.Gas, c.info.IType, c.info.OType)
+	return nil, errors.New("unexpected method")
 }
 
 func TestHandleOnlyQueriesAndDelegatesActivation(t *testing.T) {
@@ -68,6 +93,35 @@ func TestHandleOnlyQueriesAndDelegatesActivation(t *testing.T) {
 	}
 	if activator.calls != 1 || activator.name != "Add" || activator.info != info {
 		t.Fatalf("unexpected activation delegation: calls=%d name=%q info=%#v", activator.calls, activator.name, activator.info)
+	}
+}
+
+func TestHandleVersionedEventQueriesAndDelegatesActivation(t *testing.T) {
+	contractABI, err := abi.JSON(strings.NewReader(common.CodeStorageABI_json))
+	if err != nil {
+		t.Fatalf("parse ABI: %v", err)
+	}
+	info := model.AlgorithmVersionInfo{
+		AlgorithmInfo:   model.AlgorithmInfo{Code: "encoded", Gas: 7, IType: "bytes", OType: "bytes"},
+		Version:         2,
+		ActivationBlock: 42,
+	}
+	client := &fakeClient{contractABI: contractABI, versionInfo: info}
+	activator := new(fakeActivator)
+	service := NewService(contractABI, common.CodeStorageAddress, common.Hash{1}, activator)
+	event := contractABI.Events["codeVersionUploaded"]
+	data, err := event.Inputs.NonIndexed().Pack("add", uint64(2), uint64(42))
+	if err != nil {
+		t.Fatalf("pack event: %v", err)
+	}
+	if err := service.Handle(context.Background(), client, types.Log{Topics: []common.Hash{event.ID}, Data: data}); err != nil {
+		t.Fatalf("Handle failed: %v", err)
+	}
+	if client.callName != "Add" || client.callVersion != 2 {
+		t.Fatalf("getVersionInfo queried %q v%d, want Add v2", client.callName, client.callVersion)
+	}
+	if activator.versionCalls != 1 || activator.name != "Add" || activator.version != 2 || activator.versionInfo != info {
+		t.Fatalf("unexpected version activation delegation: calls=%d name=%q info=%#v", activator.versionCalls, activator.name, activator.versionInfo)
 	}
 }
 

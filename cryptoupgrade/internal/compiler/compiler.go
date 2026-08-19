@@ -50,6 +50,9 @@ func Compile(ctx context.Context, srcPath, outputPath string, build BuildContext
 	defer artifactMu.Unlock()
 
 	outputDir := filepath.Dir(outputPath)
+	if err := os.MkdirAll(outputDir, 0755); err != nil {
+		return fmt.Errorf("create plugin output directory %s: %w", outputDir, err)
+	}
 	tmp, err := os.CreateTemp(outputDir, "."+filepath.Base(outputPath)+".*.tmp")
 	if err != nil {
 		return fmt.Errorf("create temporary plugin artifact: %w", err)
