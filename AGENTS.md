@@ -2,7 +2,7 @@
 
 ## 1. 项目说明
 
-本项目用于研究 **Ethereum/Geth 中密码学算法的动态升级机制**。
+本项目用于研究 **Ethereum/Geth 中密码学算法的动态升级机制**，实现一个密码学协处理器的概念。
 
 当前 Geth 对密码学算法的扩展主要依赖客户端源码修改或 Precompiled Contract。传统方式通常需要重新编译、部署并重启节点，升级成本较高，并可能造成服务中断。
 
@@ -57,4 +57,4 @@ OpenSpec change 名称必须做到：
 
 - cryptoupgrade 目录下负责核心功能开发
 - experiments/cryptoupgrade 目录下负责实验代码以及结果的存储
-- paper 目录下负责论文编写工作
+- paper 写作Agent的工作目录
