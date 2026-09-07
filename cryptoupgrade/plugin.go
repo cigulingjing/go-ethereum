@@ -11,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/cryptoupgrade/builtin"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/compiler"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/pluginruntime"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/wasmruntime"
 	"github.com/ethereum/go-ethereum/log"
 )
 
@@ -34,10 +35,8 @@ func CallProcessor(algoName string, gas uint64, encodedInput []byte) ([]byte, ui
 	p, ok := builtin.Lookup(algoName)
 	if ok {
 		return callBuiltinAlgorithm(p, gas, encodedInput)
-	} else {
-		pluginPath := sofilePath(algoName)
-		return callUpgradeAlgo(algoName, pluginPath, gas, encodedInput)
 	}
+	return callUpgradeAlgo(algoName, gas, encodedInput)
 
 }
 
@@ -54,21 +53,12 @@ func CallProcessorAt(algoName string, gas uint64, encodedInput []byte, blockNumb
 	if !ok {
 		return nil, gas, fmt.Errorf("algorithm %s is not loaded", algoName)
 	}
-	if _, ok := getUploadedAlgorithmVersionInfo(algoName, funcInfo.Version); ok {
-		if prepared, ok := runtimeAlgorithmRepository.PreparedVersion(algoName, funcInfo.Version); ok {
-			funcInfo = prepared
-		} else {
-			if funcInfo.Version == 1 {
-				return nil, gas, fmt.Errorf("algorithm %s is not loaded", algoName)
-			}
-			return nil, gas, fmt.Errorf("algorithm %s version %d is not loaded", algoName, funcInfo.Version)
-		}
+	prepared, ok := runtimeAlgorithmRepository.PreparedVersion(algoName, funcInfo.Version)
+	if !ok {
+		return nil, gas, requiredVersionMissingError(algoName, funcInfo.Version)
 	}
-	pluginPath := sofilePath(algoName)
-	if funcInfo.Version != 1 {
-		pluginPath = runtimeAlgorithmRepository.VersionPluginPath(algoName, funcInfo.Version)
-	}
-	return callUpgradeAlgoWithInfo(algoName, pluginPath, gas, encodedInput, funcInfo.Base())
+	wasmPath, compiledPath := runtimeArtifactPaths(algoName, prepared.Version)
+	return callUpgradeAlgoWithInfo(algoName, wasmPath, compiledPath, gas, encodedInput, prepared.Base())
 }
 
 func RequiredGas(algoName string) (uint64, error) {
@@ -77,11 +67,15 @@ func RequiredGas(algoName string) (uint64, error) {
 	if p, ok := builtin.Lookup(algoName); ok {
 		return p.RequiredGas(), nil
 	}
-	funcInfo, ok := getAlgorithmInfo(algoName)
+	funcInfo, ok := getActiveAlgorithmVersionInfo(algoName)
 	if !ok {
 		return 0, fmt.Errorf("algorithm %s is not loaded", algoName)
 	}
-	return funcInfo.Gas, nil
+	prepared, ok := runtimeAlgorithmRepository.PreparedVersion(algoName, funcInfo.Version)
+	if !ok {
+		return 0, requiredVersionMissingError(algoName, funcInfo.Version)
+	}
+	return prepared.Gas, nil
 }
 
 func RequiredGasAt(algoName string, blockNumber uint64) (uint64, error) {
@@ -94,16 +88,11 @@ func RequiredGasAt(algoName string, blockNumber uint64) (uint64, error) {
 	if !ok {
 		return 0, fmt.Errorf("algorithm %s is not loaded", algoName)
 	}
-	if _, ok := getUploadedAlgorithmVersionInfo(algoName, funcInfo.Version); ok {
-		if prepared, ok := runtimeAlgorithmRepository.PreparedVersion(algoName, funcInfo.Version); ok {
-			return prepared.Gas, nil
-		}
-		if funcInfo.Version == 1 {
-			return 0, fmt.Errorf("algorithm %s is not loaded", algoName)
-		}
-		return 0, fmt.Errorf("algorithm %s version %d is not loaded", algoName, funcInfo.Version)
+	prepared, ok := runtimeAlgorithmRepository.PreparedVersion(algoName, funcInfo.Version)
+	if !ok {
+		return 0, requiredVersionMissingError(algoName, funcInfo.Version)
 	}
-	return funcInfo.Gas, nil
+	return prepared.Gas, nil
 }
 
 func RequiredGasForCall(input []byte) (uint64, error) {
@@ -140,52 +129,35 @@ func RunCallAt(input []byte, blockNumber uint64) ([]byte, error) {
 	return ret, err
 }
 
-func callUpgradeAlgo(funcName string, pluginPath string, gas uint64, encodedInput []byte) ([]byte, uint64, error) {
-	// Get algorithm info
-	funcInfo, ok := getAlgorithmInfo(funcName)
+func callUpgradeAlgo(funcName string, gas uint64, encodedInput []byte) ([]byte, uint64, error) {
+	funcInfo, ok := getActiveAlgorithmVersionInfo(funcName)
 	if !ok {
 		return nil, gas, fmt.Errorf("algorithm %s is not loaded", funcName)
 	}
-	return callUpgradeAlgoWithInfo(funcName, pluginPath, gas, encodedInput, funcInfo)
+	prepared, ok := runtimeAlgorithmRepository.PreparedVersion(funcName, funcInfo.Version)
+	if !ok {
+		return nil, gas, requiredVersionMissingError(funcName, funcInfo.Version)
+	}
+	wasmPath, compiledPath := runtimeArtifactPaths(funcName, prepared.Version)
+	return callUpgradeAlgoWithInfo(funcName, wasmPath, compiledPath, gas, encodedInput, prepared.Base())
 }
 
-func callUpgradeAlgoWithInfo(funcName string, pluginPath string, gas uint64, encodedInput []byte, funcInfo algoInfo) ([]byte, uint64, error) {
-	inputType, outputType := funcInfo.InputTypes(), funcInfo.OutputTypes()
-	log.Info("Loaded upgrade algorithm ABI types", "input", inputType, "output", outputType)
-
+func callUpgradeAlgoWithInfo(funcName string, wasmPath string, compiledPath string, gas uint64, encodedInput []byte, funcInfo algoInfo) ([]byte, uint64, error) {
+	log.Info("Loaded upgrade algorithm", "name", funcName, "wasmPath", wasmPath, "compiledPath", compiledPath)
 	// Gas sufficient check
 	if gas < funcInfo.Gas {
 		return nil, gas, errors.New("out of gas")
 	}
-
-	// Decode input
-	input, err := UnpackInput(encodedInput, inputType)
+	output, err := wasmruntime.Default.Execute(context.Background(), wasmPath, compiledPath, encodedInput)
 	if err != nil {
-		log.Error("Failed to unpack callFunc input", "err", err)
-		// fmt.Println("Unpack input from callFunc error:", err)
-		return nil, gas, err
-	}
-
-	// Call algorithm. Attention 1.[]interface{} and ...interface{} 2.Algorithm name must be capital
-	output, err := callPlugin(pluginPath, funcName, input)
-	if err != nil {
-		log.Error("Failed to call plugin", "err", err)
-		// fmt.Println("Call Plugin error", err)
-		return nil, gas, err
-	}
-
-	// Output encode
-	encodedOutput, err := PackOutput(output, outputType)
-	if err != nil {
-		log.Error("Failed to pack plugin output", "err", err)
-		// fmt.Println("Pack output error:", err)
+		log.Error("Failed to call wasm algorithm", "name", funcName, "path", wasmPath, "err", err)
 		return nil, gas, err
 	}
 
 	// Gas deduction and return output
 	remainGas := gas - funcInfo.Gas
-	log.Info("Successfully called upgrade algorithm", "gas", gas, "output", encodedOutput)
-	return encodedOutput, remainGas, nil
+	log.Info("Successfully called upgrade algorithm", "gas", gas, "output", output)
+	return output, remainGas, nil
 }
 
 func callBuiltinAlgorithm(algo builtin.Algorithm, gas uint64, encodedInput []byte) ([]byte, uint64, error) {
@@ -226,29 +198,12 @@ func callBuiltinAlgorithm(algo builtin.Algorithm, gas uint64, encodedInput []byt
 }
 
 // Call fun in plugin, parameter and return are mutable types
-func callPlugin(pluginPath string, funName string, args []interface{}) ([]interface{}, error) {
-	fn, err := lookupPluginFunction(pluginPath, funName)
-	if err != nil {
-		log.Error("Failed to load plugin function", "name", funName, "path", pluginPath, "err", err)
-		return nil, err
-	}
-
-	// Call func and return
-	ReturnList, err := callFunction(fn, args)
-	if err != nil {
-		log.Error("Failed to call plugin function", "name", funName, "path", pluginPath, "err", err)
-		return nil, err
-	} else {
-		return ReturnList, nil
-	}
-}
-
 // Provide a unified calling entry. Return fn's return as an interface{} list
 func callFunction(fn interface{}, args []interface{}) (ret []interface{}, err error) {
 	return pluginruntime.CallFunction(fn, args)
 }
 
-// Go plugin compile
+// PluginCompile 保留旧 Go plugin 编译入口；WASM 激活路径不再调用它。
 func PluginCompile(srcPath string, outputPath string) error {
 	if err := directoryInit(); err != nil {
 		return err
@@ -266,6 +221,20 @@ func compilePlugin(ctx context.Context, srcPath, outputPath string) error {
 		Stdout:     os.Stdout,
 		Stderr:     os.Stderr,
 	})
+}
+
+func runtimeArtifactPaths(algoName string, version uint64) (string, string) {
+	if version == 1 {
+		return runtimeAlgorithmRepository.SourcePath(algoName), runtimeAlgorithmRepository.PluginPath(algoName)
+	}
+	return runtimeAlgorithmRepository.VersionSourcePath(algoName, version), runtimeAlgorithmRepository.VersionPluginPath(algoName, version)
+}
+
+func requiredVersionMissingError(algoName string, version uint64) error {
+	if version == 1 {
+		return fmt.Errorf("%w: algorithm %s is not loaded", wasmruntime.ErrRequiredVersionMissing, algoName)
+	}
+	return fmt.Errorf("%w: algorithm %s version %d is not loaded", wasmruntime.ErrRequiredVersionMissing, algoName, version)
 }
 
 func pluginGoBinary() string {

@@ -1,0 +1,568 @@
+{
+  "experiment": "multi-node-upgrade-stability",
+  "change": "lab3-upgrade-stability",
+  "timestamp": "2026-09-03T08:11:03.820354797+08:00",
+  "command": [
+    "/tmp/go-build1753090877/b001/exe/benchupgradestability",
+    "-config",
+    "build/cryptoupgrade-networks/wasm-5nodes-20260902-225029/network.yaml",
+    "-out",
+    "experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/lab3",
+    "-mode",
+    "both",
+    "-rounds",
+    "1",
+    "-activation-lag",
+    "2",
+    "-timeout",
+    "5m",
+    "-poll-interval",
+    "200ms"
+  ],
+  "config": {
+    "configPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/wasm-5nodes-20260902-225029/network.yaml",
+    "chainId": 11223344,
+    "networkId": 11223344,
+    "consensusType": "clique",
+    "consensusPeriod": 5,
+    "nodeCount": 5,
+    "targetNodeIds": [
+      "node1",
+      "node2",
+      "node3",
+      "node4",
+      "node5"
+    ],
+    "senderNodeId": "node1",
+    "senderRpc": "http://127.0.0.1:8761",
+    "from": "0xF5F871aA6Bd253914705898c66251f994aa426FA",
+    "mode": "both",
+    "algorithm": "Add",
+    "rounds": 1,
+    "activationLag": 2,
+    "pollIntervalMillis": 200,
+    "timeoutMillis": 300000,
+    "preflight": true
+  },
+  "artifacts": {
+    "resultDir": "/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/lab3",
+    "resultJson": "/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/lab3/result.json",
+    "resultCsv": "/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/lab3/samples.csv",
+    "resultSummary": "/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/lab3/summary.txt"
+  },
+  "preflight": {
+    "nodes": [
+      {
+        "id": "node1",
+        "role": "signer",
+        "rpcURL": "http://127.0.0.1:8761",
+        "chainId": 11223344,
+        "peerCount": 4,
+        "startBlock": 82,
+        "endBlock": 83
+      },
+      {
+        "id": "node2",
+        "role": "observer",
+        "rpcURL": "http://127.0.0.1:8762",
+        "chainId": 11223344,
+        "peerCount": 4,
+        "startBlock": 82,
+        "endBlock": 83
+      },
+      {
+        "id": "node3",
+        "role": "observer",
+        "rpcURL": "http://127.0.0.1:8763",
+        "chainId": 11223344,
+        "peerCount": 4,
+        "startBlock": 82,
+        "endBlock": 83
+      },
+      {
+        "id": "node4",
+        "role": "observer",
+        "rpcURL": "http://127.0.0.1:8764",
+        "chainId": 11223344,
+        "peerCount": 4,
+        "startBlock": 82,
+        "endBlock": 83
+      },
+      {
+        "id": "node5",
+        "role": "observer",
+        "rpcURL": "http://127.0.0.1:8765",
+        "chainId": 11223344,
+        "peerCount": 4,
+        "startBlock": 82,
+        "endBlock": 83
+      }
+    ],
+    "ok": true
+  },
+  "rounds": [
+    {
+      "index": 1,
+      "mode": "scheduled",
+      "algorithm": "Add",
+      "versionPlan": {
+        "oldVersion": 1788394269857833,
+        "newVersion": 1788394269857834,
+        "activationBlock": 88,
+        "wasmHash": "0x7b8d0258b310a7c87aae5a260f709827faa6ba17721a9434e1748273edfb6960",
+        "oldExpectedValue": "200",
+        "newExpectedValue": "205",
+        "metadataHash": "0x875b4ac4d4afca916c3ee5e587410b89c93c86209b0d336d2b6cf71db04b177b"
+      },
+      "submittedAt": "2026-09-03T08:11:24.63917166+08:00",
+      "transactionHash": "0x45ce0f4ac81913a242a89879c09340760034cb8307a48bb82a7f12b36abd6d29",
+      "receipt": {
+        "status": 1,
+        "gasUsed": 340544,
+        "blockNumber": 88,
+        "blockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+        "logCount": 1
+      },
+      "event": {
+        "found": true,
+        "name": "Add",
+        "version": 1788394269857834,
+        "activationBlock": 88,
+        "consistent": true
+      },
+      "samples": [
+        {
+          "stage": "before",
+          "blockNumber": 87,
+          "blockHash": "0x1c53493ebf3d2ba1d975cc4274c8cb3b10fb73b580d6f76eddd40d2e0db01e33",
+          "expectedVersion": 1788394269857833,
+          "expectedOutput": "200",
+          "nodes": [
+            {
+              "nodeId": "node1",
+              "role": "signer",
+              "rpcURL": "http://127.0.0.1:8761",
+              "headNumber": 88,
+              "headHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "blockHash": "0x1c53493ebf3d2ba1d975cc4274c8cb3b10fb73b580d6f76eddd40d2e0db01e33",
+              "receiptVisible": true,
+              "receiptBlock": 88,
+              "receiptBlockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "version": 1788394269857833,
+              "activationBlock": 83,
+              "metadataHash": "0x6a80c69523a081e202527ec14f112f5e8fc720f4fefbc071197336a83eea8e64",
+              "output": "200",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000c8",
+              "ok": true
+            },
+            {
+              "nodeId": "node2",
+              "role": "observer",
+              "rpcURL": "http://127.0.0.1:8762",
+              "headNumber": 88,
+              "headHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "blockHash": "0x1c53493ebf3d2ba1d975cc4274c8cb3b10fb73b580d6f76eddd40d2e0db01e33",
+              "receiptVisible": true,
+              "receiptBlock": 88,
+              "receiptBlockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "version": 1788394269857833,
+              "activationBlock": 83,
+              "metadataHash": "0x6a80c69523a081e202527ec14f112f5e8fc720f4fefbc071197336a83eea8e64",
+              "output": "200",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000c8",
+              "ok": true
+            },
+            {
+              "nodeId": "node3",
+              "role": "observer",
+              "rpcURL": "http://127.0.0.1:8763",
+              "headNumber": 88,
+              "headHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "blockHash": "0x1c53493ebf3d2ba1d975cc4274c8cb3b10fb73b580d6f76eddd40d2e0db01e33",
+              "receiptVisible": true,
+              "receiptBlock": 88,
+              "receiptBlockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "version": 1788394269857833,
+              "activationBlock": 83,
+              "metadataHash": "0x6a80c69523a081e202527ec14f112f5e8fc720f4fefbc071197336a83eea8e64",
+              "output": "200",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000c8",
+              "ok": true
+            },
+            {
+              "nodeId": "node4",
+              "role": "observer",
+              "rpcURL": "http://127.0.0.1:8764",
+              "headNumber": 88,
+              "headHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "blockHash": "0x1c53493ebf3d2ba1d975cc4274c8cb3b10fb73b580d6f76eddd40d2e0db01e33",
+              "receiptVisible": true,
+              "receiptBlock": 88,
+              "receiptBlockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "version": 1788394269857833,
+              "activationBlock": 83,
+              "metadataHash": "0x6a80c69523a081e202527ec14f112f5e8fc720f4fefbc071197336a83eea8e64",
+              "output": "200",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000c8",
+              "ok": true
+            },
+            {
+              "nodeId": "node5",
+              "role": "observer",
+              "rpcURL": "http://127.0.0.1:8765",
+              "headNumber": 88,
+              "headHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "blockHash": "0x1c53493ebf3d2ba1d975cc4274c8cb3b10fb73b580d6f76eddd40d2e0db01e33",
+              "receiptVisible": true,
+              "receiptBlock": 88,
+              "receiptBlockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "version": 1788394269857833,
+              "activationBlock": 83,
+              "metadataHash": "0x6a80c69523a081e202527ec14f112f5e8fc720f4fefbc071197336a83eea8e64",
+              "output": "200",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000c8",
+              "ok": true
+            }
+          ],
+          "checks": {
+            "chainViewConsistent": true,
+            "receiptConsistent": true,
+            "eventConsistent": true,
+            "versionConsistent": true,
+            "outputConsistent": true,
+            "passed": true
+          }
+        },
+        {
+          "stage": "after",
+          "blockNumber": 88,
+          "blockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+          "expectedVersion": 1788394269857834,
+          "expectedOutput": "205",
+          "nodes": [
+            {
+              "nodeId": "node1",
+              "role": "signer",
+              "rpcURL": "http://127.0.0.1:8761",
+              "headNumber": 88,
+              "headHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "blockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "receiptVisible": true,
+              "receiptBlock": 88,
+              "receiptBlockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "version": 1788394269857834,
+              "activationBlock": 88,
+              "metadataHash": "0x875b4ac4d4afca916c3ee5e587410b89c93c86209b0d336d2b6cf71db04b177b",
+              "output": "205",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000cd",
+              "ok": true
+            },
+            {
+              "nodeId": "node2",
+              "role": "observer",
+              "rpcURL": "http://127.0.0.1:8762",
+              "headNumber": 88,
+              "headHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "blockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "receiptVisible": true,
+              "receiptBlock": 88,
+              "receiptBlockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "version": 1788394269857834,
+              "activationBlock": 88,
+              "metadataHash": "0x875b4ac4d4afca916c3ee5e587410b89c93c86209b0d336d2b6cf71db04b177b",
+              "output": "205",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000cd",
+              "ok": true
+            },
+            {
+              "nodeId": "node3",
+              "role": "observer",
+              "rpcURL": "http://127.0.0.1:8763",
+              "headNumber": 88,
+              "headHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "blockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "receiptVisible": true,
+              "receiptBlock": 88,
+              "receiptBlockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "version": 1788394269857834,
+              "activationBlock": 88,
+              "metadataHash": "0x875b4ac4d4afca916c3ee5e587410b89c93c86209b0d336d2b6cf71db04b177b",
+              "output": "205",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000cd",
+              "ok": true
+            },
+            {
+              "nodeId": "node4",
+              "role": "observer",
+              "rpcURL": "http://127.0.0.1:8764",
+              "headNumber": 88,
+              "headHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "blockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "receiptVisible": true,
+              "receiptBlock": 88,
+              "receiptBlockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "version": 1788394269857834,
+              "activationBlock": 88,
+              "metadataHash": "0x875b4ac4d4afca916c3ee5e587410b89c93c86209b0d336d2b6cf71db04b177b",
+              "output": "205",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000cd",
+              "ok": true
+            },
+            {
+              "nodeId": "node5",
+              "role": "observer",
+              "rpcURL": "http://127.0.0.1:8765",
+              "headNumber": 88,
+              "headHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "blockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "receiptVisible": true,
+              "receiptBlock": 88,
+              "receiptBlockHash": "0xe413a9385435a5668baf67195572019b6264886a8c603fcfc25a5339372db635",
+              "version": 1788394269857834,
+              "activationBlock": 88,
+              "metadataHash": "0x875b4ac4d4afca916c3ee5e587410b89c93c86209b0d336d2b6cf71db04b177b",
+              "output": "205",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000cd",
+              "ok": true
+            }
+          ],
+          "checks": {
+            "chainViewConsistent": true,
+            "receiptConsistent": true,
+            "eventConsistent": true,
+            "versionConsistent": true,
+            "outputConsistent": true,
+            "passed": true
+          }
+        }
+      ],
+      "nodes": [
+        {
+          "nodeId": "node1",
+          "role": "signer",
+          "rpcURL": "http://127.0.0.1:8761",
+          "completed": true
+        },
+        {
+          "nodeId": "node2",
+          "role": "observer",
+          "rpcURL": "http://127.0.0.1:8762",
+          "completed": true
+        },
+        {
+          "nodeId": "node3",
+          "role": "observer",
+          "rpcURL": "http://127.0.0.1:8763",
+          "completed": true
+        },
+        {
+          "nodeId": "node4",
+          "role": "observer",
+          "rpcURL": "http://127.0.0.1:8764",
+          "completed": true
+        },
+        {
+          "nodeId": "node5",
+          "role": "observer",
+          "rpcURL": "http://127.0.0.1:8765",
+          "completed": true
+        }
+      ],
+      "checks": {
+        "chainViewConsistent": true,
+        "receiptConsistent": true,
+        "eventConsistent": true,
+        "versionConsistent": true,
+        "outputConsistent": true,
+        "passed": true
+      },
+      "completed": true
+    },
+    {
+      "index": 2,
+      "mode": "immediate",
+      "algorithm": "Add",
+      "versionPlan": {
+        "oldVersion": 1788394292169885,
+        "newVersion": 1788394292169886,
+        "activationBlock": 92,
+        "wasmHash": "0x7b8d0258b310a7c87aae5a260f709827faa6ba17721a9434e1748273edfb6960",
+        "oldExpectedValue": "200",
+        "newExpectedValue": "205",
+        "metadataHash": "0xf9dd0c6b0917be75907e6074a1b7bda422db86bf49d963064f3647a2f9cce515"
+      },
+      "submittedAt": "2026-09-03T08:11:44.787623991+08:00",
+      "transactionHash": "0x1ea06b1bc11da08ce8844e37e23b4ec34918c25b80d291ea245879734b9d2abd",
+      "receipt": {
+        "status": 1,
+        "gasUsed": 339892,
+        "blockNumber": 92,
+        "blockHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+        "logCount": 1
+      },
+      "event": {
+        "found": true,
+        "name": "Add",
+        "version": 1788394292169886,
+        "activationBlock": 92,
+        "consistent": true
+      },
+      "samples": [
+        {
+          "stage": "after",
+          "blockNumber": 92,
+          "blockHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+          "expectedVersion": 1788394292169886,
+          "expectedOutput": "205",
+          "nodes": [
+            {
+              "nodeId": "node1",
+              "role": "signer",
+              "rpcURL": "http://127.0.0.1:8761",
+              "headNumber": 92,
+              "headHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+              "blockHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+              "receiptVisible": true,
+              "receiptBlock": 92,
+              "receiptBlockHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+              "version": 1788394292169886,
+              "activationBlock": 92,
+              "metadataHash": "0xf9dd0c6b0917be75907e6074a1b7bda422db86bf49d963064f3647a2f9cce515",
+              "output": "205",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000cd",
+              "ok": true
+            },
+            {
+              "nodeId": "node2",
+              "role": "observer",
+              "rpcURL": "http://127.0.0.1:8762",
+              "headNumber": 92,
+              "headHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+              "blockHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+              "receiptVisible": true,
+              "receiptBlock": 92,
+              "receiptBlockHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+              "version": 1788394292169886,
+              "activationBlock": 92,
+              "metadataHash": "0xf9dd0c6b0917be75907e6074a1b7bda422db86bf49d963064f3647a2f9cce515",
+              "output": "205",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000cd",
+              "ok": true
+            },
+            {
+              "nodeId": "node3",
+              "role": "observer",
+              "rpcURL": "http://127.0.0.1:8763",
+              "headNumber": 92,
+              "headHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+              "blockHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+              "receiptVisible": true,
+              "receiptBlock": 92,
+              "receiptBlockHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+              "version": 1788394292169886,
+              "activationBlock": 92,
+              "metadataHash": "0xf9dd0c6b0917be75907e6074a1b7bda422db86bf49d963064f3647a2f9cce515",
+              "output": "205",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000cd",
+              "ok": true
+            },
+            {
+              "nodeId": "node4",
+              "role": "observer",
+              "rpcURL": "http://127.0.0.1:8764",
+              "headNumber": 92,
+              "headHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+              "blockHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+              "receiptVisible": true,
+              "receiptBlock": 92,
+              "receiptBlockHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+              "version": 1788394292169886,
+              "activationBlock": 92,
+              "metadataHash": "0xf9dd0c6b0917be75907e6074a1b7bda422db86bf49d963064f3647a2f9cce515",
+              "output": "205",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000cd",
+              "ok": true
+            },
+            {
+              "nodeId": "node5",
+              "role": "observer",
+              "rpcURL": "http://127.0.0.1:8765",
+              "headNumber": 92,
+              "headHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+              "blockHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+              "receiptVisible": true,
+              "receiptBlock": 92,
+              "receiptBlockHash": "0xc09a688e6ede96a4c1656fa4e8fa9b11a903402f45bc332fbc1ac1a069add645",
+              "version": 1788394292169886,
+              "activationBlock": 92,
+              "metadataHash": "0xf9dd0c6b0917be75907e6074a1b7bda422db86bf49d963064f3647a2f9cce515",
+              "output": "205",
+              "outputHex": "0x00000000000000000000000000000000000000000000000000000000000000cd",
+              "ok": true
+            }
+          ],
+          "checks": {
+            "chainViewConsistent": true,
+            "receiptConsistent": true,
+            "eventConsistent": true,
+            "versionConsistent": true,
+            "outputConsistent": true,
+            "passed": true
+          }
+        }
+      ],
+      "nodes": [
+        {
+          "nodeId": "node1",
+          "role": "signer",
+          "rpcURL": "http://127.0.0.1:8761",
+          "completed": true
+        },
+        {
+          "nodeId": "node2",
+          "role": "observer",
+          "rpcURL": "http://127.0.0.1:8762",
+          "completed": true
+        },
+        {
+          "nodeId": "node3",
+          "role": "observer",
+          "rpcURL": "http://127.0.0.1:8763",
+          "completed": true
+        },
+        {
+          "nodeId": "node4",
+          "role": "observer",
+          "rpcURL": "http://127.0.0.1:8764",
+          "completed": true
+        },
+        {
+          "nodeId": "node5",
+          "role": "observer",
+          "rpcURL": "http://127.0.0.1:8765",
+          "completed": true
+        }
+      ],
+      "checks": {
+        "chainViewConsistent": true,
+        "receiptConsistent": true,
+        "eventConsistent": true,
+        "versionConsistent": true,
+        "outputConsistent": true,
+        "passed": true
+      },
+      "completed": true
+    }
+  ],
+  "summary": {
+    "roundCount": 2,
+    "completedRoundCount": 2,
+    "completed": true
+  },
+  "limitations": [
+    "稳定性实验通过 JSON-RPC 从控制端采样，短暂网络传播差异会体现在采样结果中。",
+    "版本选择以指定 block number 的 eth_call 结果为准，不使用节点日志时间作为一致性判据。",
+    "本命令默认使用 Add fixture 的两个版本区分旧输出和新输出，不统计执行效率或 Gas 对比作为主结论。"
+  ],
+  "completed": true
+}

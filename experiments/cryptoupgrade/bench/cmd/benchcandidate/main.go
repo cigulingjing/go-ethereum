@@ -18,7 +18,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/cryptoupgrade"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/wasmtool"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -58,7 +58,7 @@ type deployResult struct {
 func main() {
 	var (
 		rpcURL            = flag.String("rpc", "http://127.0.0.1:8666", "execution RPC endpoint")
-		source            = flag.String("source", "cryptoupgrade/algorithm/go/sha256.go", "algorithm source file")
+		source            = flag.String("source", "cryptoupgrade/algorithm/wasm/sha256.wasm", "algorithm wasm file")
 		name              = flag.String("name", "Sha256", "upgrade algorithm name")
 		itype             = flag.String("itype", "bytes", "comma-separated upgrade input ABI types")
 		otype             = flag.String("otype", "bytes", "comma-separated upgrade output ABI types")
@@ -266,7 +266,11 @@ func runDeploymentBenchmark(ctx context.Context, client *rpc.Client, codeStorage
 }
 
 func uploadAlgorithm(ctx context.Context, client *rpc.Client, codeStorageABI abi.ABI, from common.Address, source, name string, algoGas, gasLimit uint64, itype, otype string) (deployResult, error) {
-	compressed, err := cryptoupgrade.EncodeSourceFile(source)
+	compressed, err := wasmtool.EncodePath(ctx, source, wasmtool.Spec{
+		Function:    name,
+		InputTypes:  splitABITypeList(itype),
+		OutputTypes: splitABITypeList(otype),
+	})
 	if err != nil {
 		return deployResult{}, err
 	}
@@ -490,6 +494,17 @@ func parseHex(input string) ([]byte, error) {
 		return nil, nil
 	}
 	return hex.DecodeString(trimmed)
+}
+
+func splitABITypeList(raw string) []string {
+	var out []string
+	for _, part := range strings.Split(raw, ",") {
+		part = strings.TrimSpace(part)
+		if part != "" {
+			out = append(out, part)
+		}
+	}
+	return out
 }
 
 func printStats(stats benchStats, result []byte, gas uint64) {

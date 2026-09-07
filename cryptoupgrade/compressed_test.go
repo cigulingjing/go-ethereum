@@ -6,21 +6,21 @@ import (
 	"testing"
 )
 
-func TestEncodeSourceFileMatchesEncodeSource(t *testing.T) {
-	source := []byte("package main\n\nfunc Add(a, b uint64) uint64 { return a + b }\n")
-	path := filepath.Join(t.TempDir(), "add.go")
-	if err := os.WriteFile(path, source, 0600); err != nil {
+func TestEncodeWasmFileMatchesEncodeWasm(t *testing.T) {
+	wasm := []byte{0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00}
+	path := filepath.Join(t.TempDir(), "add.wasm")
+	if err := os.WriteFile(path, wasm, 0600); err != nil {
 		t.Fatal(err)
 	}
-	fromBytes, err := EncodeSource(source)
+	fromBytes, err := EncodeWasm(wasm)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fromFile, err := EncodeSourceFile(path)
+	fromFile, err := EncodeWasmFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if fromFile != fromBytes {
-		t.Fatal("file and byte source encoding differ")
+		t.Fatal("file and byte wasm encoding differ")
 	}
 }

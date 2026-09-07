@@ -5,7 +5,7 @@
 ```text
 cryptoupgrade/
 ├── *.go                       # geth 直接导入的运行时根包
-├── algorithm/                 # Go plugin 候选和 Solidity 对照算法
+├── algorithm/                 # Go 源码、TinyGo WASM fixture 和 Solidity 对照算法
 ├── builtin/                   # 编译进节点并由 registry 直接调用的算法
 ├── internal/                  # codec、编译、加载、持久化和激活内部实现
 └── results/                   # 原地只读保留的历史实验结果
@@ -19,7 +19,7 @@ experiments/cryptoupgrade/
 └── results/                   # 新实验结果默认输出
 ```
 
-运行时 plugin 制品目录不属于源码布局迁移范围。节点仍通过 `GETH_CRYPTOUPGRADE_PLUGIN_DIR` 或默认 `./plugin` 解析 `src`、`so` 和 `algorithm_info.json`。
+运行时 plugin 制品目录不属于源码布局迁移范围。节点仍通过 `GETH_CRYPTOUPGRADE_PLUGIN_DIR` 或默认 `./plugin` 解析 `wasm`、`compiled` 和 `algorithm_info.json`。
 
 ## 检查命令
 
@@ -30,7 +30,7 @@ bash cryptoupgrade/check_layout.sh
 该检查会确认：
 
 - 实验命令位于 `experiments/cryptoupgrade/bench/cmd`；
-- 算法资产位于 `cryptoupgrade/algorithm/go`、`cryptoupgrade/algorithm/go/archive` 和 `cryptoupgrade/algorithm/contracts`；
+- 算法资产位于 `cryptoupgrade/algorithm/go`、`cryptoupgrade/algorithm/go/archive`、`cryptoupgrade/algorithm/wasm` 和 `cryptoupgrade/algorithm/contracts`；
 - builtin 实现位于 `cryptoupgrade/builtin`，且不依赖动态候选源码目录；
 - 旧的 `cryptoupgrade/cmd` 目录不存在；
 - 运行时不反向导入 `experiments/cryptoupgrade`；

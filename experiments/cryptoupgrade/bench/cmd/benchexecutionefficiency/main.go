@@ -23,7 +23,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/cryptoupgrade"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/wasmtool"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -98,6 +98,9 @@ type compiledContract struct {
 type setupReference struct {
 	Scheme                string `json:"scheme"`
 	Action                string `json:"action"`
+	Version               uint64 `json:"version,omitempty"`
+	ActivationBlock       uint64 `json:"activationBlock,omitempty"`
+	WasmHash              string `json:"wasmHash,omitempty"`
 	Address               string `json:"address,omitempty"`
 	TxHash                string `json:"txHash,omitempty"`
 	ReceiptStatus         uint64 `json:"receiptStatus,omitempty"`
@@ -359,7 +362,7 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 		{
 			Algorithm:             "Add",
 			UpgradeName:           "Add",
-			SourcePath:            "cryptoupgrade/algorithm/go/add.go",
+			SourcePath:            "cryptoupgrade/algorithm/wasm/add.wasm",
 			ContractSource:        "cryptoupgrade/algorithm/contracts/Add.sol",
 			ContractName:          "AddContract",
 			ContractFunction:      "Add",
@@ -384,7 +387,7 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 		{
 			Algorithm:             "Sha256",
 			UpgradeName:           "Sha256",
-			SourcePath:            "cryptoupgrade/algorithm/go/sha256.go",
+			SourcePath:            "cryptoupgrade/algorithm/wasm/sha256.wasm",
 			ContractSource:        "cryptoupgrade/algorithm/contracts/Sha256.sol",
 			ContractName:          "Sha256Contract",
 			ContractFunction:      "Sha256",
@@ -407,7 +410,7 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 		{
 			Algorithm:             "Blake2bSum256",
 			UpgradeName:           "Sum256",
-			SourcePath:            "cryptoupgrade/algorithm/go/blake2b.go",
+			SourcePath:            "cryptoupgrade/algorithm/wasm/blake2b.wasm",
 			ContractSource:        "cryptoupgrade/algorithm/contracts/Blake2b.sol",
 			ContractName:          "Blake2b",
 			ContractFunction:      "Sum256",
@@ -430,7 +433,7 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 		{
 			Algorithm:             "Pbkdf2Sha256",
 			UpgradeName:           "Pbkdf2Sha256",
-			SourcePath:            "cryptoupgrade/algorithm/go/pbkdf2_sha256.go",
+			SourcePath:            "cryptoupgrade/algorithm/wasm/pbkdf2_sha256.wasm",
 			ContractSource:        "cryptoupgrade/algorithm/contracts/Pbkdf2Sha256.sol",
 			ContractName:          "Pbkdf2Sha256Contract",
 			ContractFunction:      "Pbkdf2Sha256",
@@ -456,7 +459,7 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 		{
 			Algorithm:             "Dh2048Secret",
 			UpgradeName:           "Dh2048Secret",
-			SourcePath:            "cryptoupgrade/algorithm/go/dh2048.go",
+			SourcePath:            "cryptoupgrade/algorithm/wasm/dh2048.wasm",
 			ContractSource:        "cryptoupgrade/algorithm/contracts/Dh2048.sol",
 			ContractName:          "Dh2048",
 			ContractFunction:      "Dh2048Secret",
@@ -482,7 +485,7 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 		{
 			Algorithm:             "PedersenCommit",
 			UpgradeName:           "PedersenCommit",
-			SourcePath:            "cryptoupgrade/algorithm/go/pedersen_commit.go",
+			SourcePath:            "cryptoupgrade/algorithm/wasm/pedersen_commit.wasm",
 			ContractSource:        "cryptoupgrade/algorithm/contracts/PedersenCommit.sol",
 			ContractName:          "PedersenCommitContract",
 			ContractFunction:      "PedersenCommit",
@@ -506,7 +509,7 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 		{
 			Algorithm:             "SchnorrVerify",
 			UpgradeName:           "SchnorrVerify",
-			SourcePath:            "cryptoupgrade/algorithm/go/schnorr_proof.go",
+			SourcePath:            "cryptoupgrade/algorithm/wasm/schnorr_proof.wasm",
 			ContractSource:        "cryptoupgrade/algorithm/contracts/SchnorrProof.sol",
 			ContractName:          "SchnorrProof",
 			ContractFunction:      "SchnorrVerify",
@@ -675,7 +678,7 @@ func runFixture(ctx context.Context, client *rpc.Client, codeStorageABI abi.ABI,
 }
 
 func uploadAlgorithm(ctx context.Context, client *rpc.Client, codeStorageABI abi.ABI, from common.Address, cfg config, fixture benchmarkFixture) (setupReference, error) {
-	sourceBytes, compressed, err := compressSource(fixture.SourcePath)
+	sourceBytes, wasmHash, compressed, err := compressSource(ctx, fixture.SourcePath, fixture.UpgradeName, fixture.UpgradeInputTypes, fixture.UpgradeOutputTypes)
 	if err != nil {
 		return setupReference{}, err
 	}
@@ -707,6 +710,9 @@ func uploadAlgorithm(ctx context.Context, client *rpc.Client, codeStorageABI abi
 	ref := setupReference{
 		Scheme:                schemeUpgrade,
 		Action:                "CodeStorage.uploadCode",
+		Version:               1,
+		ActivationBlock:       0,
+		WasmHash:              wasmHash,
 		Address:               common.CodeStorageAddress.Hex(),
 		TxHash:                txHash.Hex(),
 		ReceiptStatus:         receipt.Status,
@@ -1061,16 +1067,20 @@ func deployContract(ctx context.Context, client *rpc.Client, from common.Address
 	return receipt.ContractAddress, txHash, receipt, nil
 }
 
-func compressSource(path string) (int, string, error) {
+func compressSource(ctx context.Context, path, function string, inputTypes, outputTypes []string) (int, string, string, error) {
 	source, err := os.ReadFile(path)
 	if err != nil {
-		return 0, "", err
+		return 0, "", "", err
 	}
-	encoded, err := cryptoupgrade.EncodeSource(source)
+	wasm, encoded, err := wasmtool.BuildEncodedPath(ctx, path, wasmtool.Spec{
+		Function:    function,
+		InputTypes:  inputTypes,
+		OutputTypes: outputTypes,
+	})
 	if err != nil {
-		return 0, "", err
+		return 0, "", "", err
 	}
-	return len(source), encoded, nil
+	return len(source), wasmtool.WasmHash(wasm), encoded, nil
 }
 
 func abiArguments(types ...string) (abi.Arguments, error) {

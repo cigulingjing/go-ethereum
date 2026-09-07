@@ -37,6 +37,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/cryptoupgrade"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/wasmtool"
 	"github.com/ethereum/go-ethereum/experiments/cryptoupgrade/network"
 	"github.com/ethereum/go-ethereum/rpc"
 )
@@ -167,6 +168,7 @@ type versionPlan struct {
 	OldVersion       uint64 `json:"oldVersion"`
 	NewVersion       uint64 `json:"newVersion"`
 	ActivationBlock  uint64 `json:"activationBlock"`
+	WasmHash         string `json:"wasmHash"`
 	OldExpectedValue string `json:"oldExpectedValue"`
 	NewExpectedValue string `json:"newExpectedValue"`
 	MetadataHash     string `json:"metadataHash"`
@@ -681,7 +683,11 @@ func runRound(parent context.Context, cfg config, selected selectedNetwork, inde
 		activationBlock = planHead
 	}
 	source := addSource(5)
-	encoded, err := cryptoupgrade.EncodeSource([]byte(source))
+	wasm, encoded, err := wasmtool.BuildEncodedSource(ctx, []byte(source), wasmtool.Spec{
+		Function:    "Add",
+		InputTypes:  []string{"int256", "int256"},
+		OutputTypes: []string{"int256"},
+	})
 	if err != nil {
 		rr.Error = err.Error()
 		return rr, err
@@ -692,6 +698,7 @@ func runRound(parent context.Context, cfg config, selected selectedNetwork, inde
 		OldVersion:       oldVersion,
 		NewVersion:       newVersion,
 		ActivationBlock:  activationBlock,
+		WasmHash:         wasmtool.WasmHash(wasm),
 		OldExpectedValue: oldProbe.ExpectedText,
 		NewExpectedValue: newProbe.ExpectedText,
 		MetadataHash:     newMetadataHash.Hex(),
@@ -776,7 +783,11 @@ type samplePoint struct {
 }
 
 func submitVersion(ctx context.Context, client *rpc.Client, from common.Address, cfg config, name string, version, activationBlock uint64, source string) error {
-	encoded, err := cryptoupgrade.EncodeSource([]byte(source))
+	encoded, err := wasmtool.EncodeSource(ctx, []byte(source), wasmtool.Spec{
+		Function:    "Add",
+		InputTypes:  []string{"int256", "int256"},
+		OutputTypes: []string{"int256"},
+	})
 	if err != nil {
 		return err
 	}

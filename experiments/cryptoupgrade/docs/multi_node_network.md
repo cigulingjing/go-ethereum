@@ -11,7 +11,7 @@ experiments/cryptoupgrade/
 ├── bench/cmd/multinode/        # render/init/validate/smoke 命令
 ├── network/                    # YAML 解析和制品生成逻辑
 ├── smoke/                      # 上传、异步激活等待和 callFunc 校验
-├── deployments/docker/         # 支持 Go plugin 编译的实验镜像
+├── deployments/docker/         # 支持 WASM runtime 的实验镜像
 ├── deployments/networks/       # 示例网络配置
 ├── results/                    # 实验输出和原始数据
 └── docs/multi_node_network.md
@@ -45,7 +45,7 @@ build/cryptoupgrade-networks/<network-name>/
         └── start.sh
 ```
 
-每个节点必须使用独立 `datadir` 和 `plugin` 目录，避免链数据库、`algorithm_info.json` 和 Go plugin `.so` 文件互相污染。
+每个节点必须使用独立 `datadir` 和 `plugin` 目录，避免链数据库、`algorithm_info.json` 和 WASM/compiled 制品互相污染。
 
 ## 配置文件
 
@@ -97,7 +97,7 @@ go run ./experiments/cryptoupgrade/bench/cmd/multinode \
 
 ## Docker 镜像
 
-cryptoupgrade 的动态升级路径会在节点运行时执行 Go plugin 编译，所以实验镜像必须保留 Go toolchain、CGO 依赖和源码模块。
+cryptoupgrade 的动态升级路径会在节点运行时校验并实例化 WASM 模块，实验镜像中的 geth 按纯 Go / no-CGO 方式构建。
 
 ```bash
 docker build \
@@ -180,14 +180,12 @@ Clique signer 是 geth 节点内部的共识服务，不是单独运行的外部
 
 `validate` 的区块高度增长和 `clique_getSigners` 检查用于确认 signer 出块、observer 同步和 genesis signer 授权是否一致。
 
-## Go Plugin 注意事项
+## WASM Runtime 注意事项
 
 容器内必须满足：
 
-- `CRYPTOUPGRADE_MODULE=/go-ethereum`
 - `GETH_CRYPTOUPGRADE_PLUGIN_DIR=/plugin`
-- Go toolchain 可用；
-- CGO 编译依赖可用；
-- geth 二进制和 plugin 编译使用同一份源码模块。
+- `/plugin` 可写，用于保存 `wasm/`、`compiled/` 和 metadata；
+- geth 二进制包含 wazero WASM runtime。
 
-如果 `CodeStorage.uploadCode` 成功但后续 `CodeStorage.callFunc` 一直不可用，优先检查容器日志中的 Go build 错误、`/plugin` 是否可写，以及 `CRYPTOUPGRADE_MODULE` 是否指向包含 `go.mod` 的源码目录。
+如果 `CodeStorage.uploadCode` 成功但后续 `CodeStorage.callFunc` 一直不可用，优先检查容器日志中的 WASM decode/activation 错误，以及 `/plugin` 是否可写。

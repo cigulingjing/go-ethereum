@@ -13,6 +13,11 @@ require_dir() {
   [[ -d "$ROOT/$dir" ]] || fail "missing directory $dir"
 }
 
+require_file() {
+  local file="$1"
+  [[ -f "$ROOT/$file" ]] || fail "missing file $file"
+}
+
 require_absent() {
   local path="$1"
   local replacement="$2"
@@ -22,6 +27,18 @@ require_absent() {
 require_dir cryptoupgrade
 require_dir cryptoupgrade/algorithm/go
 require_dir cryptoupgrade/algorithm/go/archive
+require_dir cryptoupgrade/algorithm/wasm
+require_file cryptoupgrade/algorithm/wasm/add/main.go
+require_file cryptoupgrade/algorithm/wasm/sha256/main.go
+require_file cryptoupgrade/algorithm/wasm/build.sh
+require_file cryptoupgrade/algorithm/wasm/add.wasm
+require_file cryptoupgrade/algorithm/wasm/sha256.wasm
+require_file cryptoupgrade/algorithm/wasm/blake2b.wasm
+require_file cryptoupgrade/algorithm/wasm/pbkdf2_sha256.wasm
+require_file cryptoupgrade/algorithm/wasm/dh2048.wasm
+require_file cryptoupgrade/algorithm/wasm/pedersen_commit.wasm
+require_file cryptoupgrade/algorithm/wasm/schnorr_proof.wasm
+require_file cryptoupgrade/wasmtool/cmd/wasmbuild/main.go
 require_dir cryptoupgrade/algorithm/contracts
 require_dir cryptoupgrade/builtin
 require_dir cryptoupgrade/results

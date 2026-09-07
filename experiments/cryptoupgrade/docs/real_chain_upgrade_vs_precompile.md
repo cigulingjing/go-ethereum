@@ -36,7 +36,7 @@ ABI 编码输入为 `abi.encode(bytes("hello cryptoupgrade"))`：
 go run ./experiments/cryptoupgrade/bench/cmd/benchrealchain \
   -rpc http://127.0.0.1:8666 \
   -name Sha256 \
-  -source cryptoupgrade/algorithm/go/sha256.go \
+  -source cryptoupgrade/algorithm/wasm/sha256.wasm \
   -itype bytes \
   -otype bytes \
   -input-hex 0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001368656c6c6f2063727970746f7570677261646500000000000000000000000000 \
@@ -239,7 +239,7 @@ ALL_PROXY= HTTP_PROXY= HTTPS_PROXY= all_proxy= http_proxy= https_proxy= \
 go run ./experiments/cryptoupgrade/bench/cmd/benchrealchain \
   -rpc http://127.0.0.1:8666 \
   -name Sha256 \
-  -source cryptoupgrade/algorithm/go/sha256.go \
+  -source cryptoupgrade/algorithm/wasm/sha256.wasm \
   -itype bytes \
   -otype bytes \
   -input-hex 0x0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001368656c6c6f2063727970746f7570677261646500000000000000000000000000 \

@@ -1,0 +1,71 @@
+{
+  "configPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/wasm-5nodes-20260902-225029/network.yaml",
+  "chainId": 11223344,
+  "expectedPeerCount": 4,
+  "nodes": [
+    {
+      "id": "node1",
+      "role": "signer",
+      "rpcURL": "http://127.0.0.1:8761",
+      "chainId": 11223344,
+      "peerCount": 4,
+      "startBlock": 4,
+      "endBlock": 6,
+      "signers": [
+        "0xF5F871aA6Bd253914705898c66251f994aa426FA"
+      ]
+    },
+    {
+      "id": "node2",
+      "role": "observer",
+      "rpcURL": "http://127.0.0.1:8762",
+      "chainId": 11223344,
+      "peerCount": 3,
+      "startBlock": 6,
+      "endBlock": 7,
+      "signers": [
+        "0xF5F871aA6Bd253914705898c66251f994aa426FA"
+      ],
+      "error": "peer count too low: want \u003e= 4 got 3"
+    },
+    {
+      "id": "node3",
+      "role": "observer",
+      "rpcURL": "http://127.0.0.1:8763",
+      "chainId": 11223344,
+      "peerCount": 3,
+      "startBlock": 7,
+      "endBlock": 8,
+      "signers": [
+        "0xF5F871aA6Bd253914705898c66251f994aa426FA"
+      ],
+      "error": "peer count too low: want \u003e= 4 got 3"
+    },
+    {
+      "id": "node4",
+      "role": "observer",
+      "rpcURL": "http://127.0.0.1:8764",
+      "chainId": 11223344,
+      "peerCount": 2,
+      "startBlock": 8,
+      "endBlock": 9,
+      "signers": [
+        "0xF5F871aA6Bd253914705898c66251f994aa426FA"
+      ],
+      "error": "peer count too low: want \u003e= 4 got 2"
+    },
+    {
+      "id": "node5",
+      "role": "observer",
+      "rpcURL": "http://127.0.0.1:8765",
+      "chainId": 11223344,
+      "peerCount": 4,
+      "startBlock": 9,
+      "endBlock": 11,
+      "signers": [
+        "0xF5F871aA6Bd253914705898c66251f994aa426FA"
+      ]
+    }
+  ],
+  "ok": false
+}

@@ -2,6 +2,26 @@
 
 本文档定义论文实验的目标、变量、指标及结论边界。实验对象统一为 **contract-facing cryptographic algorithms（面向智能合约的密码算法）**。论文结论不得超出本文定义范围。
 
+## 与当前大纲的关系
+
+`paper_outline.md` 是当前论文结构目标；本文档是实验事实和结论边界。二者冲突时，正文结构服从 `paper_outline.md`，实验数值、指标状态和允许结论服从本文档与原始 JSON / CSV。
+
+按当前大纲，实验材料进入正文的位置如下：
+
+| 论文位置 | 对应实验材料 | 正文用途 |
+| --- | --- | --- |
+| `5.1 Experimental Setup` | Lab1、Lab2 与 WASM rerun 的共同环境说明 | 说明 Geth、Clique、节点配置、WASM runtime、算法集合和指标来源 |
+| `5.2 Upgrade Efficiency` | Lab1 + 部署 / 上传成本附属实验 | 报告升级延迟、事件后可调用时间和上传 / 部署成本 |
+| `5.3 Execution Efficiency` | Lab2 + Sha256 真实链附属实验 | 比较 WASM-backed Upgrade、Precompile 与 Solidity Contract 的 `eth_call` 延迟和 `gasEstimate` |
+| `4.4 Upgrade Consistency` | 不设置实验内容 | 仅从协议机制分析 Activation Block、链上元数据和版本选择规则带来的一致性边界 |
+| `2.3 / 3.6 / 4.2` | WASM rerun、WASM 模块与运行时实现信息 | 支撑 WebAssembly Runtime、Prototype Implementation 与 Execution Isolation 的实现叙述 |
+
+`paper_outline.md` 中提到的节点规模扩展、升级期间交易成功率、最长出块间隔、State Root、fail-stop、无 Activation Block 对照或 Lab3 一致性实验，当前都不属于论文实验内容，只能写为 `TODO`、future work 或安全分析边界。
+
+若 `paper_outline.md` 的算法清单仍保留“待按 WASM 路径重做”状态，写作时以本文件和 `wasm-rerun-20260902-225029` 的原始结果为准：当前 WASM rerun 已覆盖 7 个算法的 Lab1/Lab2。该目录中的 upgrade-stability / Lab3 产物不进入论文实验内容。
+
+路径约定：除特别说明外，本文档路径按仓库根目录书写；若从 `paper/` 目录执行命令，访问 `cryptoupgrade/` 或 `experiments/` 下的数据需加 `../` 前缀。
+
 ## 数据分层
 
 | 层级 | 用途 | 权威性 |
@@ -18,21 +38,45 @@
 | --- | --- | --- |
 | Lab1 | `benchupgradelatency` | `lab1-upgrade-latency` |
 | Lab2 | `benchexecutionefficiency` | `lab2-execution-efficiency` |
-| Lab3 | `benchupgradestability` | `lab3-upgrade-stability` |
+
+`benchupgradestability` / `lab3-upgrade-stability` 不设置为论文实验。
 
 ---
 
 # 实验目标
 
-围绕三个研究问题展开：
+围绕两个 Evaluation 问题展开：
 
 1. 动态升级需要多少时间开销，链下升级准备是否脱离交易执行关键路径？
-2. 引入动态升级能力后，密码算法执行效率是否仍接近 Native Precompile？
-3. 多节点异步完成升级准备时，能否在统一 Activation Block 完成确定性切换，并保持链视图、版本与输出一致？
+2. 引入动态升级能力后，WASM-backed 密码算法执行效率是否仍接近 Precompiled Contract？
 
 ---
 
-# Lab1：升级延迟
+# WASM rerun
+
+当前实现基座已经从 Go plugin 切换为 WASM module。`experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/summary.md`、`lab1/`、`lab2/` 及 `figures/` 下与 Lab1/Lab2 对应的源数据，是当前论文中关于 WASM 路径的最新证据包。
+
+## 用途
+
+* 验证 WASM module 替换 Go plugin 后，升级路径和执行路径仍可在同一 5 节点 Clique harness 下复现。
+* 为“统一字节码 + 受控运行时”提供当前实现层面的证据，而不是形式化证明。
+* 为 `Technical Background / WebAssembly Runtime`、`Coprocessor Architecture / Prototype Implementation`、`Security Analysis / Execution Isolation` 和 `Evaluation` 中的 WASM 相关表述提供实现支撑。
+
+## 允许结论
+
+* Go plugin 替换为 WASM module 后，模块载荷和执行边界更容易保持一致。
+* 在当前工具链与运行时下，WASM rerun 可以复现 Lab1/Lab2 的主要观测。
+* 该 rerun 可以作为新大纲中 Coprocessor Architecture、Security Analysis 和 Evaluation 相关段落的证据来源。
+
+## 禁止结论
+
+* 不得将该 rerun 表述为对任意平台的形式化一致性证明。
+* 不得将 WASM sandbox 表述为对所有攻击都成立的安全证明。
+* 不得把 rerun 中的 upgrade-stability / Lab3 / `scheduled` / `immediate` harness 结果写成论文实验内容。
+
+---
+
+# Lab1：Upgrade Efficiency（升级延迟）
 
 ## 目的
 
@@ -89,6 +133,13 @@ activationObservedAt（全部目标节点完成）
 
 节点级一手数据在各算法目录的 `nodes.csv`。
 
+与 `paper_outline.md` 的指标对应关系：
+
+* 提案确认时间可由 `submitToTxHashMillis` 和 `txHashToSenderReceiptMillis` 支撑；
+* 单节点准备时间和全网升级完成时间可由 `nodes.csv` 与 `eventToAllCompleteMillis` 支撑；
+* 模块获取、模块校验和 WASM 加载时间若原始 JSON / CSV 未拆分记录，正文应标 `TODO`，不得从总延迟反推；
+* 升级期间交易成功率和最长出块间隔当前未采集，只能列入 future work。
+
 ## 测试算法
 
 正式 5 节点延迟实验覆盖：
@@ -103,7 +154,15 @@ activationObservedAt（全部目标节点完成）
 
 ## 数据路径
 
-权威结果：
+当前 WASM 路径优先结果：
+
+* `experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/summary.md`
+* `experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/lab1/result.json`
+* `experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/lab1/rounds.csv`
+* `experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/lab1/nodes.csv`
+* `experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/figures/lab1_upgrade_latency_source.csv`
+
+历史 Go plugin 路径核对结果：
 
 * `cryptoupgrade/results/upgrade-latency/lab1-5nodes-combined-20260813/summary.csv`
 * `cryptoupgrade/results/upgrade-latency/lab1-5nodes-combined-20260813/upgrade_latency_figure_data.csv`
@@ -113,6 +172,7 @@ activationObservedAt（全部目标节点完成）
 
 * 目录：`paper/image/lab1-upgrade-latency-availability/`
 * 主图：`lab1_upgrade_latency_5nodes.*`
+* WASM rerun 正文图：`paper/image/wasm-rerun/figure_wasm_evaluation.*`，源数据为 `paper/image/wasm-rerun/figure_wasm_evaluation_source_data.csv` 中的 Lab1 panel
 
 ## 附属实验：部署 / 上传成本
 
@@ -144,7 +204,7 @@ activationObservedAt（全部目标节点完成）
 
 ---
 
-# Lab2：密码算法执行效率
+# Lab2：Execution Efficiency（密码算法执行效率）
 
 ## 目的
 
@@ -152,7 +212,7 @@ activationObservedAt（全部目标节点完成）
 
 ## 对比方案
 
-1. **Upgrade**：经 `CodeStorage.uploadCode` 动态加载的 Native 实现，调用 `CodeStorage.callFunc`；
+1. **WASM-backed Upgrade**：经 `CodeStorage.uploadCode` 动态加载的 WASM 实现，调用 `CodeStorage.callFunc`；
 2. **Precompile**：客户端内置 Native Precompiled Contract；
 3. **Contract**：Solidity 合约实现。
 
@@ -195,7 +255,14 @@ activationObservedAt（全部目标节点完成）
 
 ## 数据路径
 
-权威结果：
+当前 WASM 路径优先结果：
+
+* `experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/summary.md`
+* `experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/lab2/result.json`
+* `experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/figures/lab2_execution_efficiency_source.csv`
+* `experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/figures/lab2_latency_samples_source.csv`
+
+历史 Go plugin 路径核对结果：
 
 * `cryptoupgrade/results/execution-efficiency/all-20260810-133058/result.json`
 * `cryptoupgrade/results/execution-efficiency/all-20260810-133058/result.txt`
@@ -204,6 +271,7 @@ activationObservedAt（全部目标节点完成）
 
 * 目录：`paper/image/lab2-execution-efficiency/`
 * 主图：`lab2_execution_efficiency_latency.*`、`lab2_execution_efficiency_gas_estimate.*`
+* WASM rerun 正文图：`paper/image/wasm-rerun/figure_wasm_evaluation.*`，源数据为 `paper/image/wasm-rerun/figure_wasm_evaluation_source_data.csv` 中的 Lab2 panels
 
 ## 附属实验：真实链 Upgrade vs Precompile
 
@@ -220,14 +288,16 @@ activationObservedAt（全部目标节点完成）
 
 ## 允许结论
 
-* 判断 Upgrade 与 Precompile 的 `eth_call` 延迟是否处于相近水平；
+* 判断 WASM-backed Upgrade 与 Precompile 的 `eth_call` 延迟是否处于相近水平；
 * 分析复杂密码算法在 Solidity 实现下的延迟或 `gasEstimate` 开销；
 * 说明动态调用机制是否引入明显的运行时额外开销；
-* 附属实验可描述 Sha256 真实链上 Upgrade 相对 Precompile 的 setup 成本、调用延迟与 `gasEstimate`。
+* 附属实验可描述 Sha256 真实链上 WASM-backed Upgrade 相对 Precompile 的 setup 成本、调用延迟与 `gasEstimate`。
+
+当前 WASM rerun 支持的正文表述应写为：7 个算法均完成三方案输出一致性检查；其中 6 个算法的 WASM-backed Upgrade mean `eth_call` 延迟与 Precompile 处于毫秒级相近范围，SchnorrVerify 是明显尾部例外，不得被写进“全部算法接近 Precompile”的结论。
 
 ## Gas 结论边界
 
-Upgrade 与 Precompile 的 `gasEstimate` 采用人为定义的 Native 定价模型，例如：
+WASM-backed Upgrade 与 Precompile 的 `gasEstimate` 采用人为定义的 Native 定价模型，例如：
 
 ```text
 Base Gas + Input-dependent Gas
@@ -247,139 +317,47 @@ Base Gas + Input-dependent Gas
 
 核心目标是：
 
-> Upgrade 在获得动态升级能力的同时保持与 Native Precompile 相近的执行效率。
+> WASM-backed Upgrade 在获得动态升级能力的同时保持与 Precompiled Contract 相近的执行效率。
 
 ---
 
-# Lab3：升级过程状态一致性
+# 不纳入实验内容：Upgrade Consistency
 
-论文标题使用“状态一致性”；工程实验名为 `lab3-upgrade-stability`，命令为 `benchupgradestability`。二者指同一组正式数据。
+当前论文不设置一致性实验。`Security Analysis / Upgrade Consistency` 只能从协议机制讨论一致性边界，包括链上升级元数据、`wasmHash`、`activationHeight`、区块高度驱动的版本选择，以及未就绪节点不应静默回退到旧版本的设计要求。
 
-## 目的
+仓库中已有的 `benchupgradestability`、`upgrade-stability`、`wasm-rerun-20260902-225029/lab3/` 和 `lab3_upgrade_stability_source.csv` 产物不进入论文实验体系，不出现在 `Evaluation` 中，不设置图表，不作为 formal claim 的实验支撑。
 
-验证升级交易进入私有链后，各节点是否在同一区块高度选择相同算法版本，并保持链视图、receipt/event 字段与 `callFunc` 输出一致。本地 plugin 编译完成时刻不决定生效语义；生效由链上 `activationBlock` 与执行区块号决定。
+正文允许在安全分析中写：
 
-## 正式实验环境
+* 升级一致性依赖链上元数据、模块哈希和 Activation Block 的确定性选择规则；
+* 节点本地时间和本地准备完成时刻不应参与版本选择；
+* 若节点在 Activation Block 到达时尚未准备好目标 WASM artifact，设计上不应继续执行旧版本并声称成功。
 
-* 网络：`experiments/cryptoupgrade/deployments/networks/local-5nodes.yaml`
-* 共识：Clique，`period = 5s`，5 节点
-* 对照：**scheduled** vs **immediate**（两种模式都带 `activationBlock`）
-* 轮次：每种模式 2 轮，共 4 轮，全部通过
+正文不得写：
 
-`immediate` 将 `activationBlock` 设为升级交易生效区块（当前/收据区块），不是“关闭 Activation Block 的对照”。仓库中不存在
-
-```text
-Without Deterministic Activation
-vs.
-With Activation Block
-```
-
-对应的实验命令或结果。不得把 scheduled / immediate 写成有/无确定性激活。
-
-## 核心场景
-
-```text
-uploadCodeVersion（含 version 与 activationBlock）
-        ↓
-Upgrade Event
-        ↓
-各节点异步准备本地 artifact
-        ↓
-按区块号选择版本
-  scheduled: H < activationBlock → V_old；H >= activationBlock → V_new
-  immediate: 升级交易生效区块起使用 V_new
-```
-
-## 记录数据
-
-每个采样点按节点记录，对应 `samples.csv` / `result.json` 字段。正式数据**没有** `stateRoot`。
-
-* `block_number` / `block_hash`
-* `head_number` / `head_hash`
-* `receipt_visible`、`receipt_block`、`receipt_block_hash`
-* `version`、`activation_block`、`metadata_hash`
-* `output` / `output_hex`
-* `ok` / `error`
-* `mode`（`scheduled` / `immediate`）、`stage`（`before` / `after`）
-
-## 一致性判定
-
-### Version Consistency
-
-同一采样区块上，各节点 `version` 与预期版本一致：
-
-```text
-scheduled:  H < H_activation  → V_old
-            H >= H_activation → V_new
-immediate:  升级交易生效区块起 → V_new
-```
-
-### Execution Consistency
-
-相同采样区块和交易输入下，各节点 `output` 一致，且符合该高度应使用的版本。
-
-### Chain-view Consistency
-
-对于同一 canonical 采样区块，各节点 `head_hash`、`block_hash`、receipt 可见性与 `metadata_hash` 一致。
-
-不得把上述观察写成 State Root 等式。若正文需要 state root，标 `TODO`（当前结果未采集）。
-
-## 观察窗口
-
-正式 scheduled 轮次覆盖 activation block 前（`stage=before`）与 activation block（`stage=after`）。immediate 轮次在生效区块采样 `after`。
-
-## 未做实验：fail-stop / 未就绪节点
-
-设计要求：若某节点在 Activation Block 到达时尚未完成本地 artifact 准备，不得静默回退到旧版本并声称执行成功。
-
-正式 5 节点 4 轮实验是全部节点激活成功后的一致性检查，**没有**注入未就绪节点，也没有 fail-stop 结果文件。
-
-不得根据现有数据描述未就绪节点的拒绝/停机行为。
-
-## 数据路径
-
-权威结果：
-
-* `experiments/cryptoupgrade/results/upgrade-stability/local-5nodes-formal-20260813/result.json`
-* `experiments/cryptoupgrade/results/upgrade-stability/local-5nodes-formal-20260813/samples.csv`
-* `experiments/cryptoupgrade/results/upgrade-stability/local-5nodes-formal-20260813/conclusion.md`
-
-论文用图：
-
-* 目录：`paper/image/lab3-state-consistency/`
-* 主图：`lab3_upgrade_state_consistency_5nodes.*`
-
-## 允许结论
-
-* 链上 `activationBlock` 决定版本生效语义，本地 activation 只准备对应版本 artifact；
-* scheduled 模式在 activation block 前保持旧版本输出，在 activation block 切换到新版本输出；
-* immediate 模式在升级交易生效区块返回新版本输出；
-* 在本次 5 节点无故障私有链中，各节点的链视图、receipt/event、版本与算法输出保持一致。
-
-## 禁止结论
-
-* 不得由有限规模私有链实验推导出任意网络规模下的一致性保证；
-* 不得将实验观察直接描述为形式化安全证明；
-* “状态一致性”不得泛化表述为“系统绝对稳定”，也不得改写成 State Root 一致（未采集）；
-* 不得声称已验证 fail-stop 或“无 Activation Block 会分叉”；
-* 正式数据未注入显著的节点就绪时间差，不得把 Lab3 写成“在刻意拉大的异步准备条件下的压力测试”。
+* 本文设置或完成了一项 Lab3 一致性实验；
+* 本文通过实验验证了所有节点的版本、输出、receipt/event 或 chain-view 一致；
+* `scheduled` / `immediate` 是正文实验 baseline；
+* 已采集 `stateRoot` 或已验证 State Root 一致；
+* 已验证 fail-stop、未就绪节点行为或无 Activation Block 会导致分叉。
 
 ---
 
-# 实验与论文设计对应关系
+# 实验与论文大纲对应关系
 
-| Research Question | Design | Experiment | 验证属性 | 正式数据规模 |
+| 论文大纲位置 | Design | Experiment | 验证属性 | 正式数据规模与边界 |
 | --- | --- | --- | --- | --- |
-| RQ1 | 链上协调 + 链下异步准备 | Lab1（+ 部署成本附属实验） | Upgrade Latency | 5 节点 Clique，7 算法 |
-| RQ2 | Cryptographic Coprocessor | Lab2（+ 真实链附属实验） | Execution Efficiency | 7 算法三方案；真实链仅 Sha256 |
-| RQ3 | Activation Block | Lab3 | Version / output / chain-view consistency | 5 节点，scheduled vs immediate，4 轮 |
+| `3.3 Upgrade Protocol` / `3.4 Deterministic Activation` / `5.2 Upgrade Efficiency` | 链上协调 + 链下异步准备 | Lab1（+ 部署成本附属实验） | Upgrade latency / post-event readiness | 5 节点 Clique，7 算法；不得写成 2/10 节点规模实验 |
+| `3.5 Resource Accounting` / `5.3 Execution Efficiency` | Cryptographic Coprocessor + deterministic gas model | Lab2（+ 真实链附属实验） | `eth_call` latency / `gasEstimate` | 7 算法三方案；真实链仅 Sha256；SchnorrVerify 为尾部例外 |
+| `4.4 Upgrade Consistency` | Activation Block | 不设置实验 | 协议属性 / 安全边界分析 | 不报告一致性实验结果；不得引用 `scheduled` / `immediate` harness 作为 baseline |
+| `2.3 WebAssembly Runtime` / `3.6 Prototype Implementation` / `4.2 Execution Isolation` | Go plugin → WASM module | WASM rerun | WASM payload boundary / Lab1-Lab2 rerun consistency | 5 节点 Clique，7 算法，同一 harness；不构成形式化沙箱或跨平台一致性证明 |
 
 最终论证链：
 
 ```text
 Cryptographic Coprocessor
         ↓
-支持 Native 密码算法动态替换
+支持 WASM 模块动态替换
         ↓
 Lab2：动态能力没有明显牺牲执行效率
 
@@ -393,5 +371,11 @@ Deterministic Activation
         ↓
 异步准备、按区块统一生效
         ↓
-Lab3：验证版本、输出与链视图一致
+Security Analysis / Upgrade Consistency：从协议机制说明版本切换边界，不设置实验
+
+WASM rerun
+        ↓
+Go plugin 替换为 WASM module
+        ↓
+支撑 WebAssembly Runtime、Prototype Implementation、Execution Isolation 与 WASM 路径下的 Lab1/Lab2 复现
 ```

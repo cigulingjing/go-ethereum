@@ -37,7 +37,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/cryptoupgrade"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/wasmtool"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -124,6 +124,8 @@ type artifactResult struct {
 
 type upgradeResult struct {
 	Algorithm               string        `json:"algorithm"`
+	Version                 uint64        `json:"version"`
+	ActivationBlock         uint64        `json:"activationBlock"`
 	InputType               string        `json:"inputType"`
 	OutputType              string        `json:"outputType"`
 	AlgoGas                 uint64        `json:"algoGas"`
@@ -142,6 +144,7 @@ type upgradeResult struct {
 
 type payloadResult struct {
 	SourceBytes           int    `json:"sourceBytes"`
+	WasmHash              string `json:"wasmHash"`
 	CompressedGzipBytes   int    `json:"compressedGzipBytes"`
 	CompressedBase64Bytes int    `json:"compressedBase64Bytes"`
 	UploadCalldataBytes   int    `json:"uploadCalldataBytes"`
@@ -242,7 +245,7 @@ func parseConfig() (config, error) {
 	flag.StringVar(&cfg.httpPort, "http-port", "8666", "geth --http.port value")
 	flag.StringVar(&cfg.httpAPI, "http-api", "web3,eth,debug,net,admin", "geth --http.api value")
 
-	flag.StringVar(&cfg.sourcePath, "source", "cryptoupgrade/algorithm/go/add.go", "Add algorithm Go source")
+	flag.StringVar(&cfg.sourcePath, "source", "cryptoupgrade/algorithm/wasm/add.wasm", "Add algorithm wasm file")
 	flag.StringVar(&cfg.name, "name", "Add", "algorithm name")
 	flag.StringVar(&cfg.inputType, "itype", "int256,int256", "CodeStorage input ABI type list")
 	flag.StringVar(&cfg.outputType, "otype", "int256", "CodeStorage output ABI type list")
@@ -331,6 +334,8 @@ func newResult(cfg config) experimentResult {
 		},
 		Upgrade: upgradeResult{
 			Algorithm:           cfg.name,
+			Version:             1,
+			ActivationBlock:     0,
 			InputType:           cfg.inputType,
 			OutputType:          cfg.outputType,
 			AlgoGas:             cfg.algoGas,
@@ -349,10 +354,10 @@ func newResult(cfg config) experimentResult {
 		Limitations: []string{
 			"uploadCode receipt 只表示升级数据和 codeUploaded event 已进入链上执行结果；本地 activation 由节点事件监听线程完成。",
 			"activation block 使用首次 CodeStorage.callFunc 验证成功时的 latest block 记录，表示控制端可观测的本地可调用点。",
-			"confirm-to-activate observed latency 包含事件订阅分发、getInfo 查询、plugin 编译和轮询间隔。",
+			"confirm-to-activate observed latency 包含事件订阅分发、getInfo 查询、WASM decode/activation 和轮询间隔。",
 			"validation 使用 eth_call，因此 validation block 表示 latest 调用上下文，不是验证交易所在区块。",
-			"geth --dev 按需出块，submit-to-confirm latency 包含本地 dev miner 调度，但不再包含 uploadCode 内部 plugin 编译时间。",
-			"payload size 同时报告源码、gzip、base64 和完整 ABI calldata；当前实现没有单一字段能代表所有 payload 成本。",
+			"geth --dev 按需出块，submit-to-confirm latency 包含本地 dev miner 调度，但不包含 uploadCode 内部 WASM activation 时间。",
+			"payload size 同时报告 WASM bytecode、gzip、base64 和完整 ABI calldata；当前实现没有单一字段能代表所有 payload 成本。",
 		},
 	}
 }
@@ -388,7 +393,7 @@ func run(ctx context.Context, cfg config, res *experimentResult) error {
 	if err != nil {
 		return err
 	}
-	sourceBytes, gzBytes, compressedPayload, err := compressSource(cfg.sourcePath)
+	sourceBytes, wasmHash, gzBytes, compressedPayload, err := compressSource(ctx, cfg.sourcePath, cfg.name, splitABITypeList(cfg.inputType), splitABITypeList(cfg.outputType))
 	if err != nil {
 		return err
 	}
@@ -399,6 +404,7 @@ func run(ctx context.Context, cfg config, res *experimentResult) error {
 	sum := sha256.Sum256(uploadData)
 	res.Upgrade.Payload = payloadResult{
 		SourceBytes:           sourceBytes,
+		WasmHash:              wasmHash,
 		CompressedGzipBytes:   gzBytes,
 		CompressedBase64Bytes: len(compressedPayload),
 		UploadCalldataBytes:   len(uploadData),
@@ -600,20 +606,35 @@ func resolveSender(ctx context.Context, client *rpc.Client, fromText string) (co
 	return accounts[0], nil
 }
 
-func compressSource(path string) (sourceBytes int, gzipBytes int, encoded string, err error) {
+func compressSource(ctx context.Context, path, function string, inputTypes, outputTypes []string) (sourceBytes int, wasmHash string, gzipBytes int, encoded string, err error) {
 	source, err := os.ReadFile(path)
 	if err != nil {
-		return 0, 0, "", fmt.Errorf("read source: %w", err)
+		return 0, "", 0, "", fmt.Errorf("read source: %w", err)
 	}
-	encoded, err = cryptoupgrade.EncodeSource(source)
+	wasm, encoded, err := wasmtool.BuildEncodedPath(ctx, path, wasmtool.Spec{
+		Function:    function,
+		InputTypes:  inputTypes,
+		OutputTypes: outputTypes,
+	})
 	if err != nil {
-		return 0, 0, "", err
+		return 0, "", 0, "", err
 	}
 	compressed, err := base64.StdEncoding.DecodeString(encoded)
 	if err != nil {
-		return 0, 0, "", fmt.Errorf("decode shared source payload: %w", err)
+		return 0, "", 0, "", fmt.Errorf("decode shared source payload: %w", err)
 	}
-	return len(source), len(compressed), encoded, nil
+	return len(source), wasmtool.WasmHash(wasm), len(compressed), encoded, nil
+}
+
+func splitABITypeList(raw string) []string {
+	var out []string
+	for _, part := range strings.Split(raw, ",") {
+		part = strings.TrimSpace(part)
+		if part != "" {
+			out = append(out, part)
+		}
+	}
+	return out
 }
 
 func sendTransaction(ctx context.Context, client *rpc.Client, args txArgs) (common.Hash, error) {
@@ -807,7 +828,7 @@ func wrapPluginHint(err error) error {
 	msg := err.Error()
 	if strings.Contains(msg, "can not compile code") || strings.Contains(msg, "cannot compile code") ||
 		strings.Contains(msg, "plugin") || strings.Contains(msg, "buildmode=plugin") {
-		return fmt.Errorf("%w (check geth log and Go plugin toolchain; this experiment sets CRYPTOUPGRADE_MODULE to the repo root)", err)
+		return fmt.Errorf("%w (check geth log for WASM decode, wazero activation, or plugin directory errors)", err)
 	}
 	return err
 }

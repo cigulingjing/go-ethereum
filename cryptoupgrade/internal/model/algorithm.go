@@ -5,10 +5,13 @@ import "strings"
 // AlgorithmInfo 描述动态算法在链上提交并由节点本地激活的元数据。
 // 该类型只承载跨模块数据，升级状态和持久化流程由上层模块管理。
 type AlgorithmInfo struct {
-	Code  string `json:"code"`
-	Gas   uint64 `json:"gas"`
-	IType string `json:"itype"`
-	OType string `json:"otype"`
+	Code           string `json:"code"`
+	Gas            uint64 `json:"gas"`
+	IType          string `json:"itype"`
+	OType          string `json:"otype"`
+	WasmHash       string `json:"wasmHash,omitempty"`
+	RuntimeName    string `json:"runtimeName,omitempty"`
+	RuntimeVersion string `json:"runtimeVersion,omitempty"`
 }
 
 // AlgorithmVersionInfo 描述链上提交的一个算法版本计划。
@@ -21,6 +24,12 @@ type AlgorithmVersionInfo struct {
 // Base returns the legacy metadata view used by existing single-version paths.
 func (i AlgorithmVersionInfo) Base() AlgorithmInfo {
 	return i.AlgorithmInfo
+}
+
+// IsPrepared reports whether the local node has already materialized this
+// version as a WASM module ready for execution.
+func (i AlgorithmVersionInfo) IsPrepared() bool {
+	return strings.TrimSpace(i.WasmHash) != "" && strings.TrimSpace(i.RuntimeName) != "" && strings.TrimSpace(i.RuntimeVersion) != ""
 }
 
 // Versioned wraps legacy metadata with explicit version semantics.

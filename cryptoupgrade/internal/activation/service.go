@@ -5,19 +5,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/model"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/wasmruntime"
 )
 
-// Codec decodes an uploaded source artifact to a repository-owned path.
+// Codec decodes an uploaded WASM artifact and can persist it to a repository-owned path.
 type Codec interface {
 	DecodeToFile(encoded, outputPath string) error
 }
 
-// Compiler builds a plugin from explicit source and output paths.
-type Compiler interface {
-	Compile(ctx context.Context, sourcePath, outputPath string) error
+// Runtime compiles and instantiates a prepared WASM module.
+type Runtime interface {
+	Activate(ctx context.Context, wasmPath, compiledPath string) error
 }
 
 // Repository owns activation paths and active algorithm metadata.
@@ -38,26 +41,19 @@ type Repository interface {
 	Save() error
 }
 
-// Loader validates and activates a compiled plugin symbol.
-type Loader interface {
-	Load(pluginPath, symbolName string) error
-}
-
 // Service coordinates one complete local activation.
 type Service struct {
 	codec      Codec
-	compiler   Compiler
+	runtime    Runtime
 	repository Repository
-	loader     Loader
 }
 
 // NewService creates an activation service from injectable stage boundaries.
-func NewService(codec Codec, compiler Compiler, repository Repository, loader Loader) *Service {
+func NewService(codec Codec, runtime Runtime, repository Repository) *Service {
 	return &Service{
 		codec:      codec,
-		compiler:   compiler,
+		runtime:    runtime,
 		repository: repository,
-		loader:     loader,
 	}
 }
 
@@ -68,7 +64,7 @@ func (s *Service) Activate(ctx context.Context, name string, info model.Algorith
 
 // ActivateVersion decodes, compiles, persists and loads one uploaded algorithm version.
 func (s *Service) ActivateVersion(ctx context.Context, name string, info model.AlgorithmVersionInfo) error {
-	if s == nil || s.codec == nil || s.compiler == nil || s.repository == nil || s.loader == nil {
+	if s == nil || s.codec == nil || s.runtime == nil || s.repository == nil {
 		return errors.New("activation service dependencies are incomplete")
 	}
 	name = model.NormalizeAlgorithmName(strings.TrimSpace(name))
@@ -84,14 +80,17 @@ func (s *Service) ActivateVersion(ctx context.Context, name string, info model.A
 	if err := s.repository.EnsureDirs(); err != nil {
 		return fmt.Errorf("prepare activation repository: %w", err)
 	}
-	sourcePath := s.versionSourcePath(name, info.Version)
-	if err := s.codec.DecodeToFile(info.Code, sourcePath); err != nil {
-		return fmt.Errorf("decode algorithm %s version %d source: %w", name, info.Version, err)
+	wasmPath := s.versionSourcePath(name, info.Version)
+	if err := s.codec.DecodeToFile(info.Code, wasmPath); err != nil {
+		return fmt.Errorf("persist algorithm %s version %d wasm: %w", name, info.Version, err)
 	}
-	pluginPath := s.versionPluginPath(name, info.Version)
-	if err := s.compiler.Compile(ctx, sourcePath, pluginPath); err != nil {
-		return fmt.Errorf("compile algorithm %s version %d: %w", name, info.Version, err)
+	rawWasm, err := os.ReadFile(wasmPath)
+	if err != nil {
+		return fmt.Errorf("read persisted wasm %s: %w", wasmPath, err)
 	}
+	info.WasmHash = wasmHash(rawWasm)
+	info.RuntimeName = wasmRuntimeName
+	info.RuntimeVersion = wasmRuntimeVersion
 
 	previous, hadPrevious := s.repository.ActiveVersion(name)
 	s.repository.SetActiveVersion(name, info)
@@ -99,16 +98,17 @@ func (s *Service) ActivateVersion(ctx context.Context, name string, info model.A
 		s.restore(name, info.Version, previous, hadPrevious)
 		return fmt.Errorf("persist algorithm %s version %d metadata: %w", name, info.Version, err)
 	}
-	if err := s.loader.Load(pluginPath, name); err != nil {
+	compiledPath := s.versionCompiledPath(name, info.Version)
+	if err := s.runtime.Activate(ctx, wasmPath, compiledPath); err != nil {
 		s.restore(name, info.Version, previous, hadPrevious)
 		// load 失败时恢复旧 metadata，避免 receipt 或持久化状态被误认为激活完成。
 		if rollbackErr := s.repository.Save(); rollbackErr != nil {
 			return errors.Join(
-				fmt.Errorf("load algorithm %s version %d plugin: %w", name, info.Version, err),
+				fmt.Errorf("activate algorithm %s version %d wasm: %w", name, info.Version, err),
 				fmt.Errorf("rollback algorithm %s version %d metadata: %w", name, info.Version, rollbackErr),
 			)
 		}
-		return fmt.Errorf("load algorithm %s version %d plugin: %w", name, info.Version, err)
+		return fmt.Errorf("activate algorithm %s version %d wasm: %w", name, info.Version, err)
 	}
 	return nil
 }
@@ -120,7 +120,7 @@ func (s *Service) versionSourcePath(name string, version uint64) string {
 	return s.repository.VersionSourcePath(name, version)
 }
 
-func (s *Service) versionPluginPath(name string, version uint64) string {
+func (s *Service) versionCompiledPath(name string, version uint64) string {
 	if version == 1 {
 		return s.repository.PluginPath(name)
 	}
@@ -144,18 +144,19 @@ func (f CodecFunc) DecodeToFile(encoded, outputPath string) error {
 	return f(encoded, outputPath)
 }
 
-// CompilerFunc adapts a function to Compiler.
-type CompilerFunc func(ctx context.Context, sourcePath, outputPath string) error
+// RuntimeFunc adapts a function to Runtime.
+type RuntimeFunc func(ctx context.Context, wasmPath, compiledPath string) error
 
-// Compile calls f.
-func (f CompilerFunc) Compile(ctx context.Context, sourcePath, outputPath string) error {
-	return f(ctx, sourcePath, outputPath)
+// Activate calls f.
+func (f RuntimeFunc) Activate(ctx context.Context, wasmPath, compiledPath string) error {
+	return f(ctx, wasmPath, compiledPath)
 }
 
-// LoaderFunc adapts a function to Loader.
-type LoaderFunc func(pluginPath, symbolName string) error
-
-// Load calls f.
-func (f LoaderFunc) Load(pluginPath, symbolName string) error {
-	return f(pluginPath, symbolName)
+func wasmHash(rawWasm []byte) string {
+	return crypto.Keccak256Hash(rawWasm).Hex()
 }
+
+const (
+	wasmRuntimeName    = wasmruntime.RuntimeName
+	wasmRuntimeVersion = wasmruntime.RuntimeVersion
+)

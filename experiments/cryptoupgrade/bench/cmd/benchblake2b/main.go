@@ -19,7 +19,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto/blake2b"
-	"github.com/ethereum/go-ethereum/cryptoupgrade"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/wasmtool"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -59,7 +59,7 @@ type compiledSolidity struct {
 func main() {
 	var (
 		rpcURL            = flag.String("rpc", "http://127.0.0.1:8666", "execution RPC endpoint")
-		source            = flag.String("source", "", "algorithm source file; empty generates a wrapper around crypto/blake2b.Sum256")
+		source            = flag.String("source", "cryptoupgrade/algorithm/wasm/blake2b.wasm", "algorithm wasm file; empty compiles the repository Go fixture with TinyGo")
 		solcPath          = flag.String("solc", defaultSolcPath(), "solc compiler path")
 		evmVersion        = flag.String("evm-version", "paris", "solc EVM target; use paris or earlier when the chain does not support PUSH0 (Shanghai)")
 		soliditySource    = flag.String("solidity-source", "cryptoupgrade/algorithm/contracts/Blake2b.sol", "Solidity Blake2b contract source")
@@ -332,7 +332,11 @@ func runDeploymentBenchmark(ctx context.Context, client *rpc.Client, codeStorage
 }
 
 func uploadAlgorithm(ctx context.Context, client *rpc.Client, codeStorageABI abi.ABI, from common.Address, source, name string, algoGas, gasLimit uint64) (deployResult, error) {
-	compressed, err := cryptoupgrade.EncodeSourceFile(source)
+	compressed, err := wasmtool.EncodePath(ctx, source, wasmtool.Spec{
+		Function:    name,
+		InputTypes:  []string{"bytes"},
+		OutputTypes: []string{"bytes32"},
+	})
 	if err != nil {
 		return deployResult{}, err
 	}
@@ -501,16 +505,16 @@ func writeBlake2bWrapperSource(dir, name string) (string, error) {
 	if !isASCIIIdentifier(name) {
 		return "", fmt.Errorf("algorithm name %q is not a valid Go identifier", name)
 	}
-	source := fmt.Sprintf(`package main
-
-import "github.com/ethereum/go-ethereum/crypto/blake2b"
-
-func %s(data []byte) [32]byte {
-	return blake2b.Sum256(data)
-}
-`, name)
+	source, err := os.ReadFile("cryptoupgrade/algorithm/go/blake2b.go")
+	if err != nil {
+		return "", fmt.Errorf("read Blake2b Go fixture: %w", err)
+	}
+	source = bytes.Replace(source, []byte("func Sum256("), []byte("func "+name+"("), 1)
+	if !bytes.Contains(source, []byte("func "+name+"(")) {
+		return "", fmt.Errorf("Blake2b Go fixture does not expose Sum256")
+	}
 	path := filepath.Join(dir, name+".go")
-	if err := os.WriteFile(path, []byte(source), 0644); err != nil {
+	if err := os.WriteFile(path, source, 0644); err != nil {
 		return "", err
 	}
 	return path, nil

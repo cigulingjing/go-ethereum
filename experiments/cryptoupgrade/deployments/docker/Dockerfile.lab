@@ -9,6 +9,8 @@ RUN apk add --no-cache ca-certificates gcc git linux-headers musl-dev
 
 WORKDIR /go-ethereum
 
+ENV CGO_ENABLED=0
+
 COPY go.mod go.sum ./
 RUN go mod download
 
@@ -17,7 +19,6 @@ RUN go run build/ci.go install ./cmd/geth
 
 ENV CRYPTOUPGRADE_MODULE=/go-ethereum
 ENV GETH_CRYPTOUPGRADE_PLUGIN_DIR=/plugin
-ENV CGO_ENABLED=1
 ENV PATH="/go-ethereum/build/bin:${PATH}"
 
 RUN mkdir -p /data /plugin

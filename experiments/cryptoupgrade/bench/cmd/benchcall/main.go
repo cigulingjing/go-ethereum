@@ -15,7 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/cryptoupgrade"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/wasmtool"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -49,7 +49,7 @@ type deployResult struct {
 func main() {
 	var (
 		rpcURL               = flag.String("rpc", "http://127.0.0.1:8666", "execution RPC endpoint")
-		source               = flag.String("source", "cryptoupgrade/algorithm/go/add.go", "algorithm source file")
+		source               = flag.String("source", "cryptoupgrade/algorithm/wasm/add.wasm", "algorithm wasm file")
 		name                 = flag.String("name", "Add", "upgrade algorithm name")
 		aText                = flag.String("a", "100", "first int256 argument")
 		bText                = flag.String("b", "100", "second int256 argument")
@@ -257,7 +257,11 @@ func runDeploymentBenchmark(ctx context.Context, client *rpc.Client, codeStorage
 }
 
 func uploadAlgorithm(ctx context.Context, client *rpc.Client, codeStorageABI abi.ABI, from common.Address, source, name string, algoGas, gasLimit uint64) (deployResult, error) {
-	compressed, err := cryptoupgrade.EncodeSourceFile(source)
+	compressed, err := wasmtool.EncodePath(ctx, source, wasmtool.Spec{
+		Function:    name,
+		InputTypes:  []string{"int256", "int256"},
+		OutputTypes: []string{"int256"},
+	})
 	if err != nil {
 		return deployResult{}, err
 	}

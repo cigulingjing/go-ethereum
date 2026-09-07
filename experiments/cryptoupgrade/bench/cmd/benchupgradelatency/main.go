@@ -44,6 +44,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	gethblake2b "github.com/ethereum/go-ethereum/crypto/blake2b"
 	"github.com/ethereum/go-ethereum/cryptoupgrade"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/wasmtool"
 	"github.com/ethereum/go-ethereum/experiments/cryptoupgrade/network"
 	"github.com/ethereum/go-ethereum/rpc"
 )
@@ -219,6 +220,9 @@ type upgradeTimeline struct {
 
 type payloadResult struct {
 	SourceBytes           int    `json:"sourceBytes"`
+	Version               uint64 `json:"version"`
+	ActivationBlock       uint64 `json:"activationBlock"`
+	WasmHash              string `json:"wasmHash"`
 	CompressedGzipBytes   int    `json:"compressedGzipBytes"`
 	CompressedBase64Bytes int    `json:"compressedBase64Bytes"`
 	UploadCalldataBytes   int    `json:"uploadCalldataBytes"`
@@ -386,7 +390,7 @@ func parseConfig(args []string) (config, error) {
 	fs.StringVar(&cfg.senderID, "sender", "", "node ID used to submit the upgrade transaction; defaults to the first signer")
 	fs.StringVar(&cfg.nodeIDs, "nodes", "", "comma-separated node IDs to observe; defaults to all configured nodes")
 	fs.StringVar(&cfg.from, "from", "", "transaction sender address; defaults to the sender node account")
-	fs.StringVar(&cfg.sourcePath, "source", "cryptoupgrade/algorithm/go/add.go", "Add-compatible Go source")
+	fs.StringVar(&cfg.sourcePath, "source", "cryptoupgrade/algorithm/wasm/add.wasm", "Add-compatible wasm file")
 	fs.StringVar(&cfg.algorithm, "algorithm", "Add", "algorithm name to upload")
 	fs.StringVar(&cfg.algorithms, "algorithms", "", "comma-separated built-in algorithms to run; use all for all fixtures")
 	fs.BoolVar(&cfg.uniqueNames, "unique-names", true, "append a per-run suffix to fixture upload function names to avoid polluted baselines")
@@ -683,7 +687,7 @@ func builtinFixtures(cfg config) ([]algorithmFixture, error) {
 			Algorithm:      "Add",
 			UpgradeName:    "Add",
 			SourceFunc:     "Add",
-			SourcePath:     "cryptoupgrade/algorithm/go/add.go",
+			SourcePath:     "cryptoupgrade/algorithm/wasm/add.wasm",
 			InputTypes:     []string{"uint256", "uint256"},
 			OutputTypes:    []string{"uint256"},
 			Values:         []interface{}{a, b},
@@ -699,7 +703,7 @@ func builtinFixtures(cfg config) ([]algorithmFixture, error) {
 			Algorithm:      "Sha256",
 			UpgradeName:    "Sha256",
 			SourceFunc:     "Sha256",
-			SourcePath:     "cryptoupgrade/algorithm/go/sha256.go",
+			SourcePath:     "cryptoupgrade/algorithm/wasm/sha256.wasm",
 			InputTypes:     []string{"bytes"},
 			OutputTypes:    []string{"bytes"},
 			Values:         []interface{}{sampleData},
@@ -714,7 +718,7 @@ func builtinFixtures(cfg config) ([]algorithmFixture, error) {
 			Algorithm:      "Blake2bSum256",
 			UpgradeName:    "Sum256",
 			SourceFunc:     "Sum256",
-			SourcePath:     "cryptoupgrade/algorithm/go/blake2b.go",
+			SourcePath:     "cryptoupgrade/algorithm/wasm/blake2b.wasm",
 			InputTypes:     []string{"bytes"},
 			OutputTypes:    []string{"bytes32"},
 			Values:         []interface{}{sampleData},
@@ -729,7 +733,7 @@ func builtinFixtures(cfg config) ([]algorithmFixture, error) {
 			Algorithm:      "Pbkdf2Sha256",
 			UpgradeName:    "Pbkdf2Sha256",
 			SourceFunc:     "Pbkdf2Sha256",
-			SourcePath:     "cryptoupgrade/algorithm/go/pbkdf2_sha256.go",
+			SourcePath:     "cryptoupgrade/algorithm/wasm/pbkdf2_sha256.wasm",
 			InputTypes:     []string{"bytes", "bytes", "uint256", "uint256"},
 			OutputTypes:    []string{"bytes"},
 			Values:         []interface{}{pbkdf2Password, pbkdf2Salt, pbkdf2Iterations, pbkdf2KeyLength},
@@ -746,7 +750,7 @@ func builtinFixtures(cfg config) ([]algorithmFixture, error) {
 			Algorithm:      "Dh2048Secret",
 			UpgradeName:    "Dh2048Secret",
 			SourceFunc:     "Dh2048Secret",
-			SourcePath:     "cryptoupgrade/algorithm/go/dh2048.go",
+			SourcePath:     "cryptoupgrade/algorithm/wasm/dh2048.wasm",
 			InputTypes:     []string{"bytes", "bytes"},
 			OutputTypes:    []string{"bytes"},
 			Values:         []interface{}{dhPrivate, dhPeerPublic},
@@ -762,7 +766,7 @@ func builtinFixtures(cfg config) ([]algorithmFixture, error) {
 			Algorithm:      "PedersenCommit",
 			UpgradeName:    "PedersenCommit",
 			SourceFunc:     "PedersenCommit",
-			SourcePath:     "cryptoupgrade/algorithm/go/pedersen_commit.go",
+			SourcePath:     "cryptoupgrade/algorithm/wasm/pedersen_commit.wasm",
 			InputTypes:     []string{"bytes", "bytes"},
 			OutputTypes:    []string{"bytes"},
 			Values:         []interface{}{pedersenMessage, pedersenBlinding},
@@ -777,7 +781,7 @@ func builtinFixtures(cfg config) ([]algorithmFixture, error) {
 			Algorithm:      "SchnorrVerify",
 			UpgradeName:    "SchnorrVerify",
 			SourceFunc:     "SchnorrVerify",
-			SourcePath:     "cryptoupgrade/algorithm/go/schnorr_proof.go",
+			SourcePath:     "cryptoupgrade/algorithm/wasm/schnorr_proof.wasm",
 			InputTypes:     []string{"bytes", "bytes"},
 			OutputTypes:    []string{"bool"},
 			Values:         []interface{}{schnorrMessage, schnorrProof},
@@ -1167,13 +1171,14 @@ func prepareRoundSource(cfg config, round, repeat int, fixture algorithmFixture)
 	if sourceFunc == "" {
 		sourceFunc = fixture.UpgradeName
 	}
-	if uploadName == sourceFunc {
+	if isWASM(raw) || uploadName == sourceFunc {
 		return roundSource{Algorithm: fixture.Algorithm, UpgradeName: uploadName, Path: sourcePath, Raw: raw, Fixture: fixture}, nil
 	}
 	raw, err = renameExportedFunction(raw, sourceFunc, uploadName)
 	if err != nil {
 		return roundSource{}, err
 	}
+	fixture.SourceFunc = uploadName
 	dir := filepath.Join(cfg.resultDir, "sources")
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return roundSource{}, fmt.Errorf("create generated source dir: %w", err)
@@ -1256,7 +1261,25 @@ func exportedIdentifier(raw string) string {
 }
 
 func buildPayload(source []byte, algorithm string, fixture algorithmFixture) (payloadData, error) {
-	encoded, err := cryptoupgrade.EncodeSource(source)
+	function := fixture.SourceFunc
+	if function == "" {
+		function = algorithm
+	}
+	var (
+		wasm    []byte
+		encoded string
+		err     error
+	)
+	if isWASM(source) {
+		wasm = source
+		encoded, err = cryptoupgrade.EncodeWasm(source)
+	} else {
+		wasm, encoded, err = wasmtool.BuildEncodedSource(context.Background(), source, wasmtool.Spec{
+			Function:    function,
+			InputTypes:  fixture.InputTypes,
+			OutputTypes: fixture.OutputTypes,
+		})
+	}
 	if err != nil {
 		return payloadData{}, err
 	}
@@ -1274,12 +1297,19 @@ func buildPayload(source []byte, algorithm string, fixture algorithmFixture) (pa
 		Upload:  uploadData,
 		Result: payloadResult{
 			SourceBytes:           len(source),
+			Version:               1,
+			ActivationBlock:       0,
+			WasmHash:              wasmtool.WasmHash(wasm),
 			CompressedGzipBytes:   len(compressed),
 			CompressedBase64Bytes: len(encoded),
 			UploadCalldataBytes:   len(uploadData),
 			UploadCalldataSHA256:  hex.EncodeToString(sum[:]),
 		},
 	}, nil
+}
+
+func isWASM(data []byte) bool {
+	return len(data) >= 4 && bytes.Equal(data[:4], []byte{0x00, 0x61, 0x73, 0x6d})
 }
 
 func ensureAlgorithmUnavailable(ctx context.Context, targets []network.NodeConfig, from common.Address, probe validationProbe, cfg config) error {
@@ -2222,7 +2252,7 @@ func wrapPluginHint(err error) error {
 	msg := strings.ToLower(err.Error())
 	if strings.Contains(msg, "can not compile code") || strings.Contains(msg, "cannot compile code") ||
 		strings.Contains(msg, "plugin") || strings.Contains(msg, "buildmode=plugin") {
-		return fmt.Errorf("%w (check each node log, Go plugin toolchain, CRYPTOUPGRADE_MODULE, and GETH_CRYPTOUPGRADE_PLUGIN_DIR)", err)
+		return fmt.Errorf("%w (check each node log for WASM decode, wazero activation, and GETH_CRYPTOUPGRADE_PLUGIN_DIR)", err)
 	}
 	return err
 }

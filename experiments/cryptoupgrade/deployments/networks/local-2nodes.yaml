@@ -17,9 +17,9 @@ docker:
 
 cryptoupgrade:
   enabled: true
-  # smokeTest 会利用addSource给定的.go文件实现升级。
+  # smokeTest 会利用 addSource 给定的 .wasm 文件实现升级。
   smokeTest: true
-  addSource: ../../../../cryptoupgrade/algorithm/go/add.go
+  addSource: ../../../../cryptoupgrade/algorithm/wasm/add.wasm
 
 accounts:
   signer:

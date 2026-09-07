@@ -38,10 +38,13 @@ func TestRepositoryMetadataRoundTripPreservesSchema(t *testing.T) {
 	workspace := NewWorkspace(filepath.Join(t.TempDir(), "plugin"))
 	repo := New(workspace)
 	want := model.AlgorithmInfo{
-		Code:  "encoded-source",
-		Gas:   12345,
-		IType: "bytes,uint256",
-		OType: "bool",
+		Code:           "encoded-source",
+		Gas:            12345,
+		IType:          "bytes,uint256",
+		OType:          "bool",
+		WasmHash:       "0xabc",
+		RuntimeName:    "wazero",
+		RuntimeVersion: "v1.12.0",
 	}
 	repo.SetActive("Verify", want)
 	if err := repo.Save(); err != nil {
@@ -60,7 +63,7 @@ func TestRepositoryMetadataRoundTripPreservesSchema(t *testing.T) {
 	for key := range schema["Verify"] {
 		keys[key] = struct{}{}
 	}
-	wantKeys := map[string]struct{}{"code": {}, "gas": {}, "itype": {}, "otype": {}}
+	wantKeys := map[string]struct{}{"code": {}, "gas": {}, "itype": {}, "otype": {}, "wasmHash": {}, "runtimeName": {}, "runtimeVersion": {}}
 	if !reflect.DeepEqual(keys, wantKeys) {
 		t.Fatalf("metadata schema changed: want %v got %v", wantKeys, keys)
 	}
@@ -78,12 +81,12 @@ func TestRepositoryVersionMetadataAndPathsAreIsolated(t *testing.T) {
 	workspace := NewWorkspace(filepath.Join(t.TempDir(), "plugin"))
 	repo := New(workspace)
 	v1 := model.AlgorithmVersionInfo{
-		AlgorithmInfo:   model.AlgorithmInfo{Code: "v1", Gas: 1, IType: "bytes", OType: "bytes"},
+		AlgorithmInfo:   model.AlgorithmInfo{Code: "v1", Gas: 1, IType: "bytes", OType: "bytes", WasmHash: "0x1", RuntimeName: "wazero", RuntimeVersion: "v1.12.0"},
 		Version:         1,
 		ActivationBlock: 0,
 	}
 	v2 := model.AlgorithmVersionInfo{
-		AlgorithmInfo:   model.AlgorithmInfo{Code: "v2", Gas: 2, IType: "bytes", OType: "bytes"},
+		AlgorithmInfo:   model.AlgorithmInfo{Code: "v2", Gas: 2, IType: "bytes", OType: "bytes", WasmHash: "0x2", RuntimeName: "wazero", RuntimeVersion: "v1.12.0"},
 		Version:         2,
 		ActivationBlock: 42,
 	}
@@ -116,7 +119,7 @@ func TestRepositoryVersionMetadataRoundTrip(t *testing.T) {
 	workspace := NewWorkspace(filepath.Join(t.TempDir(), "plugin"))
 	repo := New(workspace)
 	want := model.AlgorithmVersionInfo{
-		AlgorithmInfo:   model.AlgorithmInfo{Code: "encoded-source", Gas: 12345, IType: "bytes", OType: "bytes"},
+		AlgorithmInfo:   model.AlgorithmInfo{Code: "encoded-source", Gas: 12345, IType: "bytes", OType: "bytes", WasmHash: "0xabc", RuntimeName: "wazero", RuntimeVersion: "v1.12.0"},
 		Version:         2,
 		ActivationBlock: 42,
 	}

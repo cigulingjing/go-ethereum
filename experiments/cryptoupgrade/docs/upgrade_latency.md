@@ -30,7 +30,7 @@ go run ./experiments/cryptoupgrade/bench/cmd/benchupgradelatency \
 
 - sender 使用第一个 `role: signer` 节点；
 - 目标节点使用 YAML 中的所有节点；
-- 单轮默认上传 `cryptoupgrade/algorithm/go/add.go` 中的 `Add`；
+- 单轮默认上传 `cryptoupgrade/algorithm/wasm/add.wasm` 中的 `Add`；
 - 节点完成条件是该节点 RPC 上 `CodeStorage.callFunc("Add", encodedInput)` 返回 `a + b`；
 - preflight 检查 RPC、chain ID、peer count 和区块高度增长，但不会执行 cryptoupgrade smoke test。
 
@@ -43,7 +43,7 @@ go run ./experiments/cryptoupgrade/bench/cmd/benchupgradelatency \
   -rounds 3
 ```
 
-多轮模式会在结果目录的 `sources/` 下生成 `AddLatency001`、`AddLatency002` 等等价 Add 源码，避免上一轮同名算法已经可调用而污染下一轮测量。
+多轮模式默认复用 `.wasm` 制品并使用 `AddLatency001`、`AddLatency002` 等唯一上传名，避免上一轮同名算法已经可调用而污染下一轮测量。仅当手动传入 Go 源码时，工具才会在结果目录的 `sources/` 下生成重命名后的 TinyGo 构建输入。
 
 ## 多算法实验
 
@@ -79,7 +79,7 @@ go run ./experiments/cryptoupgrade/bench/cmd/benchupgradelatency \
 
 10 节点配置会让每个节点使用独立 `datadir`、`pluginDir`、node key 和 HTTP RPC 端口。建议在 Docker Compose 启动后等待 peer count 稳定，再开始测量；preflight 不计入升级延迟。
 
-正式多算法采集建议每个算法使用一套干净 10 节点网络，分别保存该算法的 `result.json`、`rounds.csv` 和 `nodes.csv`。这样可以避免同一 geth 进程连续加载多个 Go plugin 时产生的运行时干扰，同时保证每个算法的节点级数据都是从未升级状态开始采集的一手数据。
+正式多算法采集建议每个算法使用一套干净 10 节点网络，分别保存该算法的 `result.json`、`rounds.csv` 和 `nodes.csv`。这样可以避免同一 geth 进程连续加载多个 WASM 模块时产生的运行时干扰，同时保证每个算法的节点级数据都是从未升级状态开始采集的一手数据。
 
 ## 指定节点
 
@@ -100,7 +100,7 @@ go run ./experiments/cryptoupgrade/bench/cmd/benchupgradelatency \
 - `result.json`：完整原始结果；
 - `rounds.csv`：轮次级汇总；
 - `nodes.csv`：节点级耗时；
-- `sources/`：多轮模式生成的唯一算法源码。
+- `sources/`：仅在手动传入 Go 源码时生成的 TinyGo 构建输入。
 
 关键 JSON 字段：
 

@@ -1,0 +1,70 @@
+{
+  "runId": "wasm-rerun-20260902-225029",
+  "startedAtApprox": "2026-09-02T22:50:29+08:00",
+  "completedAtApprox": "2026-09-03T02:04+08:00",
+  "network": {
+    "nodes": 5,
+    "type": "Clique",
+    "chainId": 11223344,
+    "config": "build/cryptoupgrade-networks/wasm-5nodes-20260902-225029/network.yaml",
+    "renderedDir": "build/cryptoupgrade-networks/wasm-5nodes-20260902-225029",
+    "validation": "network-validate-2.json"
+  },
+  "dockerImage": {
+    "tag": "cryptoupgrade-geth:lab",
+    "inspect": "sha256:3c46787a06c512f410d57962e8fee057d93508dbeb814e004809dbc65bf413ae 2026-09-02T22:50:19.26094694+08:00"
+  },
+  "commands": {
+    "buildImage": "docker build -f experiments/cryptoupgrade/deployments/docker/Dockerfile.lab -t cryptoupgrade-geth:lab .",
+    "renderNetwork": "go run ./experiments/cryptoupgrade/bench/cmd/multinode -mode render -config experiments/cryptoupgrade/deployments/networks/local-5nodes.yaml -out build/cryptoupgrade-networks/wasm-5nodes-20260902-225029",
+    "startNetwork": "docker compose -f build/cryptoupgrade-networks/wasm-5nodes-20260902-225029/docker-compose.yml up -d",
+    "validateNetwork": "go run ./experiments/cryptoupgrade/bench/cmd/multinode -mode validate -config build/cryptoupgrade-networks/wasm-5nodes-20260902-225029/network.yaml -timeout 90s",
+    "lab1": "go run ./experiments/cryptoupgrade/bench/cmd/benchupgradelatency -config build/cryptoupgrade-networks/wasm-5nodes-20260902-225029/network.yaml -out experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/lab1 -algorithms all -rounds 1 -timeout 5m -preflight-timeout 90s",
+    "lab2": "go run ./experiments/cryptoupgrade/bench/cmd/benchexecutionefficiency -rpc http://127.0.0.1:8761 -algorithms all -from 0xF5F871aA6Bd253914705898c66251f994aa426FA -solc /home/liuqi/project/.tools/solc/solc-0.8.26 -warmup 10 -n 100 -output-json experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/lab2/result.json",
+    "lab3": "TINYGO=/tmp/tinygo-root-57085/usr/local/lib/tinygo/bin/tinygo go run ./experiments/cryptoupgrade/bench/cmd/benchupgradestability -config build/cryptoupgrade-networks/wasm-5nodes-20260902-225029/network.yaml -out experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/lab3 -mode both -rounds 1 -activation-lag 2 -timeout 5m -poll-interval 200ms",
+    "plot": "python experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/figures/plot_wasm_experiments.py"
+  },
+  "rawData": {
+    "lab1": [
+      "lab1/result.json",
+      "lab1/rounds.csv",
+      "lab1/nodes.csv"
+    ],
+    "lab2": [
+      "lab2/result.json"
+    ],
+    "lab3": [
+      "lab3/result.json",
+      "lab3/samples.csv",
+      "lab3/summary.txt"
+    ],
+    "logs": [
+      "logs/node1.log",
+      "logs/node2.log",
+      "logs/node3.log",
+      "logs/node4.log",
+      "logs/node5.log"
+    ]
+  },
+  "figures": {
+    "sourceData": [
+      "figures/figure_source_data.csv",
+      "figures/lab1_upgrade_latency_source.csv",
+      "figures/lab2_execution_efficiency_source.csv",
+      "figures/lab2_latency_samples_source.csv",
+      "figures/lab3_upgrade_stability_source.csv"
+    ],
+    "outputs": [
+      "figures/figure_wasm_experiments.svg",
+      "figures/figure_wasm_experiments.pdf",
+      "figures/figure_wasm_experiments.tiff",
+      "figures/figure_wasm_experiments.png"
+    ],
+    "qa": "figures/figure_qa.md"
+  },
+  "notes": [
+    "First network validation snapshot captured transient low peer counts; second validation passed with 4 peers per node.",
+    "Lab2 latency is local JSON-RPC eth_call latency and includes RPC overhead.",
+    "Lab3 reports consistency of scheduled and immediate WASM upgrades on the five-node network."
+  ]
+}

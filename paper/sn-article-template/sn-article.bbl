@@ -1,6 +1,6 @@
 %% BioMed_Central_Bib_Style_v1.01
 
-\begin{thebibliography}{30}
+\begin{thebibliography}{29}
 % BibTex style file: bmc-mathphys.bst (version 2.1), 2014-07-24
 \ifx \bisbn   \undefined \def \bisbn  #1{ISBN #1}\fi
 \ifx \binits  \undefined \def \binits#1{#1}\fi
@@ -99,7 +99,8 @@ Accessed 21 August 2026
 \bibitem[\protect\citeauthoryear{Shor}{1999}]{shor1999}
 \begin{barticle}
 \bauthor{\bsnm{Shor}, \binits{P.W.}}:
-\batitle{Polynomial-time algorithms for prime factorization and discrete logarithms on a quantum computer}.
+\batitle{Polynomial-time algorithms for prime factorization and discrete
+  logarithms on a quantum computer}.
 \bjtitle{SIAM Review}
 \bvolume{41}(\bissue{2}),
 \bfpage{303}--\blpage{332}
@@ -113,7 +114,8 @@ Accessed 21 August 2026
 \begin{bchapter}
 \bauthor{\bsnm{Grover}, \binits{L.K.}}:
 \bctitle{A fast quantum mechanical algorithm for database search}.
-In: \bbtitle{Proceedings of the Twenty-Eighth Annual ACM Symposium on Theory of Computing},
+In: \bbtitle{Proceedings of the Twenty-Eighth Annual ACM Symposium on Theory of
+  Computing},
 pp. \bfpage{212}--\blpage{219}.
 \bpublisher{Association for Computing Machinery},
 \blocation{New York, NY, USA}
@@ -123,7 +125,8 @@ pp. \bfpage{212}--\blpage{219}.
 \endbibitem
 
 %%% 7
-\bibitem[\protect\citeauthoryear{{National Institute of Standards and Technology}}{2026}]{nistPqcProject}
+\bibitem[\protect\citeauthoryear{{National Institute of Standards and
+  Technology}}{2026}]{nistPqcProject}
 \begin{botherref}
 \oauthor{\bsnm{{National Institute of Standards and Technology}}}:
 Post-Quantum Cryptography.
@@ -179,7 +182,8 @@ Accessed 21 August 2026
 \bauthor{\bsnm{Li}, \binits{W.}},
 \bauthor{\bsnm{Karame}, \binits{G.O.}},
 \bauthor{\bsnm{Davi}, \binits{L.}}:
-\bctitle{{EVMPatch}: Timely and automated patching of ethereum smart contracts}.
+\bctitle{{EVMPatch}: Timely and automated patching of ethereum smart
+  contracts}.
 In: \bbtitle{Proceedings of the 30th USENIX Security Symposium},
 pp. \bfpage{1289}--\blpage{1306}.
 \bpublisher{USENIX Association}, \blocation{???}
@@ -189,7 +193,8 @@ pp. \bfpage{1289}--\blpage{1306}.
 \endbibitem
 
 %%% 12
-\bibitem[\protect\citeauthoryear{{Ethereum Foundation}}{}]{ethereumSmartContracts}
+\bibitem[\protect\citeauthoryear{{Ethereum
+  Foundation}}{}]{ethereumSmartContracts}
 \begin{botherref}
 \oauthor{\bsnm{{Ethereum Foundation}}}:
 Introduction to Smart Contracts.
@@ -209,41 +214,44 @@ Accessed 21 August 2026
 \endbibitem
 
 %%% 14
-\bibitem[\protect\citeauthoryear{{Ethereum Foundation}}{}]{ethereumNodeArchitecture}
-\begin{botherref}
-\oauthor{\bsnm{{Ethereum Foundation}}}:
-Node Architecture.
-\url{https://ethereum.org/developers/docs/nodes-and-clients/node-architecture/}.
-Accessed 21 August 2026
-\end{botherref}
-\endbibitem
-
-%%% 15
 \bibitem[\protect\citeauthoryear{{Ethereum Improvement Proposals}}{}]{eip196}
 \begin{botherref}
 \oauthor{\bsnm{{Ethereum Improvement Proposals}}}:
-EIP-196: Precompiled contracts for addition and scalar multiplication on the elliptic curve alt\_bn128.
+EIP-196: Precompiled contracts for addition and scalar multiplication on the
+  elliptic curve alt\_bn128.
 \url{https://eips.ethereum.org/EIPS/eip-196}.
 Accessed 21 August 2026
 \end{botherref}
 \endbibitem
 
-%%% 16
+%%% 15
 \bibitem[\protect\citeauthoryear{{Ethereum Improvement Proposals}}{}]{eip197}
 \begin{botherref}
 \oauthor{\bsnm{{Ethereum Improvement Proposals}}}:
-EIP-197: Precompiled contracts for optimal ate pairing check on the elliptic curve alt\_bn128.
+EIP-197: Precompiled contracts for optimal ate pairing check on the elliptic
+  curve alt\_bn128.
 \url{https://eips.ethereum.org/EIPS/eip-197}.
 Accessed 21 August 2026
 \end{botherref}
 \endbibitem
 
-%%% 17
+%%% 16
 \bibitem[\protect\citeauthoryear{{Ethereum Improvement Proposals}}{}]{eip1109}
 \begin{botherref}
 \oauthor{\bsnm{{Ethereum Improvement Proposals}}}:
 EIP-1109: PRECOMPILEDCALL opcode (Remove CALL costs for precompiled contracts).
 \url{https://eips.ethereum.org/EIPS/eip-1109}.
+Accessed 21 August 2026
+\end{botherref}
+\endbibitem
+
+%%% 17
+\bibitem[\protect\citeauthoryear{{Ethereum
+  Foundation}}{}]{ethereumNodeArchitecture}
+\begin{botherref}
+\oauthor{\bsnm{{Ethereum Foundation}}}:
+Node Architecture.
+\url{https://ethereum.org/developers/docs/nodes-and-clients/node-architecture/}.
 Accessed 21 August 2026
 \end{botherref}
 \endbibitem
@@ -259,32 +267,57 @@ Accessed 21 August 2026
 \endbibitem
 
 %%% 19
-\bibitem[\protect\citeauthoryear{{Bitcoin.org}}{}]{bitcoinFullNode}
-\begin{botherref}
-\oauthor{\bsnm{{Bitcoin.org}}}:
-Running A Full Node.
-\url{https://bitcoin.org/en/full-node}.
-Accessed 21 August 2026
-\end{botherref}
+\bibitem[\protect\citeauthoryear{Ajmani et~al.}{2006}]{ajmani2006modular}
+\begin{bchapter}
+\bauthor{\bsnm{Ajmani}, \binits{S.}},
+\bauthor{\bsnm{Liskov}, \binits{B.}},
+\bauthor{\bsnm{Shrira}, \binits{L.}}:
+\bctitle{Modular software upgrades for distributed systems}.
+In: \bbtitle{Proceedings of the 20th European Conference on Object-Oriented
+  Programming},
+pp. \bfpage{452}--\blpage{476}.
+\bpublisher{Springer}, \blocation{???}
+(\byear{2006})
+\end{bchapter}
 \endbibitem
 
 %%% 20
-\bibitem[\protect\citeauthoryear{{The Go Authors}}{}]{goPluginPackage}
-\begin{botherref}
-\oauthor{\bsnm{{The Go Authors}}}:
-plugin package.
-\url{https://pkg.go.dev/plugin}.
-Accessed 21 August 2026
-\end{botherref}
+\bibitem[\protect\citeauthoryear{Baresi
+  et~al.}{2017}]{baresi2017versionConsistency}
+\begin{barticle}
+\bauthor{\bsnm{Baresi}, \binits{L.}},
+\bauthor{\bsnm{Ghezzi}, \binits{C.}},
+\bauthor{\bsnm{Ma}, \binits{X.}},
+\bauthor{\bsnm{Panzica La~Manna}, \binits{V.}}:
+\batitle{Efficient dynamic updates of distributed components through version
+  consistency}.
+\bjtitle{IEEE Transactions on Software Engineering}
+\bvolume{43}(\bissue{4}),
+\bfpage{340}--\blpage{358}
+(\byear{2017})
+\doiurl{10.1109/TSE.2016.2592915}
+\end{barticle}
 \endbibitem
 
 %%% 21
+\bibitem[\protect\citeauthoryear{{World Wide Web
+  Consortium}}{}]{webassemblyCoreSpec}
+\begin{botherref}
+\oauthor{\bsnm{{World Wide Web Consortium}}}:
+{WebAssembly Core Specification}.
+\url{https://www.w3.org/TR/wasm-core-2/}.
+Accessed 3 September 2026
+\end{botherref}
+\endbibitem
+
+%%% 22
 \bibitem[\protect\citeauthoryear{Zhang et~al.}{2018}]{zhang2018kylinx}
 \begin{bchapter}
 \bauthor{\bsnm{Zhang}, \binits{Y.}},
 \bauthor{\bsnm{Crowcroft}, \binits{J.}},
 \bauthor{\bsnm{Li}, \binits{D.}}, \betal:
-\bctitle{{KylinX}: A dynamic library operating system for simplified and efficient cloud virtualization}.
+\bctitle{{KylinX}: A dynamic library operating system for simplified and
+  efficient cloud virtualization}.
 In: \bbtitle{Proceedings of the 2018 USENIX Annual Technical Conference},
 pp. \bfpage{173}--\blpage{186}.
 \bpublisher{USENIX Association}, \blocation{???}
@@ -292,21 +325,23 @@ pp. \bfpage{173}--\blpage{186}.
 \end{bchapter}
 \endbibitem
 
-%%% 22
+%%% 23
 \bibitem[\protect\citeauthoryear{Pina et~al.}{2019}]{pina2019mvedsua}
 \begin{bchapter}
 \bauthor{\bsnm{Pina}, \binits{L.}},
 \bauthor{\bsnm{Andronidis}, \binits{A.}},
 \bauthor{\bsnm{Hicks}, \binits{M.}}, \betal:
-\bctitle{Mvedsua: Higher availability dynamic software updates via multi-version execution}.
-In: \bbtitle{Proceedings of the Twenty-Fourth International Conference on Architectural Support for Programming Languages and Operating Systems},
+\bctitle{Mvedsua: Higher availability dynamic software updates via
+  multi-version execution}.
+In: \bbtitle{Proceedings of the Twenty-Fourth International Conference on
+  Architectural Support for Programming Languages and Operating Systems},
 pp. \bfpage{573}--\blpage{585}.
 \bpublisher{Association for Computing Machinery}, \blocation{???}
 (\byear{2019})
 \end{bchapter}
 \endbibitem
 
-%%% 23
+%%% 24
 \bibitem[\protect\citeauthoryear{Huang et~al.}{2021}]{huang2021pylive}
 \begin{bchapter}
 \bauthor{\bsnm{Huang}, \binits{H.}},
@@ -320,37 +355,7 @@ pp. \bfpage{349}--\blpage{363}.
 \end{bchapter}
 \endbibitem
 
-%%% 24
-\bibitem[\protect\citeauthoryear{Ajmani et~al.}{2006}]{ajmani2006modular}
-\begin{bchapter}
-\bauthor{\bsnm{Ajmani}, \binits{S.}},
-\bauthor{\bsnm{Liskov}, \binits{B.}},
-\bauthor{\bsnm{Shrira}, \binits{L.}}:
-\bctitle{Modular software upgrades for distributed systems}.
-In: \bbtitle{Proceedings of the 20th European Conference on Object-Oriented Programming},
-pp. \bfpage{452}--\blpage{476}.
-\bpublisher{Springer}, \blocation{???}
-(\byear{2006})
-\end{bchapter}
-\endbibitem
-
 %%% 25
-\bibitem[\protect\citeauthoryear{Baresi et~al.}{2017}]{baresi2017versionConsistency}
-\begin{barticle}
-\bauthor{\bsnm{Baresi}, \binits{L.}},
-\bauthor{\bsnm{Ghezzi}, \binits{C.}},
-\bauthor{\bsnm{Ma}, \binits{X.}},
-\bauthor{\bsnm{Panzica La~Manna}, \binits{V.}}:
-\batitle{Efficient dynamic updates of distributed components through version consistency}.
-\bjtitle{IEEE Transactions on Software Engineering}
-\bvolume{43}(\bissue{4}),
-\bfpage{340}--\blpage{358}
-(\byear{2017})
-\doiurl{10.1109/TSE.2016.2592915}
-\end{barticle}
-\endbibitem
-
-%%% 26
 \bibitem[\protect\citeauthoryear{{NMKR}}{}]{cardanoHardForkCombinator}
 \begin{botherref}
 \oauthor{\bsnm{{NMKR}}}:
@@ -360,7 +365,7 @@ Accessed 21 August 2026
 \end{botherref}
 \endbibitem
 
-%%% 27
+%%% 26
 \bibitem[\protect\citeauthoryear{{Cardano Foundation}}{}]{cardanoEvolution}
 \begin{botherref}
 \oauthor{\bsnm{{Cardano Foundation}}}:
@@ -370,33 +375,35 @@ Accessed 21 August 2026
 \end{botherref}
 \endbibitem
 
-%%% 28
+%%% 27
 \bibitem[\protect\citeauthoryear{Ciampi et~al.}{2020}]{ciampi2020updatable}
 \begin{bchapter}
 \bauthor{\bsnm{Ciampi}, \binits{M.}},
 \bauthor{\bsnm{Karayannidis}, \binits{N.}},
 \bauthor{\bsnm{Kiayias}, \binits{A.}}, \betal:
 \bctitle{Updatable blockchains}.
-In: \bbtitle{Proceedings of the 25th European Symposium on Research in Computer Security},
+In: \bbtitle{Proceedings of the 25th European Symposium on Research in Computer
+  Security},
 pp. \bfpage{590}--\blpage{609}.
 \bpublisher{Springer}, \blocation{???}
 (\byear{2020})
 \end{bchapter}
 \endbibitem
 
-%%% 29
+%%% 28
 \bibitem[\protect\citeauthoryear{Zindros}{2021}]{zindros2021softPower}
 \begin{bchapter}
 \bauthor{\bsnm{Zindros}, \binits{D.}}:
 \bctitle{Soft power: Upgrading chain macroeconomic policy through soft forks}.
-In: \bbtitle{Proceedings of the 25th International Conference on Financial Cryptography and Data Security},
+In: \bbtitle{Proceedings of the 25th International Conference on Financial
+  Cryptography and Data Security},
 pp. \bfpage{467}--\blpage{481}.
 \bpublisher{Springer}, \blocation{???}
 (\byear{2021})
 \end{bchapter}
 \endbibitem
 
-%%% 30
+%%% 29
 \bibitem[\protect\citeauthoryear{{Polkadot Wiki}}{}]{polkadotRuntimeUpgrades}
 \begin{botherref}
 \oauthor{\bsnm{{Polkadot Wiki}}}:

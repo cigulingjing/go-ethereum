@@ -1,4 +1,4 @@
-# Lab 1：升级延迟与可用性
+# Lab 1：升级延迟与上传成本
 
 图片：
 
@@ -10,4 +10,3 @@
 - `cryptoupgrade/results/upgrade-latency/lab1-5nodes-combined-20260813/summary.csv`
 - `cryptoupgrade/results/upgrade-latency/lab1-5nodes-combined-20260813/upgrade_latency_figure_data.csv`
 - `experiments/cryptoupgrade/docs/test_result.md`
-

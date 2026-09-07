@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"os"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
@@ -14,6 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/cryptoupgrade"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/wasmtool"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/experiments/cryptoupgrade/network"
 	"github.com/ethereum/go-ethereum/rpc"
@@ -32,12 +34,15 @@ type Options struct {
 
 // Result records the cryptoupgrade Add smoke test using the legacy JSON fields.
 type Result struct {
-	NodeID     string `json:"nodeId"`
-	From       string `json:"from"`
-	UploadHash string `json:"uploadHash,omitempty"`
-	Output     string `json:"output,omitempty"`
-	OK         bool   `json:"ok"`
-	Error      string `json:"error,omitempty"`
+	NodeID          string `json:"nodeId"`
+	From            string `json:"from"`
+	Version         uint64 `json:"version,omitempty"`
+	ActivationBlock uint64 `json:"activationBlock"`
+	WasmHash        string `json:"wasmHash,omitempty"`
+	UploadHash      string `json:"uploadHash,omitempty"`
+	Output          string `json:"output,omitempty"`
+	OK              bool   `json:"ok"`
+	Error           string `json:"error,omitempty"`
 }
 
 type backend interface {
@@ -66,12 +71,21 @@ func RunAdd(ctx context.Context, cfg *network.Config, opts Options) *Result {
 	}
 	defer client.Close()
 
-	source, err := cryptoupgrade.EncodeSourceFile(cfg.CryptoUpgrade.AddSource)
+	rawWasm, err := os.ReadFile(cfg.CryptoUpgrade.AddSource)
 	if err != nil {
 		result.Error = err.Error()
 		return result
 	}
-	return runAdd(ctx, node, source, opts, client)
+	source, err := cryptoupgrade.EncodeWasm(rawWasm)
+	if err != nil {
+		result.Error = err.Error()
+		return result
+	}
+	result = runAdd(ctx, node, source, opts, client)
+	result.Version = 1
+	result.ActivationBlock = 0
+	result.WasmHash = wasmtool.WasmHash(rawWasm)
+	return result
 }
 
 func runAdd(ctx context.Context, node network.NodeConfig, source string, opts Options, client backend) *Result {

@@ -46,10 +46,10 @@ func TestAlgorithmPathsUseRuntimeResolver(t *testing.T) {
 	base := filepath.Join(t.TempDir(), "plugin")
 	withRuntimePluginPaths(t, newPluginPaths(base), nil)
 
-	if want := filepath.Join(base, "src", "Sha256.go"); gofilePath("Sha256") != want {
+	if want := filepath.Join(base, "wasm", "Sha256.wasm"); gofilePath("Sha256") != want {
 		t.Fatalf("unexpected source path: want %s got %s", want, gofilePath("Sha256"))
 	}
-	if want := filepath.Join(base, "so", "Sha256.so"); sofilePath("Sha256") != want {
+	if want := filepath.Join(base, "compiled", "Sha256"); sofilePath("Sha256") != want {
 		t.Fatalf("unexpected plugin path: want %s got %s", want, sofilePath("Sha256"))
 	}
 	if want := filepath.Join(base, "algorithm_info.json"); algorithmInfoPath() != want {

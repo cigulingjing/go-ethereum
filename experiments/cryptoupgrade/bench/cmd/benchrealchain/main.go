@@ -36,7 +36,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/cryptoupgrade"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/wasmtool"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -74,6 +74,9 @@ type callArgs struct {
 
 type setupMetrics struct {
 	Scheme          string  `json:"scheme"`
+	Version         uint64  `json:"version,omitempty"`
+	ActivationBlock uint64  `json:"activationBlock,omitempty"`
+	WasmHash        string  `json:"wasmHash,omitempty"`
 	TxCount         int     `json:"txCount"`
 	TxHash          string  `json:"txHash,omitempty"`
 	ReceiptStatus   uint64  `json:"receiptStatus"`
@@ -285,7 +288,7 @@ func parseFlags() config {
 	flag.StringVar(&cfg.rpc, "rpc", "http://127.0.0.1:8666", "JSON-RPC endpoint")
 	flag.StringVar(&cfg.mode, "mode", "all", "benchmark mode: all, setup, or call")
 	flag.StringVar(&cfg.algorithm, "name", "Sha256", "algorithm name registered in CodeStorage")
-	flag.StringVar(&cfg.sourcePath, "source", "cryptoupgrade/algorithm/go/sha256.go", "algorithm source file to upload")
+	flag.StringVar(&cfg.sourcePath, "source", "cryptoupgrade/algorithm/wasm/sha256.wasm", "algorithm wasm file to upload")
 	flag.StringVar(&cfg.inputTypes, "itype", "bytes", "comma-separated ABI input types")
 	flag.StringVar(&cfg.outputTypes, "otype", "bytes", "comma-separated ABI output types")
 	flag.StringVar(&cfg.inputHex, "input-hex", defaultInput, "ABI-encoded input bytes")
@@ -419,7 +422,7 @@ func resolveSender(ctx context.Context, client *rpc.Client, raw string) (common.
 }
 
 func uploadAlgorithm(ctx context.Context, client *rpc.Client, codeStorageABI abi.ABI, from common.Address, cfg config) (setupMetrics, error) {
-	sourceBytes, payload, err := compressSource(cfg.sourcePath)
+	sourceBytes, wasmHash, payload, err := compressSource(ctx, cfg.sourcePath, cfg.algorithm, splitComma(cfg.inputTypes), splitComma(cfg.outputTypes))
 	if err != nil {
 		return setupMetrics{}, err
 	}
@@ -443,6 +446,9 @@ func uploadAlgorithm(ctx context.Context, client *rpc.Client, codeStorageABI abi
 	}
 	metrics := setupMetrics{
 		Scheme:          "upgrade",
+		Version:         1,
+		ActivationBlock: 0,
+		WasmHash:        wasmHash,
 		TxCount:         1,
 		TxHash:          txHash.Hex(),
 		ReceiptStatus:   receipt.Status,
@@ -458,16 +464,20 @@ func uploadAlgorithm(ctx context.Context, client *rpc.Client, codeStorageABI abi
 	return metrics, nil
 }
 
-func compressSource(path string) (int, string, error) {
+func compressSource(ctx context.Context, path, function string, inputTypes, outputTypes []string) (int, string, string, error) {
 	source, err := os.ReadFile(path)
 	if err != nil {
-		return 0, "", fmt.Errorf("read source: %w", err)
+		return 0, "", "", fmt.Errorf("read source: %w", err)
 	}
-	encoded, err := cryptoupgrade.EncodeSource(source)
+	wasm, encoded, err := wasmtool.BuildEncodedPath(ctx, path, wasmtool.Spec{
+		Function:    function,
+		InputTypes:  inputTypes,
+		OutputTypes: outputTypes,
+	})
 	if err != nil {
-		return 0, "", err
+		return 0, "", "", err
 	}
-	return len(source), encoded, nil
+	return len(source), wasmtool.WasmHash(wasm), encoded, nil
 }
 
 func resolveGasLimit(ctx context.Context, client *rpc.Client, args callArgs, fixed uint64) (hexutil.Uint64, error) {
@@ -704,7 +714,7 @@ func wrapPluginCompileHint(err error) error {
 	}
 	msg := err.Error()
 	if strings.Contains(msg, "can not compile code") || strings.Contains(msg, "cannot compile code") {
-		return fmt.Errorf("%w (check that the Geth node was built with CGO enabled and the Go plugin toolchain is available)", err)
+		return fmt.Errorf("%w (check the node log for WASM decode, wazero activation, or GETH_CRYPTOUPGRADE_PLUGIN_DIR errors)", err)
 	}
 	return err
 }

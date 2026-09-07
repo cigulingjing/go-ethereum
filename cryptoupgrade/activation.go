@@ -4,20 +4,19 @@ import (
 	"context"
 
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/activation"
-	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/pluginruntime"
-	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/sourcecodec"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/wasmcodec"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/wasmruntime"
 )
 
 func runtimeActivationService() *activation.Service {
 	return activation.NewService(
-		activation.CodecFunc(sourcecodec.DecodeToFile),
-		activation.CompilerFunc(compilePlugin),
+		activation.CodecFunc(wasmcodec.DecodeToFile),
+		wasmruntime.Default,
 		runtimeAlgorithmRepository,
-		activation.LoaderFunc(pluginruntime.Default.Activate),
 	)
 }
 
-// ActivateAlgorithm activates uploaded source without terminating the node on failure.
+// ActivateAlgorithm activates uploaded WASM without terminating the node on failure.
 func ActivateAlgorithm(name string, info algoInfo) error {
 	return runtimeActivationService().Activate(context.Background(), name, info)
 }

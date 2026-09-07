@@ -34,7 +34,7 @@ type txInfo struct {
 func main() {
 	var (
 		rpcURL  = flag.String("rpc", "http://127.0.0.1:8666", "execution RPC endpoint")
-		source  = flag.String("source", "cryptoupgrade/algorithm/go/add.go", "algorithm source file")
+		source  = flag.String("source", "cryptoupgrade/algorithm/wasm/add.wasm", "algorithm wasm file")
 		name    = flag.String("name", "Add", "algorithm name")
 		aText   = flag.String("a", "100", "first int256 argument")
 		bText   = flag.String("b", "100", "second int256 argument")
@@ -74,7 +74,7 @@ func run(rpcURL, source, name, aText, bText string, algoGas, txGas uint64, fromT
 		return err
 	}
 
-	compressed, err := cryptoupgrade.EncodeSourceFile(source)
+	compressed, err := cryptoupgrade.EncodeWasmFile(source)
 	if err != nil {
 		return err
 	}

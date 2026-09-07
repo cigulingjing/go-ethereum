@@ -176,9 +176,9 @@ def draw_invocation_path(ax):
     rounded_box(ax, 0.355, 0.285, 0.220, 0.037, "Version Manager", fc="#FCFFFC", ec=GREEN_EDGE, lw=0.7, radius=0.005, fontsize=5.0, weight="bold")
     rounded_box(ax, 0.355, 0.213, 0.220, 0.037, "Module Manager", fc="#FCFFFC", ec=GREEN_EDGE, lw=0.7, radius=0.005, fontsize=5.0, weight="bold")
     rounded_box(ax, 0.355, 0.136, 0.220, 0.055, fc="#FCFFFC", ec=GREEN_EDGE, lw=0.7, radius=0.005)
-    text(ax, 0.465, 0.178, "Native Modules", size=5.0, weight="bold")
+    text(ax, 0.465, 0.178, "WASM Modules", size=5.0, weight="bold")
     chip_x = [0.363, 0.411, 0.459, 0.507, 0.555]
-    chip_text = ["VDF", "BLS", "KZG", "Curve", "..."]
+    chip_text = ["Hash", "KDF", "DH", "Commit", "Sig"]
     for x, label in zip(chip_x, chip_text):
         rounded_box(ax, x, 0.144, 0.039, 0.028, label, fc=GREEN_FILL, ec=GREEN_EDGE, lw=0.65, radius=0.004, fontsize=5.0)
 
@@ -190,7 +190,7 @@ def draw_invocation_path(ax):
 def draw_upgrade_handler(ax):
     rounded_box(ax, 0.625, 0.130, 0.155, 0.300, fc="#F7FFF8", ec=GREEN_EDGE, lw=0.75, radius=0.007)
     text(ax, 0.7025, 0.407, "Upgrade Handler", size=5.2, weight="bold", color=GREEN)
-    labels = ["Event Listener", "Decompress", "Restore Source", "Compile", "Verify", "Load Module"]
+    labels = ["Event Listener", "Decode WASM", "Verify Hash", "Compile", "Check Export", "Instantiate"]
     ys = [0.357, 0.313, 0.269, 0.225, 0.181, 0.137]
     for y, label in zip(ys, labels):
         rounded_box(ax, 0.638, y, 0.129, 0.031, label, fc="#FCFFFC", ec=GREEN_EDGE, lw=0.65, radius=0.004, fontsize=5.0)

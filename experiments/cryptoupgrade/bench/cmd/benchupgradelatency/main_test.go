@@ -19,6 +19,7 @@ package main
 import (
 	"math/big"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -106,12 +107,13 @@ func TestRoundAlgorithmNameAndGeneratedSource(t *testing.T) {
 }
 
 func TestBuildPayloadStats(t *testing.T) {
+	requireTinyGo(t)
 	fixture := algorithmFixture{
 		InputTypes:  []string{"uint256", "uint256"},
 		OutputTypes: []string{"uint256"},
 		AlgoGas:     1,
 	}
-	source := []byte("package main\nfunc Add() {}\n")
+	source := []byte("package main\n\nimport \"math/big\"\n\nfunc Add(a *big.Int, b *big.Int) *big.Int { return new(big.Int).Add(a, b) }\n")
 	payload, err := buildPayload(source, "Add", fixture)
 	if err != nil {
 		t.Fatalf("buildPayload failed: %v", err)
@@ -127,6 +129,19 @@ func TestBuildPayloadStats(t *testing.T) {
 	}
 	if payload.Result.UploadCalldataSHA256 == "" {
 		t.Fatal("upload calldata hash is empty")
+	}
+	if payload.Result.WasmHash == "" || payload.Result.Version != 1 || payload.Result.ActivationBlock != 0 {
+		t.Fatalf("wasm identity fields not populated: %#v", payload.Result)
+	}
+}
+
+func requireTinyGo(t *testing.T) {
+	t.Helper()
+	if tinygo := os.Getenv("TINYGO"); tinygo != "" {
+		return
+	}
+	if _, err := exec.LookPath("tinygo"); err != nil {
+		t.Skip("tinygo not available")
 	}
 }
 

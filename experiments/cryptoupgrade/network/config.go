@@ -161,7 +161,7 @@ func (cfg *Config) Normalize() error {
 		cfg.Accounts = make(map[string]AccountConfig)
 	}
 	if cfg.CryptoUpgrade.AddSource == "" {
-		cfg.CryptoUpgrade.AddSource = "cryptoupgrade/algorithm/go/add.go"
+		cfg.CryptoUpgrade.AddSource = "cryptoupgrade/algorithm/wasm/add.wasm"
 	}
 	for i := range cfg.Nodes {
 		node := &cfg.Nodes[i]

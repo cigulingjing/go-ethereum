@@ -16,76 +16,80 @@
 \citation{wang2023phoenix,rodler2021evmpatch}
 \@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}{section.1}\protected@file@percent }
 \newlabel{sec1}{{1}{2}{Introduction}{section.1}{}}
-\citation{ethereumSmartContracts,ethereumAccounts,ethereumNodeArchitecture}
-\citation{woodEthereumYellowPaper,ethereumNodeArchitecture}
-\citation{eip196,eip197,eip1109,woodEthereumYellowPaper}
-\@writefile{toc}{\contentsline {section}{\numberline {2}Background}{3}{section.2}\protected@file@percent }
-\newlabel{sec2}{{2}{3}{Background}{section.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Smart Contract Execution}{3}{subsection.2.1}\protected@file@percent }
-\newlabel{sec2.1}{{2.1}{3}{Smart Contract Execution}{subsection.2.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Precompiled Contracts}{3}{subsection.2.2}\protected@file@percent }
-\newlabel{sec2.2}{{2.2}{3}{Precompiled Contracts}{subsection.2.2}{}}
+\citation{ethereumSmartContracts,ethereumAccounts,woodEthereumYellowPaper}
+\citation{woodEthereumYellowPaper,buterin2016eip150}
+\citation{eip196,eip197,eip1109,evmCodesPrecompiled}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Technical Background}{3}{section.2}\protected@file@percent }
+\newlabel{sec2}{{2}{3}{Technical Background}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Cryptographic Execution}{3}{subsection.2.1}\protected@file@percent }
+\newlabel{sec2.1}{{2.1}{3}{Cryptographic Execution}{subsection.2.1}{}}
 \citation{ethereumNodeArchitecture,gethHome}
-\citation{bitcoinFullNode}
-\citation{goPluginPackage}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Blockchain Clients}{4}{subsection.2.3}\protected@file@percent }
-\newlabel{sec2.3}{{2.3}{4}{Blockchain Clients}{subsection.2.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Dynamic Loading}{4}{subsection.2.4}\protected@file@percent }
-\newlabel{sec2.4}{{2.4}{4}{Dynamic Loading}{subsection.2.4}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Cryptographic Coprocessor Architecture}{4}{section.3}\protected@file@percent }
-\newlabel{sec3}{{3}{4}{Cryptographic Coprocessor Architecture}{section.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Architecture Overview}{4}{subsection.3.1}\protected@file@percent }
-\newlabel{sec3.1}{{3.1}{4}{Architecture Overview}{subsection.3.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Overall architecture of the Cryptographic Coprocessor. The on-chain layer publishes upgrade proposals, stores version metadata, and emits events. The client layer separates invocation dispatch from upgrade preparation: the execution engine routes calls into the coprocessor, while the upgrade handler restores, compiles, verifies, and loads Native modules. The Activation Block determines when a prepared module becomes active.}}{5}{figure.3.1}\protected@file@percent }
-\newlabel{fig:overview}{{1}{5}{Overall architecture of the Cryptographic Coprocessor. The on-chain layer publishes upgrade proposals, stores version metadata, and emits events. The client layer separates invocation dispatch from upgrade preparation: the execution engine routes calls into the coprocessor, while the upgrade handler restores, compiles, verifies, and loads Native modules. The Activation Block determines when a prepared module becomes active}{figure.3.1}{}}
+\citation{ajmani2006modular,baresi2017versionConsistency,wang2023phoenix}
+\citation{webassemblyCoreSpec}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Runtime Upgrade}{4}{subsection.2.2}\protected@file@percent }
+\newlabel{sec2.2}{{2.2}{4}{Runtime Upgrade}{subsection.2.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}WebAssembly Runtime}{4}{subsection.2.3}\protected@file@percent }
+\newlabel{sec2.3}{{2.3}{4}{WebAssembly Runtime}{subsection.2.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Coprocessor Architecture}{5}{section.3}\protected@file@percent }
+\newlabel{sec3}{{3}{5}{Coprocessor Architecture}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}System Overview}{5}{subsection.3.1}\protected@file@percent }
+\newlabel{sec3.1}{{3.1}{5}{System Overview}{subsection.3.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Overall architecture of the Cryptographic Coprocessor. Ordinary transactions remain on the EVM execution path. Calls recognized by the Identity Hooks enter the coprocessor boundary, where the dispatcher selects a prepared WASM module through version metadata. Upgrade proposals are published on chain, while the Upgrade Handler verifies, compiles, and instantiates WASM modules before the Activation Block makes a prepared version active.}}{6}{figure.3.1}\protected@file@percent }
+\newlabel{fig:overview}{{1}{6}{Overall architecture of the Cryptographic Coprocessor. Ordinary transactions remain on the EVM execution path. Calls recognized by the Identity Hooks enter the coprocessor boundary, where the dispatcher selects a prepared WASM module through version metadata. Upgrade proposals are published on chain, while the Upgrade Handler verifies, compiles, and instantiates WASM modules before the Activation Block makes a prepared version active}{figure.3.1}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Invocation Abstraction}{6}{subsection.3.2}\protected@file@percent }
 \newlabel{sec3.2}{{3.2}{6}{Invocation Abstraction}{subsection.3.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Dynamic Upgrade}{6}{subsection.3.3}\protected@file@percent }
-\newlabel{sec3.3}{{3.3}{6}{Dynamic Upgrade}{subsection.3.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Upgrade Protocol}{7}{subsection.3.3}\protected@file@percent }
+\newlabel{sec3.3}{{3.3}{7}{Upgrade Protocol}{subsection.3.3}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Deterministic Activation}{7}{subsection.3.4}\protected@file@percent }
 \newlabel{sec3.4}{{3.4}{7}{Deterministic Activation}{subsection.3.4}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Evaluation}{7}{section.4}\protected@file@percent }
-\newlabel{sec4}{{4}{7}{Evaluation}{section.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Overview}{8}{subsection.4.1}\protected@file@percent }
-\newlabel{sec4.1}{{4.1}{8}{Overview}{subsection.4.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Upgrade Latency and Upload Cost}{8}{subsection.4.2}\protected@file@percent }
-\newlabel{sec4.2}{{4.2}{8}{Upgrade Latency and Upload Cost}{subsection.4.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Upgrade latency in the five-node Clique private chain. The measurement starts when the controller submits the upgrade transaction and ends when every target node can return the expected output through \texttt  {CodeStorage.callFunc}. The event-to-all-complete interval includes RPC polling and node-local preparation, not only internal plugin compilation.}}{9}{figure.4.2}\protected@file@percent }
-\newlabel{fig:lab1-upgrade-latency}{{2}{9}{Upgrade latency in the five-node Clique private chain. The measurement starts when the controller submits the upgrade transaction and ends when every target node can return the expected output through \texttt {CodeStorage.callFunc}. The event-to-all-complete interval includes RPC polling and node-local preparation, not only internal plugin compilation}{figure.4.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Upload and deployment cost for the auxiliary Lab1 cost experiment. The upgrade path uses \texttt  {CodeStorage.uploadCode} and emits an upgrade event, whereas the Contract path deploys a Solidity implementation. The figure reports total transaction-level setup cost, not an isolated event-log gas component.}}{10}{figure.4.3}\protected@file@percent }
-\newlabel{fig:lab1-deployment-cost}{{3}{10}{Upload and deployment cost for the auxiliary Lab1 cost experiment. The upgrade path uses \texttt {CodeStorage.uploadCode} and emits an upgrade event, whereas the Contract path deploys a Solidity implementation. The figure reports total transaction-level setup cost, not an isolated event-log gas component}{figure.4.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Execution Efficiency}{10}{subsection.4.3}\protected@file@percent }
-\newlabel{sec4.3}{{4.3}{10}{Execution Efficiency}{subsection.4.3}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Execution latency after setup. Upgrade invokes a dynamically loaded Native module through CodeStorage, Precompile invokes a client-native Precompiled Contract, and Contract executes a Solidity implementation. Latency is measured by repeated \texttt  {eth\_call} after warm-up.}}{11}{figure.4.4}\protected@file@percent }
-\newlabel{fig:lab2-execution-latency}{{4}{11}{Execution latency after setup. Upgrade invokes a dynamically loaded Native module through CodeStorage, Precompile invokes a client-native Precompiled Contract, and Contract executes a Solidity implementation. Latency is measured by repeated \texttt {eth\_call} after warm-up}{figure.4.4}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Gas estimates for steady-state algorithm invocation. Values are obtained from \texttt  {eth\_estimateGas}; they reflect the prototype pricing model and are not receipt \texttt  {gasUsed}.}}{12}{figure.4.5}\protected@file@percent }
-\newlabel{fig:lab2-gas-estimate}{{5}{12}{Gas estimates for steady-state algorithm invocation. Values are obtained from \texttt {eth\_estimateGas}; they reflect the prototype pricing model and are not receipt \texttt {gasUsed}}{figure.4.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}State Consistency}{12}{subsection.4.4}\protected@file@percent }
-\newlabel{sec4.4}{{4.4}{12}{State Consistency}{subsection.4.4}{}}
-\citation{zhang2018kylinx}
-\citation{pina2019mvedsua}
-\citation{huang2021pylive}
-\citation{ajmani2006modular}
-\citation{baresi2017versionConsistency}
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces State-consistency checks for scheduled and immediate activation. The experiment verifies version selection, output agreement, receipt visibility, metadata hash agreement, and chain-view consistency across five Clique nodes.}}{13}{figure.4.6}\protected@file@percent }
-\newlabel{fig:lab3-state-consistency}{{6}{13}{State-consistency checks for scheduled and immediate activation. The experiment verifies version selection, output agreement, receipt visibility, metadata hash agreement, and chain-view consistency across five Clique nodes}{figure.4.6}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Related Work}{13}{section.5}\protected@file@percent }
-\newlabel{sec5}{{5}{13}{Related Work}{section.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Software Upgrade Mechanisms}{13}{subsection.5.1}\protected@file@percent }
-\newlabel{sec5.1}{{5.1}{13}{Software Upgrade Mechanisms}{subsection.5.1}{}}
-\citation{cardanoHardForkCombinator}
-\citation{cardanoEvolution}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Resource Accounting}{8}{subsection.3.5}\protected@file@percent }
+\newlabel{sec3.5}{{3.5}{8}{Resource Accounting}{subsection.3.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Prototype Implementation}{8}{subsection.3.6}\protected@file@percent }
+\newlabel{sec3.6}{{3.6}{8}{Prototype Implementation}{subsection.3.6}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Security Analysis}{9}{section.4}\protected@file@percent }
+\newlabel{sec4}{{4}{9}{Security Analysis}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Threat Model}{9}{subsection.4.1}\protected@file@percent }
+\newlabel{sec4.1}{{4.1}{9}{Threat Model}{subsection.4.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Execution Isolation}{9}{subsection.4.2}\protected@file@percent }
+\newlabel{sec4.2}{{4.2}{9}{Execution Isolation}{subsection.4.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Resource Abuse}{9}{subsection.4.3}\protected@file@percent }
+\newlabel{sec4.3}{{4.3}{9}{Resource Abuse}{subsection.4.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Upgrade Consistency}{10}{subsection.4.4}\protected@file@percent }
+\newlabel{sec4.4}{{4.4}{10}{Upgrade Consistency}{subsection.4.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Evaluation}{10}{section.5}\protected@file@percent }
+\newlabel{sec5}{{5}{10}{Evaluation}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Experimental Setup}{10}{subsection.5.1}\protected@file@percent }
+\newlabel{sec5.1}{{5.1}{10}{Experimental Setup}{subsection.5.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces WASM rerun results used in the Evaluation section. Panel a reports five-node upgrade completion latency and post-event readiness tails. Panels b and c compare \texttt  {eth\_call} latency and \texttt  {eth\_estimateGas} for the WASM-backed Upgrade, Solidity Contract, and Precompile paths after setup. Upgrade consistency is not plotted or reported as a separate experiment.}}{11}{figure.5.2}\protected@file@percent }
+\newlabel{fig:wasm-evaluation}{{2}{11}{WASM rerun results used in the Evaluation section. Panel a reports five-node upgrade completion latency and post-event readiness tails. Panels b and c compare \texttt {eth\_call} latency and \texttt {eth\_estimateGas} for the WASM-backed Upgrade, Solidity Contract, and Precompile paths after setup. Upgrade consistency is not plotted or reported as a separate experiment}{figure.5.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Upgrade Efficiency}{11}{subsection.5.2}\protected@file@percent }
+\newlabel{sec5.2}{{5.2}{11}{Upgrade Efficiency}{subsection.5.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Upload and deployment cost for the auxiliary Lab1 cost experiment. The upgrade path uses \texttt  {CodeStorage.uploadCode} and emits an upgrade event, whereas the Contract path deploys a Solidity implementation. The figure reports total transaction-level setup cost, not an isolated event-log gas component.}}{12}{figure.5.3}\protected@file@percent }
+\newlabel{fig:lab1-deployment-cost}{{3}{12}{Upload and deployment cost for the auxiliary Lab1 cost experiment. The upgrade path uses \texttt {CodeStorage.uploadCode} and emits an upgrade event, whereas the Contract path deploys a Solidity implementation. The figure reports total transaction-level setup cost, not an isolated event-log gas component}{figure.5.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Execution Efficiency}{12}{subsection.5.3}\protected@file@percent }
+\newlabel{sec5.3}{{5.3}{12}{Execution Efficiency}{subsection.5.3}{}}
+\citation{woodEthereumYellowPaper,ethereumEVM}
+\citation{evmCodesPrecompiled,eip196,eip197}
+\citation{zhang2018kylinx,pina2019mvedsua,huang2021pylive,ajmani2006modular,baresi2017versionConsistency}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Related Work}{13}{section.6}\protected@file@percent }
+\newlabel{sec6}{{6}{13}{Related Work}{section.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}EVM Cryptographic Extensions}{13}{subsection.6.1}\protected@file@percent }
+\newlabel{sec6.1}{{6.1}{13}{EVM Cryptographic Extensions}{subsection.6.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Blockchain Runtime Upgrades}{13}{subsection.6.2}\protected@file@percent }
+\newlabel{sec6.2}{{6.2}{13}{Blockchain Runtime Upgrades}{subsection.6.2}{}}
+\citation{cardanoHardForkCombinator,cardanoEvolution}
 \citation{ciampi2020updatable}
 \citation{zindros2021softPower}
 \citation{wang2023phoenix}
-\citation{polkadotRuntimeUpgrades}
 \citation{rodler2021evmpatch}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Blockchain Upgrade Mechanisms}{14}{subsection.5.2}\protected@file@percent }
-\newlabel{sec5.2}{{5.2}{14}{Blockchain Upgrade Mechanisms}{subsection.5.2}{}}
+\citation{webassemblyCoreSpec}
+\citation{polkadotRuntimeUpgrades}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}WebAssembly Execution}{14}{subsection.6.3}\protected@file@percent }
+\newlabel{sec6.3}{{6.3}{14}{WebAssembly Execution}{subsection.6.3}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion}{14}{section.7}\protected@file@percent }
+\newlabel{sec7}{{7}{14}{Conclusion}{section.7}{}}
 \bibdata{sn-bibliography}
 \bibcite{nakamoto2008bitcoin}{{1}{2008}{{Nakamoto}}{{}}}
-\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{15}{section.6}\protected@file@percent }
-\newlabel{sec6}{{6}{15}{Conclusion}{section.6}{}}
 \bibcite{zou2021smartContracts}{{2}{2021}{{Zou et~al.}}{{}}}
 \bibcite{woodEthereumYellowPaper}{{3}{2014}{{Wood}}{{}}}
 \bibcite{ethereumEVM}{{4}{}{{{Ethereum Foundation}}}{{}}}
@@ -98,21 +102,20 @@
 \bibcite{rodler2021evmpatch}{{11}{2021}{{Rodler et~al.}}{{}}}
 \bibcite{ethereumSmartContracts}{{12}{}{{{Ethereum Foundation}}}{{}}}
 \bibcite{ethereumAccounts}{{13}{}{{{Ethereum Foundation}}}{{}}}
-\bibcite{ethereumNodeArchitecture}{{14}{}{{{Ethereum Foundation}}}{{}}}
-\bibcite{eip196}{{15}{}{{{Ethereum Improvement Proposals}}}{{}}}
-\bibcite{eip197}{{16}{}{{{Ethereum Improvement Proposals}}}{{}}}
-\bibcite{eip1109}{{17}{}{{{Ethereum Improvement Proposals}}}{{}}}
+\bibcite{eip196}{{14}{}{{{Ethereum Improvement Proposals}}}{{}}}
+\bibcite{eip197}{{15}{}{{{Ethereum Improvement Proposals}}}{{}}}
+\bibcite{eip1109}{{16}{}{{{Ethereum Improvement Proposals}}}{{}}}
+\bibcite{ethereumNodeArchitecture}{{17}{}{{{Ethereum Foundation}}}{{}}}
 \bibcite{gethHome}{{18}{}{{{go-ethereum}}}{{}}}
-\bibcite{bitcoinFullNode}{{19}{}{{{Bitcoin.org}}}{{}}}
-\bibcite{goPluginPackage}{{20}{}{{{The Go Authors}}}{{}}}
-\bibcite{zhang2018kylinx}{{21}{2018}{{Zhang et~al.}}{{}}}
-\bibcite{pina2019mvedsua}{{22}{2019}{{Pina et~al.}}{{}}}
-\bibcite{huang2021pylive}{{23}{2021}{{Huang et~al.}}{{}}}
-\bibcite{ajmani2006modular}{{24}{2006}{{Ajmani et~al.}}{{}}}
-\bibcite{baresi2017versionConsistency}{{25}{2017}{{Baresi et~al.}}{{}}}
-\bibcite{cardanoHardForkCombinator}{{26}{}{{{NMKR}}}{{}}}
-\bibcite{cardanoEvolution}{{27}{}{{{Cardano Foundation}}}{{}}}
-\bibcite{ciampi2020updatable}{{28}{2020}{{Ciampi et~al.}}{{}}}
-\bibcite{zindros2021softPower}{{29}{2021}{{Zindros}}{{}}}
-\bibcite{polkadotRuntimeUpgrades}{{30}{}{{{Polkadot Wiki}}}{{}}}
-\gdef \@abspage@last{18}
+\bibcite{ajmani2006modular}{{19}{2006}{{Ajmani et~al.}}{{}}}
+\bibcite{baresi2017versionConsistency}{{20}{2017}{{Baresi et~al.}}{{}}}
+\bibcite{webassemblyCoreSpec}{{21}{}{{{World Wide Web Consortium}}}{{}}}
+\bibcite{zhang2018kylinx}{{22}{2018}{{Zhang et~al.}}{{}}}
+\bibcite{pina2019mvedsua}{{23}{2019}{{Pina et~al.}}{{}}}
+\bibcite{huang2021pylive}{{24}{2021}{{Huang et~al.}}{{}}}
+\bibcite{cardanoHardForkCombinator}{{25}{}{{{NMKR}}}{{}}}
+\bibcite{cardanoEvolution}{{26}{}{{{Cardano Foundation}}}{{}}}
+\bibcite{ciampi2020updatable}{{27}{2020}{{Ciampi et~al.}}{{}}}
+\bibcite{zindros2021softPower}{{28}{2021}{{Zindros}}{{}}}
+\bibcite{polkadotRuntimeUpgrades}{{29}{}{{{Polkadot Wiki}}}{{}}}
+\gdef \@abspage@last{17}

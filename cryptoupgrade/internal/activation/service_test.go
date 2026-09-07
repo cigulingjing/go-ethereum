@@ -3,10 +3,13 @@ package activation
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/model"
 )
 
@@ -22,7 +25,9 @@ type fakeRepository struct {
 }
 
 func (r *fakeRepository) EnsureDirs() error {
-	*r.order = append(*r.order, "ensure")
+	if r.order != nil {
+		*r.order = append(*r.order, "ensure")
+	}
 	return r.ensureErr
 }
 
@@ -63,7 +68,7 @@ func (r *fakeRepository) ActiveVersion(name string) (model.AlgorithmVersionInfo,
 
 func (r *fakeRepository) PreparedVersion(name string, version uint64) (model.AlgorithmVersionInfo, bool) {
 	info, ok := r.ActiveVersion(name)
-	if !ok || info.Version != version {
+	if !ok || info.Version != version || !info.IsPrepared() {
 		return model.AlgorithmVersionInfo{}, false
 	}
 	return info, true
@@ -89,65 +94,83 @@ func (r *fakeRepository) DeletePreparedVersion(name string, version uint64) {
 }
 
 func (r *fakeRepository) Save() error {
-	*r.order = append(*r.order, "save")
+	if r.order != nil {
+		*r.order = append(*r.order, "save")
+	}
 	r.saveCalls++
 	return r.saveErr
 }
 
 func TestServiceActivateRunsStagesInOrder(t *testing.T) {
 	var order []string
+	wasm := []byte{0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00}
+	sourcePath := filepath.Join(t.TempDir(), "Add.wasm")
+	compiledPath := filepath.Join(t.TempDir(), "compiled", "Add")
 	repository := &fakeRepository{
 		order:      &order,
 		active:     make(map[string]model.AlgorithmInfo),
-		sourcePath: "src/Add.go",
-		pluginPath: "so/Add.so",
+		sourcePath: sourcePath,
+		pluginPath: compiledPath,
 	}
-	info := model.AlgorithmInfo{Code: "encoded", Gas: 7}
+	info := model.AlgorithmInfo{Code: "encoded", Gas: 7, IType: "bytes", OType: "bytes"}
 	service := NewService(
 		CodecFunc(func(encoded, path string) error {
 			order = append(order, "decode")
 			if encoded != info.Code || path != repository.sourcePath {
 				t.Fatalf("unexpected decode input: %q %q", encoded, path)
 			}
+			if err := os.WriteFile(path, wasm, 0o644); err != nil {
+				t.Fatalf("write wasm bytes: %v", err)
+			}
 			return nil
 		}),
-		CompilerFunc(func(_ context.Context, sourcePath, pluginPath string) error {
-			order = append(order, "compile")
-			if sourcePath != repository.sourcePath || pluginPath != repository.pluginPath {
-				t.Fatalf("unexpected compile paths: %q %q", sourcePath, pluginPath)
+		RuntimeFunc(func(_ context.Context, wasmPath, compiledPath string) error {
+			order = append(order, "activate")
+			if wasmPath != repository.sourcePath || compiledPath != repository.pluginPath {
+				t.Fatalf("unexpected activate paths: %q %q", wasmPath, compiledPath)
 			}
 			return nil
 		}),
 		repository,
-		LoaderFunc(func(pluginPath, symbol string) error {
-			order = append(order, "load")
-			if pluginPath != repository.pluginPath || symbol != "Add" {
-				t.Fatalf("unexpected load request: %q %q", pluginPath, symbol)
-			}
-			return nil
-		}),
 	)
 	if err := service.Activate(context.Background(), "add", info); err != nil {
 		t.Fatalf("Activate failed: %v", err)
 	}
-	if want := []string{"ensure", "decode", "compile", "save", "load"}; !reflect.DeepEqual(order, want) {
+	if want := []string{"ensure", "decode", "save", "activate"}; !reflect.DeepEqual(order, want) {
 		t.Fatalf("unexpected stage order: want %v got %v", want, order)
 	}
-	if got, ok := repository.active["Add"]; !ok || got != info {
-		t.Fatalf("algorithm was not activated: ok=%t info=%#v", ok, got)
+	got, ok := repository.ActiveVersion("Add")
+	if !ok {
+		t.Fatal("expected prepared version metadata")
+	}
+	if got.Code != info.Code || got.Gas != info.Gas || got.IType != info.IType || got.OType != info.OType {
+		t.Fatalf("unexpected algorithm metadata: %#v", got)
+	}
+	if got.WasmHash != crypto.Keccak256Hash(wasm).Hex() {
+		t.Fatalf("unexpected wasm hash: %s", got.WasmHash)
+	}
+	if got.RuntimeName == "" || got.RuntimeVersion == "" {
+		t.Fatalf("runtime metadata not recorded: %#v", got)
+	}
+	base, ok := repository.Active("Add")
+	if !ok || base.Code != info.Code || base.Gas != info.Gas || base.IType != info.IType || base.OType != info.OType {
+		t.Fatalf("legacy active metadata not preserved: ok=%t info=%#v", ok, base)
 	}
 }
 
 func TestServiceActivateVersionUsesVersionedPaths(t *testing.T) {
 	var order []string
+	wasm := []byte{0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00}
+	sourcePath := filepath.Join(t.TempDir(), "Add-2.wasm")
+	compiledPath := filepath.Join(t.TempDir(), "compiled", "Add-2")
 	repository := &fakeRepository{
 		order:      &order,
 		active:     make(map[string]model.AlgorithmInfo),
-		sourcePath: "src/Add/v2.go",
-		pluginPath: "so/Add/v2.so",
+		sourcePath: sourcePath,
+		pluginPath: compiledPath,
 	}
 	info := model.AlgorithmVersionInfo{
-		AlgorithmInfo:   model.AlgorithmInfo{Code: "encoded", Gas: 7},
+		AlgorithmInfo:   model.AlgorithmInfo{Code: "encoded", Gas: 7, IType: "bytes", OType: "bytes"},
 		Version:         2,
 		ActivationBlock: 42,
 	}
@@ -156,34 +179,41 @@ func TestServiceActivateVersionUsesVersionedPaths(t *testing.T) {
 			if encoded != info.Code || path != repository.sourcePath {
 				t.Fatalf("unexpected decode input: %q %q", encoded, path)
 			}
+			if err := os.WriteFile(path, wasm, 0o644); err != nil {
+				t.Fatalf("write wasm bytes: %v", err)
+			}
 			return nil
 		}),
-		CompilerFunc(func(_ context.Context, sourcePath, pluginPath string) error {
-			if sourcePath != repository.sourcePath || pluginPath != repository.pluginPath {
-				t.Fatalf("unexpected compile paths: %q %q", sourcePath, pluginPath)
+		RuntimeFunc(func(_ context.Context, wasmPath, compiledPath string) error {
+			if wasmPath != repository.sourcePath || compiledPath != repository.pluginPath {
+				t.Fatalf("unexpected activate paths: %q %q", wasmPath, compiledPath)
 			}
 			return nil
 		}),
 		repository,
-		LoaderFunc(func(pluginPath, symbol string) error {
-			if pluginPath != repository.pluginPath || symbol != "Add" {
-				t.Fatalf("unexpected load request: %q %q", pluginPath, symbol)
-			}
-			return nil
-		}),
 	)
 	if err := service.ActivateVersion(context.Background(), "add", info); err != nil {
 		t.Fatalf("ActivateVersion failed: %v", err)
 	}
-	if got, ok := repository.active["Add"]; !ok || got != info.Base() {
-		t.Fatalf("algorithm version was not activated: ok=%t info=%#v", ok, got)
+	got, ok := repository.ActiveVersion("Add")
+	if !ok {
+		t.Fatal("expected prepared version metadata")
+	}
+	if got.Version != info.Version || got.ActivationBlock != info.ActivationBlock {
+		t.Fatalf("unexpected version metadata: %#v", got)
+	}
+	if got.WasmHash != crypto.Keccak256Hash(wasm).Hex() {
+		t.Fatalf("unexpected wasm hash: %s", got.WasmHash)
+	}
+	if got.RuntimeName == "" || got.RuntimeVersion == "" {
+		t.Fatalf("runtime metadata not recorded: %#v", got)
 	}
 }
 
 func TestServiceActivateVersionSkipsAlreadyPreparedVersion(t *testing.T) {
 	var order []string
 	info := model.AlgorithmVersionInfo{
-		AlgorithmInfo:   model.AlgorithmInfo{Code: "encoded", Gas: 7},
+		AlgorithmInfo:   model.AlgorithmInfo{Code: "encoded", Gas: 7, WasmHash: "0x1", RuntimeName: "wazero", RuntimeVersion: "v1.12.0"},
 		Version:         2,
 		ActivationBlock: 42,
 	}
@@ -191,23 +221,19 @@ func TestServiceActivateVersionSkipsAlreadyPreparedVersion(t *testing.T) {
 		order:      &order,
 		active:     map[string]model.AlgorithmInfo{"Add": info.Base()},
 		versions:   map[string]model.AlgorithmVersionInfo{"Add": info},
-		sourcePath: "src/Add/v2.go",
-		pluginPath: "so/Add/v2.so",
+		sourcePath: filepath.Join(t.TempDir(), "Add-2.wasm"),
+		pluginPath: filepath.Join(t.TempDir(), "compiled", "Add-2"),
 	}
 	service := NewService(
 		CodecFunc(func(string, string) error {
 			order = append(order, "decode")
 			return nil
 		}),
-		CompilerFunc(func(context.Context, string, string) error {
-			order = append(order, "compile")
-			return nil
-		}),
-		repository,
-		LoaderFunc(func(string, string) error {
+		RuntimeFunc(func(context.Context, string, string) error {
 			order = append(order, "load")
 			return nil
 		}),
+		repository,
 	)
 	if err := service.ActivateVersion(context.Background(), "Add", info); err != nil {
 		t.Fatalf("ActivateVersion failed: %v", err)
@@ -224,78 +250,83 @@ func TestServiceActivatePropagatesStageFailures(t *testing.T) {
 		failStage string
 		wantStage string
 	}{
-		{name: "decode", failStage: "decode", wantStage: "decode"},
-		{name: "compile", failStage: "compile", wantStage: "compile"},
+		{name: "decode", failStage: "decode", wantStage: "wasm"},
 		{name: "persist", failStage: "save", wantStage: "persist"},
-		{name: "load", failStage: "load", wantStage: "load"},
+		{name: "activate", failStage: "activate", wantStage: "activate"},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			var order []string
-			old := model.AlgorithmInfo{Code: "old", Gas: 1}
+			oldWasm := []byte{0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00}
+			old := model.AlgorithmVersionInfo{
+				AlgorithmInfo:   model.AlgorithmInfo{Code: "old", Gas: 1, WasmHash: crypto.Keccak256Hash(oldWasm).Hex(), RuntimeName: "wazero", RuntimeVersion: "v1.12.0"},
+				Version:         1,
+				ActivationBlock: 0,
+			}
 			repository := &fakeRepository{
 				order:      &order,
-				active:     map[string]model.AlgorithmInfo{"Add": old},
-				sourcePath: "src/Add.go",
-				pluginPath: "so/Add.so",
+				active:     map[string]model.AlgorithmInfo{"Add": old.Base()},
+				versions:   map[string]model.AlgorithmVersionInfo{"Add": old},
+				sourcePath: filepath.Join(t.TempDir(), "Add.wasm"),
+				pluginPath: filepath.Join(t.TempDir(), "compiled", "Add"),
 			}
 			if test.failStage == "save" {
 				repository.saveErr = stageErr
 			}
 			service := NewService(
-				CodecFunc(func(string, string) error {
+				CodecFunc(func(_, path string) error {
 					order = append(order, "decode")
+					if err := os.WriteFile(path, oldWasm, 0o644); err != nil {
+						t.Fatalf("write wasm bytes: %v", err)
+					}
 					if test.failStage == "decode" {
 						return stageErr
 					}
 					return nil
 				}),
-				CompilerFunc(func(context.Context, string, string) error {
-					order = append(order, "compile")
-					if test.failStage == "compile" {
+				RuntimeFunc(func(context.Context, string, string) error {
+					order = append(order, "activate")
+					if test.failStage == "activate" {
 						return stageErr
 					}
 					return nil
 				}),
 				repository,
-				LoaderFunc(func(string, string) error {
-					order = append(order, "load")
-					if test.failStage == "load" {
-						return stageErr
-					}
-					return nil
-				}),
 			)
 			err := service.Activate(context.Background(), "Add", model.AlgorithmInfo{Code: "new", Gas: 2})
 			if err == nil || !errors.Is(err, stageErr) || !strings.Contains(err.Error(), test.wantStage) {
 				t.Fatalf("unexpected stage error: %v", err)
 			}
-			if got := repository.active["Add"]; got != old {
-				t.Fatalf("failed activation changed active metadata: %#v", got)
+			if got, ok := repository.Active("Add"); !ok || !reflect.DeepEqual(got, old.Base()) {
+				t.Fatalf("failed activation changed active metadata: ok=%t %#v", ok, got)
+			}
+			if got, ok := repository.ActiveVersion("Add"); !ok || !reflect.DeepEqual(got, old) {
+				t.Fatalf("failed activation changed active version metadata: ok=%t %#v", ok, got)
 			}
 		})
 	}
 }
 
-func TestServiceLoadFailureRemovesFirstActivationMetadata(t *testing.T) {
+func TestServiceActivateFailureRemovesFirstActivationMetadata(t *testing.T) {
 	var order []string
 	repository := &fakeRepository{
 		order:      &order,
 		active:     make(map[string]model.AlgorithmInfo),
-		sourcePath: "src/Add.go",
-		pluginPath: "so/Add.so",
+		sourcePath: filepath.Join(t.TempDir(), "Add.wasm"),
+		pluginPath: filepath.Join(t.TempDir(), "compiled", "Add"),
 	}
 	service := NewService(
-		CodecFunc(func(string, string) error { return nil }),
-		CompilerFunc(func(context.Context, string, string) error { return nil }),
+		CodecFunc(func(_, path string) error {
+			return os.WriteFile(path, []byte{0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00}, 0o644)
+		}),
+		RuntimeFunc(func(context.Context, string, string) error { return errors.New("invalid wasm runtime") }),
 		repository,
-		LoaderFunc(func(string, string) error { return errors.New("invalid plugin") }),
 	)
 	if err := service.Activate(context.Background(), "Add", model.AlgorithmInfo{Code: "new"}); err == nil {
-		t.Fatal("expected load failure")
+		t.Fatal("expected activate failure")
 	}
-	if _, ok := repository.active["Add"]; ok {
-		t.Fatal("load failure left first activation metadata active")
+	if got, ok := repository.Active("Add"); ok {
+		t.Fatalf("activate failure left first activation metadata active: %#v", got)
 	}
 	if repository.saveCalls != 2 {
 		t.Fatalf("expected activation save and rollback save, got %d", repository.saveCalls)
@@ -317,17 +348,18 @@ func TestServiceActivateVersionLoadFailureRestoresPreviousVersion(t *testing.T) 
 		order:      new([]string),
 		active:     map[string]model.AlgorithmInfo{"Add": previous.Base()},
 		versions:   map[string]model.AlgorithmVersionInfo{"Add": previous},
-		sourcePath: "src/Add/v2.go",
-		pluginPath: "so/Add/v2.so",
+		sourcePath: filepath.Join(t.TempDir(), "Add-2.wasm"),
+		pluginPath: filepath.Join(t.TempDir(), "compiled", "Add-2"),
 	}
 	service := NewService(
-		CodecFunc(func(string, string) error { return nil }),
-		CompilerFunc(func(context.Context, string, string) error { return nil }),
+		CodecFunc(func(_, path string) error {
+			return os.WriteFile(path, []byte{0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00}, 0o644)
+		}),
+		RuntimeFunc(func(context.Context, string, string) error { return errors.New("invalid wasm runtime") }),
 		repository,
-		LoaderFunc(func(string, string) error { return errors.New("invalid plugin") }),
 	)
 	if err := service.ActivateVersion(context.Background(), "Add", next); err == nil {
-		t.Fatal("expected load failure")
+		t.Fatal("expected activate failure")
 	}
 	if got := repository.versions["Add"]; got != previous {
 		t.Fatalf("load failure did not restore previous version: %#v", got)

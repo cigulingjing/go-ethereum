@@ -1,0 +1,68 @@
+{
+  "configPath": "/home/liuqi/project/paper/go-ethereum/build/cryptoupgrade-networks/wasm-5nodes-20260902-225029/network.yaml",
+  "chainId": 11223344,
+  "expectedPeerCount": 4,
+  "nodes": [
+    {
+      "id": "node1",
+      "role": "signer",
+      "rpcURL": "http://127.0.0.1:8761",
+      "chainId": 11223344,
+      "peerCount": 4,
+      "startBlock": 20,
+      "endBlock": 21,
+      "signers": [
+        "0xF5F871aA6Bd253914705898c66251f994aa426FA"
+      ]
+    },
+    {
+      "id": "node2",
+      "role": "observer",
+      "rpcURL": "http://127.0.0.1:8762",
+      "chainId": 11223344,
+      "peerCount": 4,
+      "startBlock": 21,
+      "endBlock": 22,
+      "signers": [
+        "0xF5F871aA6Bd253914705898c66251f994aa426FA"
+      ]
+    },
+    {
+      "id": "node3",
+      "role": "observer",
+      "rpcURL": "http://127.0.0.1:8763",
+      "chainId": 11223344,
+      "peerCount": 4,
+      "startBlock": 22,
+      "endBlock": 23,
+      "signers": [
+        "0xF5F871aA6Bd253914705898c66251f994aa426FA"
+      ]
+    },
+    {
+      "id": "node4",
+      "role": "observer",
+      "rpcURL": "http://127.0.0.1:8764",
+      "chainId": 11223344,
+      "peerCount": 4,
+      "startBlock": 23,
+      "endBlock": 24,
+      "signers": [
+        "0xF5F871aA6Bd253914705898c66251f994aa426FA"
+      ]
+    },
+    {
+      "id": "node5",
+      "role": "observer",
+      "rpcURL": "http://127.0.0.1:8765",
+      "chainId": 11223344,
+      "peerCount": 4,
+      "startBlock": 24,
+      "endBlock": 26,
+      "signers": [
+        "0xF5F871aA6Bd253914705898c66251f994aa426FA"
+      ]
+    }
+  ],
+  "ok": true
+}

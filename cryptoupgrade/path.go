@@ -71,11 +71,11 @@ func algorithmInfoPath() string {
 }
 
 func gofilePath(fileName string) string {
-	return filepath.Join(pluginSourceDir(), fileName+".go")
+	return filepath.Join(pluginSourceDir(), fileName+".wasm")
 }
 
 func sofilePath(fileName string) string {
-	return filepath.Join(pluginSharedObjectDir(), fileName+".so")
+	return filepath.Join(pluginSharedObjectDir(), fileName)
 }
 
 func directoryInit() error {

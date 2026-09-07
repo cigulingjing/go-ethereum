@@ -15,15 +15,15 @@ const (
 	PluginDirEnvVar = "GETH_CRYPTOUPGRADE_PLUGIN_DIR"
 	DefaultBaseDir  = "./plugin"
 
-	sourceSubdir       = "src"
-	sharedObjectSubdir = "so"
-	algorithmInfoFile  = "algorithm_info.json"
-	versionInfoFile    = "algorithm_versions.json"
-	directoryMode      = 0755
-	fileMode           = 0644
+	wasmSubdir        = "wasm"
+	compiledSubdir    = "compiled"
+	algorithmInfoFile = "algorithm_info.json"
+	versionInfoFile   = "algorithm_versions.json"
+	directoryMode     = 0755
+	fileMode          = 0644
 )
 
-// Workspace 描述动态算法源码、plugin 制品和 metadata 的本地存储位置。
+// Workspace 描述动态算法 WASM 制品、编译缓存和 metadata 的本地存储位置。
 type Workspace struct {
 	BaseDir           string
 	SourceDir         string
@@ -61,41 +61,41 @@ func NewWorkspace(baseDir string) Workspace {
 	baseDir = filepath.Clean(baseDir)
 	return Workspace{
 		BaseDir:           baseDir,
-		SourceDir:         filepath.Join(baseDir, sourceSubdir),
-		SharedObjectDir:   filepath.Join(baseDir, sharedObjectSubdir),
+		SourceDir:         filepath.Join(baseDir, wasmSubdir),
+		SharedObjectDir:   filepath.Join(baseDir, compiledSubdir),
 		AlgorithmInfoPath: filepath.Join(baseDir, algorithmInfoFile),
 		VersionInfoPath:   filepath.Join(baseDir, versionInfoFile),
 	}
 }
 
-// EnsureDirs 创建编译源码和 plugin 制品所需目录。
+// EnsureDirs 创建编译缓存和 WASM 制品所需目录。
 func (w Workspace) EnsureDirs() error {
 	for _, dir := range []string{w.SourceDir, w.SharedObjectDir} {
 		if err := os.MkdirAll(dir, directoryMode); err != nil {
-			return fmt.Errorf("create cryptoupgrade plugin directory %s: %w", dir, err)
+			return fmt.Errorf("create cryptoupgrade artifact directory %s: %w", dir, err)
 		}
 	}
 	return nil
 }
 
-// SourcePath 返回指定算法的 Go 源码路径。
+// SourcePath 返回指定算法的 WASM 路径。
 func (w Workspace) SourcePath(name string) string {
-	return filepath.Join(w.SourceDir, name+".go")
+	return filepath.Join(w.SourceDir, name+".wasm")
 }
 
-// VersionSourcePath 返回指定算法版本的源码路径。
+// VersionSourcePath 返回指定算法版本的 WASM 路径。
 func (w Workspace) VersionSourcePath(name string, version uint64) string {
-	return filepath.Join(w.SourceDir, name, fmt.Sprintf("v%d.go", version))
+	return filepath.Join(w.SourceDir, fmt.Sprintf("%s-%d.wasm", name, version))
 }
 
-// PluginPath 返回指定算法的 plugin 制品路径。
+// PluginPath 返回指定算法的编译缓存路径。
 func (w Workspace) PluginPath(name string) string {
-	return filepath.Join(w.SharedObjectDir, name+".so")
+	return filepath.Join(w.SharedObjectDir, name)
 }
 
-// VersionPluginPath 返回指定算法版本的 plugin 制品路径。
+// VersionPluginPath 返回指定算法版本的编译缓存路径。
 func (w Workspace) VersionPluginPath(name string, version uint64) string {
-	return filepath.Join(w.SharedObjectDir, name, fmt.Sprintf("v%d.so", version))
+	return filepath.Join(w.SharedObjectDir, fmt.Sprintf("%s-%d", name, version))
 }
 
 // Repository 管理活动算法、待激活算法以及 metadata 持久化。
@@ -132,22 +132,22 @@ func (r *Repository) EnsureDirs() error {
 	return r.workspace.EnsureDirs()
 }
 
-// SourcePath 返回指定算法的源码路径。
+// SourcePath 返回指定算法的 WASM bytecode 路径。
 func (r *Repository) SourcePath(name string) string {
 	return r.workspace.SourcePath(name)
 }
 
-// VersionSourcePath 返回指定算法版本的源码路径。
+// VersionSourcePath 返回指定算法版本的 WASM bytecode 路径。
 func (r *Repository) VersionSourcePath(name string, version uint64) string {
 	return r.workspace.VersionSourcePath(name, version)
 }
 
-// PluginPath 返回指定算法的 canonical plugin 路径。
+// PluginPath 返回指定算法的 WASM 编译缓存路径。
 func (r *Repository) PluginPath(name string) string {
 	return r.workspace.PluginPath(name)
 }
 
-// VersionPluginPath 返回指定算法版本的 canonical plugin 路径。
+// VersionPluginPath 返回指定算法版本的 WASM 编译缓存路径。
 func (r *Repository) VersionPluginPath(name string, version uint64) string {
 	return r.workspace.VersionPluginPath(name, version)
 }
@@ -261,13 +261,15 @@ func (r *Repository) PreparedVersion(name string, version uint64) (model.Algorit
 	defer r.mu.RUnlock()
 	versions := r.activeVersions[name]
 	if versions != nil {
-		if info, ok := versions[version]; ok {
+		if info, ok := versions[version]; ok && info.IsPrepared() {
 			return info, true
 		}
 	}
 	if version == 1 {
 		if info, ok := r.active[name]; ok {
-			return model.LegacyVersion(info), true
+			if info := model.LegacyVersion(info); info.IsPrepared() {
+				return info, true
+			}
 		}
 	}
 	return model.AlgorithmVersionInfo{}, false

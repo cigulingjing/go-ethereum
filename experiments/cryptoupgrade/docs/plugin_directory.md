@@ -7,10 +7,10 @@ Cryptoupgrade 将运行时插件产物存放在节点本地的插件目录中。
 ```text
 ./plugin/
   algorithm_info.json
-  src/
-    <Algorithm>.go
-  so/
-    <Algorithm>.so
+  wasm/
+    <Algorithm>-<version>.wasm
+  compiled/
+    <Algorithm>-<version>
 ```
 
 默认配置保留现有开发目录布局。运行时在包初始化阶段解析一次基础目录，随后所有子路径均基于该已解析的基础目录派生。
@@ -28,8 +28,8 @@ GETH_CRYPTOUPGRADE_PLUGIN_DIR=/var/lib/geth-node-a/cryptoupgrade-plugin ./build/
 ```text
 /var/lib/geth-node-a/cryptoupgrade-plugin/
   algorithm_info.json
-  src/
-  so/
+  wasm/
+  compiled/
 ```
 
 相对路径的覆盖值会相对于 geth 启动时的工作目录解析。以服务方式部署时，建议使用绝对路径。

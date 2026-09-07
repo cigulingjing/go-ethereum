@@ -18,7 +18,7 @@ docker:
 cryptoupgrade:
   enabled: true
   smokeTest: false
-  addSource: ../../../../cryptoupgrade/algorithm/go/add.go
+  addSource: ../../../../cryptoupgrade/algorithm/wasm/add.wasm
 
 accounts:
   signer:
