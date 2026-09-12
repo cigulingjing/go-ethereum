@@ -58,6 +58,11 @@ type config struct {
 	evmVersion        string
 	outputDir         string
 	outputJSON        string
+	polyLeftLen       int
+	polyRightLen      int
+	polyModulus       string
+	polyCoefMax       int
+	schemes           string
 }
 
 type txArgs struct {
@@ -309,6 +314,11 @@ func parseFlags() config {
 	flag.StringVar(&cfg.evmVersion, "evm-version", "paris", "solc EVM target")
 	flag.StringVar(&cfg.outputDir, "output-dir", "experiments/cryptoupgrade/results/execution-efficiency", "directory used when -output-json is empty")
 	flag.StringVar(&cfg.outputJSON, "output-json", "", "write JSON result to this file; defaults under -output-dir")
+	flag.IntVar(&cfg.polyLeftLen, "poly-left-len", 4, "PolynomialMul left polynomial length")
+	flag.IntVar(&cfg.polyRightLen, "poly-right-len", 4, "PolynomialMul right polynomial length")
+	flag.StringVar(&cfg.polyModulus, "poly-modulus", "12289", "PolynomialMul modulus")
+	flag.IntVar(&cfg.polyCoefMax, "poly-coef-max", 0, "PolynomialMul coefficient upper bound; when >0 use values in [1,max] cyclically")
+	flag.StringVar(&cfg.schemes, "schemes", "upgrade,contract,precompile", "comma-separated implementation schemes to benchmark")
 	flag.Parse()
 	return cfg
 }
@@ -357,6 +367,17 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 	pedersenBlinding := []byte{0x0b}
 	schnorrMessage := []byte("cryptoupgrade schnorr benchmark")
 	schnorrProof := deterministicSchnorrProof(schnorrMessage)
+
+	polyModulus, err := parsePositiveBigInt("poly-modulus", cfg.polyModulus)
+	if err != nil {
+		return nil, nil, err
+	}
+	if cfg.polyLeftLen <= 0 || cfg.polyRightLen <= 0 {
+		return nil, nil, fmt.Errorf("poly-left-len and poly-right-len must be positive")
+	}
+	polyLeft := buildPolynomialCoeffs(cfg.polyLeftLen, polyModulus, cfg.polyCoefMax)
+	polyRight := buildPolynomialCoeffs(cfg.polyRightLen, polyModulus, cfg.polyCoefMax)
+	polyExpected := polynomialMulReference(polyLeft, polyRight, polyModulus)
 
 	fixtures := []benchmarkFixture{
 		{
@@ -532,6 +553,35 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 			},
 			AlgoGas: 200000,
 		},
+		{
+			Algorithm:             "PolynomialMul",
+			UpgradeName:           "PolynomialMul",
+			SourcePath:            "experiments/cryptoupgrade/algorithm/go/polynomial_mul.wasm",
+			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/PolynomialMul.sol",
+			ContractName:          "PolynomialMulContract",
+			ContractFunction:      "PolynomialMul",
+			PrecompileName:        "PolynomialMul",
+			PrecompileAddress:     common.CryptoUpgradePolynomialMulAddress,
+			UpgradeInputTypes:     []string{"uint256[]", "uint256[]", "uint256"},
+			UpgradeOutputTypes:    []string{"uint256[]"},
+			ContractInputTypes:    []string{"uint256[]", "uint256[]", "uint256"},
+			ContractOutputTypes:   []string{"uint256[]"},
+			PrecompileInputTypes:  []string{"uint256[]", "uint256[]", "uint256"},
+			PrecompileOutputTypes: []string{"uint256[]"},
+			UpgradeValues:         []interface{}{polyLeft, polyRight, polyModulus},
+			ContractValues:        []interface{}{polyLeft, polyRight, polyModulus},
+			PrecompileValues:      []interface{}{polyLeft, polyRight, polyModulus},
+			Input: map[string]string{
+				"profile":        polyProfileName(cfg.polyLeftLen, cfg.polyRightLen),
+				"leftLen":        fmt.Sprintf("%d", cfg.polyLeftLen),
+				"rightLen":       fmt.Sprintf("%d", cfg.polyRightLen),
+				"mulIterations":  fmt.Sprintf("%d", cfg.polyLeftLen*cfg.polyRightLen),
+				"modulus":        polyModulus.String(),
+				"coefMax":        fmt.Sprintf("%d", cfg.polyCoefMax),
+				"expectedPrefix": bigIntSliceDisplay(polyExpected[:min(3, len(polyExpected))]),
+			},
+			AlgoGas: polynomialMulAlgoGas(cfg.polyLeftLen, cfg.polyRightLen),
+		},
 	}
 
 	skipped := []skippedAlgorithm{
@@ -594,6 +644,22 @@ func selectFixtures(fixtures []benchmarkFixture, skipped []skippedAlgorithm, cfg
 	return selected, selectedSkipped, requested, nil
 }
 
+func parseSchemes(raw string) (map[string]bool, error) {
+	selected := make(map[string]bool)
+	for _, part := range splitAlgorithmList(raw) {
+		switch strings.ToLower(part) {
+		case schemeUpgrade, schemeContract, schemePrecompile:
+			selected[strings.ToLower(part)] = true
+		default:
+			return nil, fmt.Errorf("unknown scheme %q", part)
+		}
+	}
+	if len(selected) == 0 {
+		return nil, errors.New("at least one scheme must be selected")
+	}
+	return selected, nil
+}
+
 func splitAlgorithmList(raw string) []string {
 	var out []string
 	for _, part := range strings.Split(raw, ",") {
@@ -606,46 +672,77 @@ func splitAlgorithmList(raw string) []string {
 }
 
 func runFixture(ctx context.Context, client *rpc.Client, codeStorageABI abi.ABI, from common.Address, cfg config, fixture benchmarkFixture) (algorithmResult, error) {
+	selectedSchemes, err := parseSchemes(cfg.schemes)
+	if err != nil {
+		return algorithmResult{}, err
+	}
 	setup := make(map[string]setupReference)
-	if cfg.upload {
-		ref, err := uploadAlgorithm(ctx, client, codeStorageABI, from, cfg, fixture)
-		if err != nil {
-			return algorithmResult{}, err
-		}
-		setup[schemeUpgrade] = ref
-	} else {
-		setup[schemeUpgrade] = setupReference{
-			Scheme:   schemeUpgrade,
-			Action:   "reuse-existing-upload",
-			Address:  common.CodeStorageAddress.Hex(),
-			Function: fixture.UpgradeName,
-			Note:     "selected algorithms must already be uploaded in the connected node",
+	var contract compiledContract
+	var contractAddress common.Address
+
+	if selectedSchemes[schemeUpgrade] {
+		if cfg.upload {
+			ref, err := uploadAlgorithm(ctx, client, codeStorageABI, from, cfg, fixture)
+			if err != nil {
+				return algorithmResult{}, err
+			}
+			setup[schemeUpgrade] = ref
+		} else {
+			setup[schemeUpgrade] = setupReference{
+				Scheme:   schemeUpgrade,
+				Action:   "reuse-existing-upload",
+				Address:  common.CodeStorageAddress.Hex(),
+				Function: fixture.UpgradeName,
+				Note:     "selected algorithms must already be uploaded in the connected node",
+			}
 		}
 	}
 
-	contract, err := compileSolidity(cfg.solcPath, cfg.evmVersion, fixture.ContractSource, fixture.ContractName, fixture.ContractFunction)
-	if err != nil {
-		return algorithmResult{}, err
+	if selectedSchemes[schemeContract] {
+		var err error
+		contract, err = compileSolidity(cfg.solcPath, cfg.evmVersion, fixture.ContractSource, fixture.ContractName, fixture.ContractFunction)
+		if err != nil {
+			return algorithmResult{}, err
+		}
+		contractAddress, setup[schemeContract], err = deployFixtureContract(ctx, client, from, contract, fixture, cfg.contractDeployGas)
+		if err != nil {
+			return algorithmResult{}, err
+		}
 	}
-	contractAddress, contractSetup, err := deployFixtureContract(ctx, client, from, contract, fixture, cfg.contractDeployGas)
-	if err != nil {
-		return algorithmResult{}, err
-	}
-	setup[schemeContract] = contractSetup
-	setup[schemePrecompile] = setupReference{
-		Scheme:   schemePrecompile,
-		Action:   "precompile-address",
-		Address:  fixture.PrecompileAddress.Hex(),
-		Function: fixture.PrecompileName,
-		Note:     "precompile requires no setup transaction",
+
+	if selectedSchemes[schemePrecompile] {
+		setup[schemePrecompile] = setupReference{
+			Scheme:   schemePrecompile,
+			Action:   "precompile-address",
+			Address:  fixture.PrecompileAddress.Hex(),
+			Function: fixture.PrecompileName,
+			Note:     "precompile requires no setup transaction",
+		}
 	}
 
 	targets, err := buildTargets(codeStorageABI, contract, contractAddress, fixture)
 	if err != nil {
 		return algorithmResult{}, err
 	}
-	if cfg.upload {
-		if err := waitCallFuncReady(ctx, client, from, targets[0], cfg.callGas, 30*time.Second); err != nil {
+	filtered := make([]callTarget, 0, len(targets))
+	for _, target := range targets {
+		if selectedSchemes[target.scheme] {
+			filtered = append(filtered, target)
+		}
+	}
+	targets = filtered
+	if len(targets) == 0 {
+		return algorithmResult{}, errors.New("no implementation schemes selected")
+	}
+	if selectedSchemes[schemeUpgrade] && cfg.upload {
+		var upgradeTarget callTarget
+		for _, target := range targets {
+			if target.scheme == schemeUpgrade {
+				upgradeTarget = target
+				break
+			}
+		}
+		if err := waitCallFuncReady(ctx, client, from, upgradeTarget, cfg.callGas, 60*time.Second); err != nil {
 			return algorithmResult{}, err
 		}
 	}
@@ -778,9 +875,13 @@ func buildTargets(codeStorageABI abi.ABI, contract compiledContract, contractAdd
 	if err != nil {
 		return nil, fmt.Errorf("pack CodeStorage.callFunc: %w", err)
 	}
-	contractCallData, err := contract.ABI.Pack(fixture.ContractFunction, fixture.ContractValues...)
-	if err != nil {
-		return nil, fmt.Errorf("pack %s contract call: %w", fixture.Algorithm, err)
+	var contractCallData []byte
+	if contract.Contract != "" {
+		var err error
+		contractCallData, err = contract.ABI.Pack(fixture.ContractFunction, fixture.ContractValues...)
+		if err != nil {
+			return nil, fmt.Errorf("pack %s contract call: %w", fixture.Algorithm, err)
+		}
 	}
 	precompileCallData, err := precompileArgs.Pack(fixture.PrecompileValues...)
 	if err != nil {
@@ -943,6 +1044,8 @@ func decodeSingleOutput(args abi.Arguments, output []byte) (decodedOutput, error
 	case [32]byte:
 		encoded := hexutil.Encode(v[:])
 		return decodedOutput{canonical: "bytes:" + encoded, display: encoded}, nil
+	case []*big.Int:
+		return decodedBigIntSlice(v), nil
 	}
 	if b, ok := fixedByteArray(value); ok {
 		encoded := hexutil.Encode(b)
@@ -1368,6 +1471,108 @@ func fixedBytes(x *big.Int, size int) []byte {
 	out := make([]byte, size)
 	copy(out[size-len(b):], b)
 	return out
+}
+
+func polynomialMulAlgoGas(leftLen, rightLen int) uint64 {
+	products := uint64(leftLen * rightLen)
+	// 与 precompile 的 step gas 同量级，避免大负载下 callFunc 因 metadata gas 不足失败。
+	return 5000 + products*200
+}
+
+func polyProfileName(leftLen, rightLen int) string {
+	if leftLen == rightLen {
+		switch leftLen {
+		case 4:
+			return "P1"
+		case 8:
+			return "P2"
+		case 16:
+			return "P3"
+		case 32:
+			return "P4"
+		case 64:
+			return "P5"
+		case 128:
+			return "P6"
+		}
+	}
+	return fmt.Sprintf("custom-%dx%d", leftLen, rightLen)
+}
+
+func buildPolynomialCoeffs(length int, modulus *big.Int, coefMax int) []*big.Int {
+	coeffs := make([]*big.Int, length)
+	for i := range coeffs {
+		var value int64
+		if coefMax > 0 {
+			value = int64(i%coefMax + 1)
+		} else {
+			value = int64(i + 1)
+		}
+		coeffs[i] = new(big.Int).Mod(big.NewInt(value), modulus)
+		if coeffs[i].Sign() == 0 {
+			coeffs[i].SetInt64(1)
+		}
+	}
+	return coeffs
+}
+
+func polynomialMulReference(left, right []*big.Int, modulus *big.Int) []*big.Int {
+	result := make([]*big.Int, len(left)+len(right)-1)
+	for i := range result {
+		result[i] = new(big.Int)
+	}
+	for i, l := range left {
+		lc := new(big.Int).Mod(l, modulus)
+		for j, r := range right {
+			rc := new(big.Int).Mod(r, modulus)
+			term := new(big.Int).Mul(lc, rc)
+			term.Mod(term, modulus)
+			result[i+j].Add(result[i+j], term)
+			result[i+j].Mod(result[i+j], modulus)
+		}
+	}
+	return result
+}
+
+func decodedBigIntSlice(values []*big.Int) decodedOutput {
+	return decodedOutput{
+		canonical: bigIntSliceCanonical(values),
+		display:   bigIntSliceDisplay(values),
+	}
+}
+
+func bigIntSliceCanonical(values []*big.Int) string {
+	parts := make([]string, len(values))
+	for i, value := range values {
+		if value == nil {
+			parts[i] = "<nil>"
+			continue
+		}
+		parts[i] = value.String()
+	}
+	return "uint256[]:" + strings.Join(parts, ",")
+}
+
+func bigIntSliceDisplay(values []*big.Int) string {
+	if len(values) == 0 {
+		return "[]"
+	}
+	if len(values) <= 4 {
+		return "[" + strings.Join(strings.Fields(strings.TrimPrefix(bigIntSliceCanonical(values), "uint256[]:")), ", ") + "]"
+	}
+	prefix := bigIntSliceDisplay(values[:3])
+	return strings.TrimSuffix(prefix, "]") + ", ...(" + fmt.Sprintf("%d", len(values)) + ")]"
+}
+
+func parsePositiveBigInt(label, raw string) (*big.Int, error) {
+	value, ok := new(big.Int).SetString(strings.TrimSpace(raw), 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid %s %q", label, raw)
+	}
+	if value.Sign() <= 0 {
+		return nil, fmt.Errorf("%s must be positive", label)
+	}
+	return value, nil
 }
 
 func defaultSolcPath() string {

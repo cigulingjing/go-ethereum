@@ -7,11 +7,13 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/ethereum/go-ethereum/cryptoupgrade/builtin"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/compiler"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/pluginruntime"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/wasmruntime"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/stagelog"
 	"github.com/ethereum/go-ethereum/log"
 )
 
@@ -41,6 +43,10 @@ func CallProcessor(algoName string, gas uint64, encodedInput []byte) ([]byte, ui
 }
 
 func CallProcessorAt(algoName string, gas uint64, encodedInput []byte, blockNumber uint64) ([]byte, uint64, error) {
+	return callProcessorAtContext(context.Background(), algoName, gas, encodedInput, blockNumber)
+}
+
+func callProcessorAtContext(ctx context.Context, algoName string, gas uint64, encodedInput []byte, blockNumber uint64) ([]byte, uint64, error) {
 	algoName = capitalString(algoName)
 
 	log.Info("Call upgrade algorithm", "name", algoName, "block", blockNumber, "input", encodedInput)
@@ -58,7 +64,10 @@ func CallProcessorAt(algoName string, gas uint64, encodedInput []byte, blockNumb
 		return nil, gas, requiredVersionMissingError(algoName, funcInfo.Version)
 	}
 	wasmPath, compiledPath := runtimeArtifactPaths(algoName, prepared.Version)
-	return callUpgradeAlgoWithInfo(algoName, wasmPath, compiledPath, gas, encodedInput, prepared.Base())
+	if stagelog.Enabled() {
+		ctx = stagelog.With(ctx, stagelog.Fields{"algorithm": algoName, "version": prepared.Version, "blockNumber": blockNumber})
+	}
+	return callUpgradeAlgoWithInfoContext(ctx, algoName, wasmPath, compiledPath, gas, encodedInput, prepared.Base())
 }
 
 func RequiredGas(algoName string) (uint64, error) {
@@ -121,11 +130,15 @@ func RunCall(input []byte) ([]byte, error) {
 }
 
 func RunCallAt(input []byte, blockNumber uint64) ([]byte, error) {
+	return RunCallAtContext(context.Background(), input, blockNumber)
+}
+
+func RunCallAtContext(ctx context.Context, input []byte, blockNumber uint64) ([]byte, error) {
 	algoName, encodedInput, err := ParseCall(input)
 	if err != nil {
 		return nil, err
 	}
-	ret, _, err := CallProcessorAt(algoName, ^uint64(0), encodedInput, blockNumber)
+	ret, _, err := callProcessorAtContext(ctx, algoName, ^uint64(0), encodedInput, blockNumber)
 	return ret, err
 }
 
@@ -143,6 +156,23 @@ func callUpgradeAlgo(funcName string, gas uint64, encodedInput []byte) ([]byte, 
 }
 
 func callUpgradeAlgoWithInfo(funcName string, wasmPath string, compiledPath string, gas uint64, encodedInput []byte, funcInfo algoInfo) ([]byte, uint64, error) {
+	return callUpgradeAlgoWithInfoContext(context.Background(), funcName, wasmPath, compiledPath, gas, encodedInput, funcInfo)
+}
+
+func callUpgradeAlgoWithInfoContext(ctx context.Context, funcName string, wasmPath string, compiledPath string, gas uint64, encodedInput []byte, funcInfo algoInfo) (ret []byte, remaining uint64, runErr error) {
+	if stagelog.Enabled() {
+		ctx = stagelog.With(ctx, stagelog.Fields{"flow": "call", "algorithm": funcName, "executionId": stagelog.NewID(), "runtime": "wasm"})
+		start := time.Now()
+		stagelog.RecordAt(ctx, "coprocessor_enter", start, nil)
+		defer func() {
+			end := time.Now()
+			fields := stagelog.Fields{"durationNs": end.Sub(start).Nanoseconds(), "success": runErr == nil}
+			if runErr != nil {
+				fields["error"] = runErr.Error()
+			}
+			stagelog.RecordAt(ctx, "coprocessor_exit", end, fields)
+		}()
+	}
 	log.Info("Loaded upgrade algorithm", "name", funcName, "wasmPath", wasmPath, "compiledPath", compiledPath)
 	// Gas sufficient check
 	if gas < funcInfo.Gas {
@@ -177,8 +207,7 @@ func callBuiltinAlgorithm(algo builtin.Algorithm, gas uint64, encodedInput []byt
 	}
 
 	// Call algorithm
-	p := algo.TargetFunc()
-	output, err := callFunction(p, input)
+	output, err := algo.Run(input)
 	if err != nil {
 		log.Error("Failed to call builtin algorithm", "err", err)
 		return nil, gas, err

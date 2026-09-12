@@ -16,6 +16,8 @@ terminology.md文档核心是统一英文与中文用词。
 | Execution Engine | 执行引擎 | 执行普通 EVM 交易并在识别到管理合约调用时进入协处理器边界的执行组件 |
 | Identity Hooks | 身份识别钩子 | 原型中识别 Management Contract / CodeStorage 调用并将特定调用路由到 Cryptographic Coprocessor 的 EVM 集成点 |
 | contract-facing interface | 面向合约的接口 | 智能合约用于访问密码算法能力的稳定 EVM/ABI 调用边界 |
+| Invocation Protocol | 调用协议 | 合约通过稳定的 CodeStorage/callFunc EVM 入口调用已准备算法的协议流程 |
+| Upgrade Protocol | 升级协议 | 通过链上元数据、升级事件和节点本地 WASM preparation 完成算法版本发布与准备的协议流程 |
 | CodeStorage | 代码存储合约 / CodeStorage | 原型中用于提交算法元数据、触发事件并提供 `callFunc` 调用入口的 EVM-facing interface |
 | Management Contract | 管理合约 | 链上发布升级提案、维护版本元数据并提供调用入口的管理组件，本文原型中由 CodeStorage 承担 |
 | Upgrade Contract | 升级合约 | 合约侧统一发布升级提案和算法元数据的链上入口，本文原型中由 CodeStorage 承担 |

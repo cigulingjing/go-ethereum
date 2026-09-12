@@ -2,8 +2,8 @@
 set -eu
 
 IMAGE="${IMAGE:-cryptoupgrade-geth:lab}"
-CONFIG="${CONFIG:-experiments/cryptoupgrade/deployments/networks/local-2nodes.yaml}"
-OUT="${OUT:-build/cryptoupgrade-networks/docker-check}"
+CONFIG="${CONFIG:-experiments/cryptoupgrade/deployments/networks/local.yaml}"
+OUT="${OUT:-experiments/cryptoupgrade/deployments/docker-check}"
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "skip: docker command not found"

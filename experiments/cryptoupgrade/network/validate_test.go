@@ -72,3 +72,21 @@ func TestValidateNetworkChecksOnlyNetworkState(t *testing.T) {
 		t.Fatalf("block height did not increase: %+v", result.Nodes[0])
 	}
 }
+
+func TestRequiredPeerCount(t *testing.T) {
+	tests := []struct {
+		nodes int
+		min   int
+		want  int
+	}{
+		{nodes: 1, min: 0, want: 0},
+		{nodes: 5, min: 0, want: 4},
+		{nodes: 5, min: 2, want: 2},
+		{nodes: 5, min: 99, want: 4},
+	}
+	for _, tt := range tests {
+		if got := requiredPeerCount(tt.nodes, tt.min); got != tt.want {
+			t.Fatalf("requiredPeerCount(%d, %d) = %d, want %d", tt.nodes, tt.min, got, tt.want)
+		}
+	}
+}

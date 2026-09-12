@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/activationtrace"
 	"github.com/tetratelabs/wazero"
 	"github.com/tetratelabs/wazero/api"
 	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
@@ -144,11 +145,14 @@ func (l *Loader) compileAndInstantiate(ctx context.Context, wasmPath, compiledPa
 		return nil, fmt.Errorf("instantiate wasi module for %s: %w", wasmPath, err)
 	}
 
+	compileStart := time.Now()
 	compiled, err := rt.CompileModule(ctx, wasmBytes)
 	if err != nil {
 		_ = rt.Close(ctx)
+		recordTrace(ctx, "wasm_compile_failed", wasmPath, compiledPath, time.Since(compileStart), err)
 		return nil, fmt.Errorf("compile wasm module %s: %w", wasmPath, err)
 	}
+	recordTrace(ctx, "wasm_compiled", wasmPath, compiledPath, time.Since(compileStart), nil)
 	if err := validateImports(compiled, wasmPath); err != nil {
 		_ = compiled.Close(ctx)
 		_ = rt.Close(ctx)
@@ -156,10 +160,12 @@ func (l *Loader) compileAndInstantiate(ctx context.Context, wasmPath, compiledPa
 	}
 
 	moduleName := strings.TrimSuffix(filepath.Base(wasmPath), filepath.Ext(wasmPath))
+	instantiateStart := time.Now()
 	instance, err := rt.InstantiateModule(ctx, compiled, wazero.NewModuleConfig().WithName(moduleName).WithStartFunctions())
 	if err != nil {
 		_ = compiled.Close(ctx)
 		_ = rt.Close(ctx)
+		recordTrace(ctx, "wasm_instantiate_failed", wasmPath, compiledPath, time.Since(instantiateStart), err)
 		return nil, fmt.Errorf("instantiate wasm module %s: %w", wasmPath, err)
 	}
 	execute := instance.ExportedFunction("execute")
@@ -178,6 +184,7 @@ func (l *Loader) compileAndInstantiate(ctx context.Context, wasmPath, compiledPa
 			return nil, fmt.Errorf("initialize wasm module %s: %w", wasmPath, err)
 		}
 	}
+	recordTrace(ctx, "wasm_instantiated", wasmPath, compiledPath, time.Since(instantiateStart), nil)
 
 	return &preparedModule{
 		runtime:   rt,
@@ -187,6 +194,19 @@ func (l *Loader) compileAndInstantiate(ctx context.Context, wasmPath, compiledPa
 		wasmPath:  wasmPath,
 		cachePath: compiledPath,
 	}, nil
+}
+
+func recordTrace(ctx context.Context, stage, wasmPath, compiledPath string, duration time.Duration, err error) {
+	event := activationtrace.ForStage(ctx, stage)
+	event.WasmPath = wasmPath
+	event.CompiledPath = compiledPath
+	if duration > 0 {
+		event.DurationMillis = float64(duration.Nanoseconds()) / float64(time.Millisecond)
+	}
+	if err != nil {
+		event.Error = err.Error()
+	}
+	_ = activationtrace.Record(event)
 }
 
 type preparedModule struct {

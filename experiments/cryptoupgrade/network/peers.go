@@ -14,9 +14,13 @@ func EnodeForNode(node NodeConfig) (string, error) {
 	if node.NodeKey == "" {
 		return "", fmt.Errorf("node %s requires nodeKey path", node.ID)
 	}
-	raw, err := os.ReadFile(node.NodeKey)
-	if err != nil {
-		return "", err
+	raw := []byte(node.generatedKey)
+	if node.generatedKey == "" {
+		var err error
+		raw, err = os.ReadFile(node.NodeKey)
+		if err != nil {
+			return "", err
+		}
 	}
 	keyHex := strings.TrimSpace(string(raw))
 	keyHex = strings.TrimPrefix(keyHex, "0x")
@@ -46,6 +50,9 @@ func StaticPeers(cfg *Config) (map[string][]string, error) {
 		enodes[node.ID] = enode
 	}
 	peers := make(map[string][]string, len(cfg.Nodes))
+	if cfg.Network.PeerTopology == "star" {
+		return starStaticPeers(cfg, enodes), nil
+	}
 	for _, node := range cfg.Nodes {
 		for _, peer := range cfg.Nodes {
 			if peer.ID == node.ID {
@@ -55,4 +62,31 @@ func StaticPeers(cfg *Config) (map[string][]string, error) {
 		}
 	}
 	return peers, nil
+}
+
+func starStaticPeers(cfg *Config, enodes map[string]string) map[string][]string {
+	peers := make(map[string][]string, len(cfg.Nodes))
+	if len(cfg.Nodes) <= 1 {
+		return peers
+	}
+	hubID := cfg.Nodes[0].ID
+	for _, node := range cfg.Nodes {
+		if node.Role == "signer" {
+			hubID = node.ID
+			break
+		}
+	}
+	for _, node := range cfg.Nodes {
+		if node.ID == hubID {
+			for _, peer := range cfg.Nodes {
+				if peer.ID == node.ID {
+					continue
+				}
+				peers[node.ID] = append(peers[node.ID], enodes[peer.ID])
+			}
+			continue
+		}
+		peers[node.ID] = append(peers[node.ID], enodes[hubID])
+	}
+	return peers
 }

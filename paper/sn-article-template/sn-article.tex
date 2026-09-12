@@ -55,6 +55,11 @@
 \usepackage{algorithmicx}%
 \usepackage{algpseudocode}%
 \usepackage{listings}%
+\algrenewcommand\algorithmicrequire{\textbf{Input:}}
+\algrenewcommand\algorithmicensure{\textbf{Output:}}
+\makeatletter
+\renewcommand{\fnum@algorithm}{\fname@algorithm~\thealgorithm:}
+\makeatother
 %%%%
 
 %%%%%=============================================================================%%%%
@@ -90,7 +95,7 @@
 
 \begin{document}
 
-\title{An Upgradable Cryptographic Coprocessor for the Ethereum Virtual Machine}
+\title{EvoCrypt:An Upgradable Cryptographic Coprocessor for the Ethereum Virtual Machine}
 
 %%=============================================================%%
 %% GivenName	-> \fnm{Joergen W.}
@@ -120,7 +125,7 @@
 %% Sample for unstructured abstract %%
 %%==================================%%
 
-\abstract{Smart contracts increasingly require cryptographic algorithms for authentication, integrity protection, signatures, key agreement, and privacy-preserving workflows. Implementing such algorithms directly in Solidity preserves contract-layer flexibility but can incur high EVM execution and gas overhead, whereas Precompiled Contracts provide efficient native execution but bind algorithm updates to client modification, rebuild, and coordinated deployment. This paper proposes a Cryptographic Coprocessor for the EVM that routes selected contract-facing cryptographic calls to client-side WebAssembly (WASM) modules through a stable invocation interface. The architecture combines on-chain upgrade proposals, off-chain asynchronous WASM preparation, controlled runtime loading, and Activation-Block-based deterministic activation, so that algorithm implementations can be replaced without replacing the whole blockchain client. We implement a Geth prototype and evaluate upgrade efficiency and execution efficiency on a five-node Clique private chain across seven algorithms. In the WASM rerun reported here, all upgrades completed across the five target nodes in 4.86--5.34 s, the post-event readiness tail was at most 287.3 ms, and outputs matched across the WASM-backed Upgrade, Solidity contract, and Precompile paths. The WASM path remained in the same millisecond-scale latency range as Precompiled Contracts for six of seven benchmarks, while SchnorrVerify exposed a clear tail-latency limitation. Upgrade consistency is treated as a protocol security property rather than as a separate experiment. These results indicate that a WASM-based coprocessor boundary can reduce the operational cost of cryptographic algorithm updates while preserving deterministic smart-contract execution under bounded conditions.}
+\abstract{Smart contracts are a central mechanism for blockchain programmability because they encode application logic, asset rules, and multi-party workflows inside a deterministic execution environment. Many of these workflows require cryptographic algorithms, but implementing such algorithms directly as smart contracts is difficult and expensive: developers must express low-level cryptographic operations in Solidity, and the resulting EVM execution can consume substantial latency and gas. Ethereum addresses part of this problem through Precompiled Contracts, which provide efficient client-native cryptographic routines behind EVM-facing addresses. However, a Precompiled Contract is implemented inside the blockchain client, so adding or upgrading an algorithm normally requires client modification, rebuild, coordinated redeployment, and possible node interruption. To address this upgrade boundary, we propose a Cryptographic Coprocessor architecture for the EVM. The coprocessor keeps a stable contract-facing interface while executing selected cryptographic algorithms as client-side WebAssembly (WASM) modules, and it supports runtime upgrade through on-chain metadata, module hashes, asynchronous local preparation, and Activation-Block-based version selection. We implement the prototype in Geth and evaluate seven algorithms on a five-node Clique private chain. In the WASM rerun, all upgrades became callable on all target nodes in 4.86--5.34 s, and all comparable execution paths returned matching outputs. For six benchmarks, WASM-backed mean \texttt{eth\_call} latency was 1.00--1.88 ms, close to the corresponding Precompile range of 0.87--1.01 ms; SchnorrVerify was a tail exception at 188.6 ms. Under the prototype deterministic pricing model, WASM-backed calls also reduced \texttt{gasEstimate} relative to Solidity for the more complex evaluated cryptographic algorithms. These results indicate that WASM-based cryptographic coprocessing can support dynamically upgradable contract-facing algorithms while retaining near-precompile execution efficiency under the evaluated conditions.}
 
 %%================================%%
 %% Sample for structured abstract %%
@@ -134,7 +139,7 @@
 % 
 % \textbf{Conclusion:} The abstract serves both as a general introduction to the topic and as a brief, non-technical summary of the main results and their implications. The abstract must not include subheadings (unless expressly permitted in the journal's Instructions to Authors), equations or citations. As a guide the abstract should not exceed 200 words. Most journals do not set a hard limit however authors are advised to check the author instructions for the journal they are submitting to.}
 
-\keywords{Cryptographic Coprocessor, smart contracts, contract-facing cryptographic algorithms, blockchain client, WebAssembly module, WASM runtime, runtime upgrade, deterministic activation}
+\keywords{blockchain, smart contracts, upgrade, WebAssembly (WASM)}
 
 %%\pacs[JEL Classification]{D8, H51}
 
@@ -156,60 +161,113 @@ This paper proposes a general Cryptographic Coprocessor architecture for smart-c
 
 We make three contributions. First, we design a Cryptographic Coprocessor architecture that separates contract-facing cryptographic algorithm interfaces from WASM module implementations, allowing algorithm implementations to be managed and replaced independently of the core EVM execution logic while using a narrower runtime boundary than process-local plugin loading. Second, we design an upgrade protocol that combines on-chain event coordination, off-chain asynchronous WASM preparation, and block-height-based deterministic activation. Third, we implement a prototype in Geth and evaluate it through WASM-based experiments covering upgrade latency in a five-node Clique network and execution efficiency against Precompiled Contract and Solidity contract baselines. The resulting claims are intentionally bounded: the evaluation concerns contract-facing cryptographic algorithms under the evaluated scenarios, does not claim that unrelated EVM transactions are unaffected during the upgrade preparation window, does not set up a separate consistency experiment, and does not treat the WASM sandbox as a formal security proof.
 
-\section{Technical Background}\label{sec2}
+\section{Background}\label{sec2}
 
-\subsection{Cryptographic Execution}\label{sec2.1}
+\subsection{Smart Contracts}\label{sec2.1}
 Ethereum smart contracts are programs that run on contract accounts. A contract account is identified by an address, its code hash points to EVM bytecode stored in the state database, and a transaction or message call to that address triggers bytecode execution in the EVM \cite{ethereumSmartContracts,ethereumAccounts,woodEthereumYellowPaper}. Gas is the protocol-level budget for this execution. The protocol charges for opcode execution, memory use, state access, and transaction data, so deterministic execution is coupled to an explicit resource-pricing mechanism \cite{woodEthereumYellowPaper,buterin2016eip150}.
 
 Cryptographic algorithms can be exposed to smart contracts in several ways. A Solidity contract implementation is flexible because it can be deployed and updated at the contract layer, but complex arithmetic or byte-oriented computation is executed as EVM instructions and can therefore incur high latency and gas cost. A Precompiled Contract provides a reserved EVM-facing address whose execution is dispatched to native client code. The elliptic-curve precompiles introduced by EIP-196 and EIP-197, together with EIP-1109's call-cost discussion, illustrate this pattern: the interface is stable at the protocol boundary, while the implementation and gas schedule are fixed by client and protocol rules \cite{eip196,eip197,eip1109,evmCodesPrecompiled}. This improves execution efficiency, but adding or replacing an algorithm usually follows the client release path rather than an application-level deployment path.
 
-\subsection{Runtime Upgrade}\label{sec2.2}
+\subsection{Live Upgrade}\label{sec2.2}
 A blockchain client receives and validates blocks, maintains local state, executes transactions, and exposes RPC interfaces. In Ethereum, the execution client handles transaction validation, state management, and EVM execution, while the consensus client handles fork choice and finality coordination \cite{ethereumNodeArchitecture,gethHome}. Updating functionality inside an execution client is therefore different from updating an ordinary application library: a faulty or inconsistently adopted update can affect transaction replayability and the semantics that different nodes apply to the same block.
 
 Traditional client upgrades rely on software distribution, local deployment, and process restart. Dynamic software update (DSU) mechanisms reduce this operational cost in general distributed systems, and live-upgradable blockchain clients show that runtime replacement is also relevant in blockchain software \cite{ajmani2006modular,baresi2017versionConsistency,wang2023phoenix}. For contract-facing cryptographic algorithms, however, runtime upgrade must also preserve a deterministic version boundary. A node must not decide the active cryptographic implementation from local wall-clock time or local preparation completion alone, because the same contract call at the same block height must resolve to the same algorithm version under the same chain view.
 
-\subsection{WebAssembly Runtime}\label{sec2.3}
+\subsection{WebAssembly}\label{sec2.3}
 WebAssembly defines a portable low-level bytecode format intended for compact representation and efficient execution under a host runtime \cite{webassemblyCoreSpec}. A WASM module executes with explicit imports, exports, and linear memory. In this work, WASM is used as the dynamically loaded algorithm artifact, replacing the earlier process-local plugin boundary with a bytecode payload that each node can decode, hash, compile, instantiate, and invoke through a controlled runtime interface.
 
 This runtime boundary is useful for cryptographic algorithm modules because it separates the host client from the module's internal implementation language and binary layout. It also gives the upgrade protocol a concrete artifact, the WASM module bytes and their hash, that can be referenced by on-chain metadata. The boundary is nevertheless an engineering boundary, not a formal proof of sandbox security or cross-platform determinism across all runtimes and compiler toolchains. The evaluation in this paper is limited to the implemented Geth prototype and the evaluated WASM runtime path.
 
-\section{Coprocessor Architecture}\label{sec3}
+\section{Design}\label{sec3}
 
 The Cryptographic Coprocessor is designed to provide runtime-upgradable WASM implementations for contract-facing cryptographic algorithms without turning the entire blockchain client into a dynamically updated component. The scope is deliberately narrow: ordinary transactions continue to execute through the EVM, the execution client continues to charge gas through the EVM call path, and only selected cryptographic algorithm implementations behind a stable contract-facing interface are prepared, loaded, and selected as replaceable WASM modules.
 
-\subsection{System Overview}\label{sec3.1}
+\subsection{Overview}\label{sec3.1}
 Figure~\ref{fig:overview} shows the main modules. The Execution Engine executes ordinary EVM transactions. Identity Hooks recognize calls to the Management Contract entry point used by the prototype and route only those calls into the coprocessor boundary. The Cryptographic Coprocessor manages ABI decoding, algorithm lookup, version selection, gas metadata, and WASM invocation. The Upgrade Handler listens for on-chain upgrade events and prepares node-local artifacts. The WASM Runtime compiles and instantiates modules under a controlled import/export and memory boundary, and WASM Modules contain the replaceable algorithm implementations.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{../image/overview.png}
-\caption{Overall architecture of the Cryptographic Coprocessor. Ordinary transactions remain on the EVM execution path. Calls recognized by the Identity Hooks enter the coprocessor boundary, where the dispatcher selects a prepared WASM module through version metadata. Upgrade proposals are published on chain, while the Upgrade Handler verifies, compiles, and instantiates WASM modules before the Activation Block makes a prepared version active.}
+\caption{Workflow of the Upgradable Cryptographic Coprocessor.}
 \label{fig:overview}
 \end{figure}
 
-The on-chain layer contains the Management Contract, event log, version metadata, and Activation Block. The Management Contract abstracts the CodeStorage contract used in the prototype: its invocation interface exposes the contract-facing call entry, and its upgrade interface publishes the algorithm name, version, WASM artifact, WASM hash, ABI type metadata, gas value, and activation height. The client-side layer contains the Execution Engine, Identity Hooks, Cryptographic Coprocessor, Upgrade Handler, WASM Runtime, and local module workspace. This split keeps the chain as the authoritative coordination surface while leaving module preparation as node-local work.
+The on-chain layer contains the Management Contract, event log, version metadata, and Activation Block. The Management Contract abstracts the CodeStorage contract used in the prototype: its invocation interface exposes the contract-facing call entry, and its upgrade interface publishes the algorithm name, version, encoded WASM artifact, ABI type metadata, gas value, and activation height. Clients derive the module hash from the decoded artifact during local preparation. The client-side layer contains the Execution Engine, Identity Hooks, Cryptographic Coprocessor, Upgrade Handler, WASM Runtime, and local module workspace. This split keeps the chain as the authoritative coordination surface while leaving module preparation as node-local work.
 
-\subsection{Invocation Abstraction}\label{sec3.2}
-The contract-facing invocation interface is:
+\subsection{Upgrade Protocol}\label{sec3.2}
+An upgrade starts from an on-chain proposal. In the versioned path, the proposal is submitted through \texttt{uploadCodeVersion}. The proposal contains the module identifier, module version, encoded WASM artifact, activation height, gas value, and ABI input-output type descriptions. During transaction execution, the Management Contract validates and stores this metadata and emits a versioned upgrade event. The EVM path does not compile or instantiate the WASM module; it records the authoritative metadata and publishes an event that clients can observe.
 
-\begin{quote}
-\texttt{callFunc(string algorithm, bytes input)}
-\end{quote}
-
-The \texttt{algorithm} argument names the target cryptographic algorithm, and \texttt{input} carries ABI-encoded parameters. The smart contract does not depend on the location of the compiled artifact, the implementation language, or the local loading state of a node. It depends only on the EVM-visible interface and the ABI-level input-output contract associated with the selected algorithm version.
-
-Inside the client, the coprocessor parses the CodeStorage calldata, normalizes the algorithm name, retrieves the stored metadata, and decodes the input according to the registered type list. It then resolves the implementation for the current block height. Built-in cryptographic routines can be called through the internal registry, while dynamically upgraded algorithms are invoked through the WASM Runtime. After the WASM \texttt{execute} export returns, the coprocessor re-encodes the result according to the registered output type list and returns the bytes to the EVM.
-
-This abstraction decouples contract-facing cryptographic algorithm interfaces from WASM module implementations. Replacing an implementation does not require changing the contract-facing call shape, provided that the registered metadata and ABI-level input-output contract remain compatible. The EVM integration layer also does not need to understand the internal logic of every cryptographic algorithm; it needs a stable dispatch boundary, a gas query, and a deterministic return value for the selected version.
-
-\subsection{Upgrade Protocol}\label{sec3.3}
-An upgrade starts from an on-chain proposal. In the versioned path, the proposal is submitted through \texttt{uploadCodeVersion}. The proposal contains the module identifier, module version, encoded WASM bytes, WASM hash, activation height, gas value, and ABI input-output type descriptions. During transaction execution, the Management Contract validates and stores this metadata and emits a versioned upgrade event. The EVM path does not compile or instantiate the WASM module; it records the authoritative metadata and publishes an event that clients can observe.
-
-Each client runs an Event Listener for Management Contract upgrade events. When a listener observes a versioned event, it queries the authoritative metadata from the contract, checks that the event and stored metadata agree on the version and activation height, and delegates preparation to the Upgrade Handler. The Upgrade Handler decodes the uploaded artifact into the local WASM workspace, verifies the artifact hash, asks the WASM Runtime to compile and instantiate the module, checks the required export, and records the resulting artifact as a prepared version.
+Each client runs an Event Listener for Management Contract upgrade events. When a listener observes a versioned event, it queries the authoritative metadata from the contract, checks that the event and stored metadata agree on the version and activation height, and delegates preparation to the Upgrade Handler. The Upgrade Handler decodes the uploaded artifact into the local WASM workspace, computes and records the artifact hash, asks the WASM Runtime to compile and instantiate the module, checks the required export, and records the resulting artifact as a prepared version.
 
 This workflow separates on-chain coordination from node-local preparation. The chain provides one upgrade proposal and a stable metadata source, while each node independently verifies and prepares the same WASM artifact. A local preparation failure does not roll back the already executed upgrade transaction and must not be interpreted as successful activation. This separation is the basis for asynchronous upgrade preparation and explains why the upgrade transaction itself does not wait for WASM compilation.
 
-\subsection{Deterministic Activation}\label{sec3.4}
+Formally, an upgrade proposal for algorithm \(a\) and version \(v\) is represented by
+
+\begin{equation}
+\begin{aligned}
+\mu_{a,v}
+&=\langle a, v, C_{a,v}, g_{a,v},
+\tau^{\mathrm{in}}_{a,v}, \tau^{\mathrm{out}}_{a,v}, H_{a,v}\rangle,\\
+B_{a,v}
+&=\operatorname{Decode}(C_{a,v}),\\
+h_{a,v}
+&=\operatorname{Keccak256}(B_{a,v}),
+\end{aligned}
+\label{eq:upgrade-metadata}
+\end{equation}
+
+where \(C_{a,v}\) is the encoded WASM artifact, \(g_{a,v}\) is the deterministic gas metadata, \(\tau^{\mathrm{in}}_{a,v}\) and \(\tau^{\mathrm{out}}_{a,v}\) are the ABI input-output type descriptors, \(H_{a,v}\) is the Activation Block, and \(h_{a,v}\) is the derived WASM hash. The versioned event carries only the scheduling projection
+
+\begin{equation}
+e_{a,v}=\pi_{\mathrm{event}}(\mu_{a,v})=\langle a,v,H_{a,v}\rangle .
+\label{eq:upgrade-event-projection}
+\end{equation}
+
+Thus, an event is not treated as a complete artifact descriptor. It is accepted by a client only after the listener retrieves \(\mu_{a,v}\) from the Management Contract and checks that the event projection in Eq.~\ref{eq:upgrade-event-projection} agrees with the stored metadata. For node \(n_i\), the local preparation predicate is
+
+\begin{equation}
+\begin{aligned}
+\operatorname{Prepared}_i(a,v) \equiv{}&
+\operatorname{Keccak256}(B_{i,a,v})=h_{a,v}\\
+&{}\land \operatorname{Compile}_i(B_{i,a,v})=\mathtt{ok}\\
+&{}\land \operatorname{Export}_i(B_{i,a,v},\texttt{execute})=\mathtt{true}\\
+&{}\land \operatorname{RuntimeMeta}_i(a,v)=\mathtt{ok}.
+\end{aligned}
+\label{eq:prepared-predicate}
+\end{equation}
+
+Only versions satisfying Eq.~\ref{eq:prepared-predicate} are placed in the node-local prepared set \(\mathcal{P}_i\). Algorithm~\ref{alg:upgrade-protocol} summarizes the resulting protocol flow.
+
+\begin{algorithm}[H]
+\caption{\textbf{Activation-Block-based WASM upgrade protocol.}}
+\label{alg:upgrade-protocol}
+\begin{algorithmic}[1]
+\Require \(\mu_{a,v}=\langle a,v,C,g,\tau^{\mathrm{in}},\tau^{\mathrm{out}},H\rangle\), node set \(\mathcal{N}\)
+\Ensure Prepared set \(\mathcal{P}_i\) for each \(n_i\in\mathcal{N}\)
+\State \(\mathsf{tx}\gets\texttt{uploadCodeVersion}(a,v,C,g,\tau^{\mathrm{in}},\tau^{\mathrm{out}},H)\)
+\State Management Contract validates \(v>0\), \(C\neq\emptyset\), and \(g>0\)
+\State Management Contract stores \(\mu_{a,v}\) and emits \(e_{a,v}=\langle a,v,H\rangle\)
+\ForAll{\(n_i\in\mathcal{N}\)}
+    \State wait until the Event Listener observes \(e_{a,v}\)
+    \State \(\mu'_{a,v}\gets\texttt{getVersionInfo}(a,v)\)
+    \If{\(\pi_{\mathrm{event}}(\mu'_{a,v})\ne e_{a,v}\)}
+        \State reject preparation of \((a,v)\)
+    \Else
+        \State \(B_{i,a,v}\gets\operatorname{Decode}(C'_{a,v})\)
+        \State \(h_{i,a,v}\gets\operatorname{Keccak256}(B_{i,a,v})\)
+        \State compile, instantiate, and validate the \texttt{execute} export
+        \If{\(\operatorname{Prepared}_i(a,v)=\mathtt{false}\)}
+            \State \(\mathcal{P}_i\gets\mathcal{P}_i\setminus\{(a,v)\}\)
+        \Else
+            \State persist \(h_{i,a,v}\), runtime metadata, ABI metadata, \(v\), and \(H\)
+            \State \(\mathcal{P}_i\gets\mathcal{P}_i\cup\{(a,v)\}\)
+        \EndIf
+    \EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\noindent\textbf{Deterministic activation.}
 Asynchronous preparation creates a consistency problem if nodes switch algorithm versions as soon as their local WASM module is ready. Two nodes may observe the same chain but finish compilation at different physical times. If local readiness determined the active version, the same contract call at the same block height could execute different module implementations. The coprocessor therefore separates preparation time from activation time through an Activation Block.
 
 For module \(m\), execution at block height \(b\) selects the old or new version around activation height \(H_m\) as:
@@ -222,100 +280,189 @@ V_{\mathrm{new}}, & b \ge H_m.
 \end{cases}
 \end{equation}
 
-More generally, when multiple versions exist, the version selector chooses the newest prepared version whose Activation Block is not greater than the execution block height. This rule makes activation deterministic with respect to chain height: given the same chain view, metadata, and prepared artifacts, nodes apply the same version-selection rule for the same block. A node that reaches the Activation Block without the required prepared version must not silently fall back to the obsolete implementation for calls requiring the new semantics. In the prototype this is enforced by a required-version check that returns an execution error when the selected version is missing locally.
+More generally, when multiple versions exist, the version selector chooses the newest scheduled version whose Activation Block is not greater than the execution block height, and the runtime checks local preparation only after this required version has been selected. This rule makes activation deterministic with respect to chain height: given the same chain view and metadata, nodes apply the same version-selection rule for the same block. A node that reaches the Activation Block without the required prepared version must not silently fall back to the obsolete implementation for calls requiring the new semantics. In the prototype this is enforced by a required-version check that returns an execution error when the selected version is missing locally.
 
-\subsection{Resource Accounting}\label{sec3.5}
-The coprocessor uses deterministic gas accounting rather than CPU-time-based charging. This is necessary because wall-clock execution time differs across machines and cannot be part of consensus-visible execution semantics. A precompile-like gas rule can be expressed as:
+The multi-version rule is:
 
 \begin{equation}
-G_a(x)=G_{\mathrm{base},a}
-+\left\lceil\frac{L(x)}{W}\right\rceil G_{\mathrm{unit},a},
+\begin{aligned}
+\mathcal{S}_i(a,b)
+&=\{v\mid \mu_{a,v}\in\mathcal{M}_i,\ H_{a,v}\le b\},\\
+V_i^\star(a,b)
+&=
+\begin{cases}
+\bot, & \mathcal{S}_i(a,b)=\emptyset,\\
+\operatorname*{arg\,max}_{v\in\mathcal{S}_i(a,b)}(v,H_{a,v}), & \text{otherwise}.
+\end{cases}
+\end{aligned}
+\label{eq:version-selector}
 \end{equation}
 
-where \(a\) is the algorithm, \(x\) is the ABI-encoded input, \(L(x)\) is the input length, \(W\) is the word size, and \(G_{\mathrm{base},a}\) and \(G_{\mathrm{unit},a}\) are algorithm-specific gas parameters. The prototype records deterministic gas metadata for upgraded algorithms and uses precompile-like pricing functions for native baselines. The evaluation reports \texttt{gasEstimate} under this prototype pricing model; it does not claim that the current parameters are an optimal economic pricing rule for public Ethereum.
+where \(\mathcal{M}_i\) is the chain-authoritative metadata visible to node \(n_i\) under its canonical chain view. The selector is defined over scheduled metadata rather than local readiness. For any two nodes \(n_i\) and \(n_j\) with the same chain view, \(\mathcal{M}_i=\mathcal{M}_j\) implies \(V_i^\star(a,b)=V_j^\star(a,b)\). This equality captures only the deterministic version boundary; the separate Invocation Protocol below checks local preparation after the required version has been selected.
 
-\subsection{Prototype Implementation}\label{sec3.6}
-We implemented the prototype in Geth by adding the CodeStorage interface, EVM call recognition for the Management Contract entry point, the Cryptographic Coprocessor dispatcher, the activation service, version metadata storage, and the WASM Runtime path. The invocation path recognizes CodeStorage calls, calculates required gas from the registered metadata, decodes the ABI input, selects the applicable algorithm version for the execution block height, invokes the selected WASM module, and returns ABI-encoded output to the EVM.
+\subsection{Invocation Protocol}\label{sec3.3}
+The Invocation Protocol provides a uniform contract-facing interface for invoking selected cryptographic algorithms. A caller supplies the target algorithm and ABI-encoded input through this interface, while the smart contract remains independent of the compiled artifact's location, implementation language, and local loading state. The contract depends only on the stable EVM-facing boundary and the ABI-level input-output contract associated with the selected algorithm version. If the required version is unavailable locally, the call returns an explicit execution error rather than being silently redirected to another implementation.
 
-The upgrade path is event-driven. \texttt{uploadCode} supports the legacy unversioned path, while \texttt{uploadCodeVersion} carries version and activation metadata. The Event Listener observes the emitted upgrade event, and the activation service decodes the uploaded WASM artifact, computes its hash, records runtime metadata, compiles and instantiates the module through the WASM Runtime, and persists the prepared-version metadata. The WASM Runtime uses a memory limit, an execution budget, import validation, and an \texttt{execute} export check. These checks are implementation safeguards for the prototype boundary, not a substitute for a complete production security policy.
+Inside the client, the EVM integration boundary recognizes the CodeStorage target and the \texttt{callFunc} selector before the coprocessor parses the outer calldata and normalizes the algorithm name. The inner \texttt{input} remains ABI-encoded across the host--runtime boundary: a dynamically upgraded WASM module receives these bytes through its \texttt{execute} export and returns an ABI-encoded result, whereas a built-in routine may decode and re-encode the values in the host. In both cases, the selected result is returned to the EVM call frame.
+
+This abstraction decouples contract-facing cryptographic algorithm interfaces from WASM module implementations. Replacing an implementation does not require changing the contract-facing call shape, provided that the registered metadata and ABI-level input-output contract remain compatible. The EVM integration layer also does not need to understand the internal logic of every cryptographic algorithm; it needs a stable dispatch boundary, a gas query, and a deterministic return value for the selected version.
+
+At the data plane, this interface is used to invoke a prepared cryptographic algorithm from another contract. It is independent of the Upgrade Protocol: it does not publish metadata, emit upgrade events, compile or instantiate a module, or change the prepared set. Let \(C_u\) be a caller contract, \(A_{\mathrm{CS}}\) the CodeStorage gateway address, \(a\) the algorithm name, and \(p=(p_1,\ldots,p_k)\) the typed algorithm parameters. The caller constructs the inner ABI payload and the outer gateway calldata as
+
+\begin{equation}
+x=\operatorname{ABIEnc}_{\tau^{\mathrm{in}}_a}(p_1,\ldots,p_k),
+\qquad
+d=\operatorname{ABIEnc}_{\texttt{callFunc(string,bytes)}}(a,x),
+\label{eq:invocation-calldata}
+\end{equation}
+
+where \(\tau^{\mathrm{in}}_a\) is the stable contract-facing input interface, \(\tau_a=(\tau^{\mathrm{in}}_a,\tau^{\mathrm{out}}_a)\) denotes the corresponding input-output interface, and \(\tau_{a,v}=(\tau^{\mathrm{in}}_{a,v},\tau^{\mathrm{out}}_{a,v})\) denotes the interface registered for version \(v\). Because the caller does not provide a version number, the Upgrade Protocol must preserve the contract-facing interface when registering a replacement version. The current prototype stores these ABI descriptors and forwards the inner bytes without a generic type-conversion layer. The caller then issues a read-only \texttt{STATICCALL} to \(A_{\mathrm{CS}}\) with \(d\). A Solidity wrapper can use the low-level call result and decode the returned payload according to the registered output descriptor; the wrapper does not need to know the WASM module path or the client-side runtime implementation.
+
+The EVM integration boundary distinguishes the data-plane invocation from the other CodeStorage methods. Let \(\Sigma_{\mathrm{CS}}\) be the set of selectors registered by CodeStorage and let \(\sigma_{\mathrm{call}}=\operatorname{Sel}(\texttt{callFunc})\). The routing rule is:
+
+\begin{equation}
+\operatorname{Route}(A,d)=
+\begin{cases}
+\operatorname{Invocation}, &
+A=A_{\mathrm{CS}}\land
+\operatorname{Sel}(d)=\sigma_{\mathrm{call}},\\
+\operatorname{CodeStorage}, &
+A=A_{\mathrm{CS}}\land
+\operatorname{Sel}(d)\in\Sigma_{\mathrm{CS}}\setminus\{\sigma_{\mathrm{call}}\},\\
+\operatorname{EVM}, & \text{otherwise}.
+\end{cases}
+\label{eq:invocation-routing}
+\end{equation}
+
+Only the first branch enters the invocation flow below; the second branch continues through CodeStorage metadata or management dispatch. For a dynamically upgraded WASM algorithm, the dispatcher parses \(d\) into \((a,x)\), normalizes \(a\), and obtains \(v=V_i^\star(a,b)\) from the block height \(b\). It checks local preparation only after this chain-derived version has been selected. With \(G_{a,v}(x)=g_{a,v}\) for the current metadata-priced dynamic path, the invocation semantics are
+
+\begin{equation}
+\operatorname{Exec}_i(a,x,b,g)=
+\begin{cases}
+\operatorname{RunWASM}_i(a,v,x), &
+\substack{v=V_i^\star(a,b)\neq\bot\land(a,v)\in\mathcal{P}_i\\
+g\ge G_{a,v}(x)},\\
+\perp_{\mathrm{missing}}, &
+v=\bot\lor(a,v)\notin\mathcal{P}_i,\\
+\perp_{\mathrm{oog}}, &
+v\neq\bot\land(a,v)\in\mathcal{P}_i
+\land g<G_{a,v}(x),\\
+\perp_{\mathrm{abi}}, &
+\text{the outer ABI envelope is invalid},\\
+\perp_{\mathrm{runtime}}, &
+\text{WASM execution fails}.
+\end{cases}
+\label{eq:execution-rule}
+\end{equation}
+
+Here \(g\) is the available call gas and \(G_{a,v}(x)\) is the deterministic gas requirement. The output of \(\operatorname{RunWASM}_i\) is the ABI-encoded result produced by the selected module under its registered output descriptor \(\tau^{\mathrm{out}}_{a,v}\). Built-in cryptographic routines use the same outer call envelope but replace \(\operatorname{RunWASM}_i\) with the corresponding Native registry entry, which performs host-side ABI decoding and encoding. Algorithm~\ref{alg:invocation-protocol} summarizes the data-plane flow.
+
+\begin{algorithm}[H]
+\caption{\textbf{Contract-to-coprocessor invocation protocol.}}
+\label{alg:invocation-protocol}
+\begin{algorithmic}[1]
+\Require Caller contract \(C_u\), algorithm \(a\), typed input \(p\), block height \(b\), gas budget \(g\)
+\Ensure ABI-encoded result \(y\) or error \(\perp\)
+\State \(x\gets\operatorname{ABIEnc}_{\tau^{\mathrm{in}}_a}(p)\)
+\State \(d\gets\operatorname{ABIEnc}_{\texttt{callFunc(string,bytes)}}(a,x)\)
+\State \(C_u\) issues \(\operatorname{STATICCALL}(A_{\mathrm{CS}},d,g)\)
+\If{\(\operatorname{Route}(A_{\mathrm{CS}},d)=\operatorname{EVM}\)}
+    \State continue through ordinary EVM dispatch
+\ElsIf{\(\operatorname{Route}(A_{\mathrm{CS}},d)=\operatorname{CodeStorage}\)}
+    \State continue through CodeStorage metadata or management dispatch
+\Else
+    \If{\(\operatorname{ParseCall}(d)\) fails}
+        \State return \(\perp_{\mathrm{abi}}\)
+    \Else
+        \State \((a,x)\gets\operatorname{ParseCall}(d)\); normalize \(a\)
+        \State \(v\gets V_i^\star(a,b)\)
+        \If{\(v=\bot\) or \((a,v)\notin\mathcal{P}_i\)}
+            \State return \(\perp_{\mathrm{missing}}\)
+        \ElsIf{\(g<G_{a,v}(x)\)}
+            \State return \(\perp_{\mathrm{oog}}\)
+        \Else
+            \State charge deterministic gas \(G_{a,v}(x)\)
+            \State \(y\gets\operatorname{RunWASM}_i(a,v,x)\)
+            \State return \(y\) to \(C_u\), or \(\perp_{\mathrm{runtime}}\) if execution fails
+        \EndIf
+    \EndIf
+\EndIf
+\end{algorithmic}
+\end{algorithm}
 
 \section{Security Analysis}\label{sec4}
 
-\subsection{Threat Model}\label{sec4.1}
-The threat model covers risks introduced by dynamic cryptographic algorithm loading. An attacker may submit a malformed or malicious WASM module, provide metadata that does not match the uploaded artifact, attempt to consume excessive CPU, memory, storage, calldata, or block gas, or exploit nodes that prepare an upgrade more slowly than others. The analysis also considers erroneous upgrade artifacts and local preparation failures. We do not model a compromised Geth binary, a broken consensus protocol, or cryptographic primitives whose mathematical security assumptions are false.
+\subsection{Attack Circumstances}\label{sec4.1}
+The security analysis focuses on attack circumstances introduced by cryptographic algorithms that are upgraded at runtime and invoked from contracts. The attacker may influence uploaded artifacts, metadata fields, transaction inputs, and the timing pressure around node-local upgrade preparation. We also consider erroneous upgrade artifacts and local preparation failures because they can lead to the same safety outcomes as adversarial inputs. The analysis does not model a compromised Geth binary, a broken consensus protocol, or cryptographic primitives whose mathematical assumptions are false.
 
-\subsection{Execution Isolation}\label{sec4.2}
-WASM narrows the execution boundary compared with a process-local plugin or shared-library interface. The module runs inside a WASM Runtime with linear memory, explicit exports, and validated imports. In the prototype, modules are invoked through a fixed \texttt{execute} export, and imported memories or unauthorized host imports are rejected. This design reduces direct access from the algorithm module to Geth process memory, local files, system networking, and host functions that are not explicitly exposed.
+\noindent\textbf{Malicious or malformed WASM artifacts.}
+An attacker may submit a WASM module that is malformed, omits the required entry point, imports unauthorized host functions, declares unsafe memory behavior, or attempts to exploit the WASM runtime boundary. This scenario targets execution isolation: the module is dynamically supplied after client deployment, so the client cannot rely on source-level review or static compilation into the Geth binary.
 
-The isolation claim is intentionally bounded. WASM sandboxing reduces the trusted boundary of dynamically loaded algorithm code, but it is not presented here as a formal proof of security for all runtimes, compiler toolchains, or host configurations. A production deployment would need additional hardening, including stronger artifact admission policies, runtime diversity testing, reproducible builds, and governance rules for approving cryptographic modules.
+\noindent\textbf{Inconsistent upgrade metadata.}
+An attacker or faulty proposer may publish metadata whose version, Activation Block, gas parameters, ABI type descriptors, event projection, or encoded artifact are inconsistent with the intended upgrade. Such inconsistencies can cause version confusion, incorrect ABI decoding, incorrect gas charging, or preparation of an artifact that does not correspond to the version later selected during EVM execution.
 
-\subsection{Resource Abuse}\label{sec4.3}
-Dynamic algorithm loading creates resource-abuse risks. A module may be large, slow to compile, memory intensive, or designed to run for a long time. A low gas setting could underprice an expensive cryptographic operation, causing denial-of-service (DoS) pressure on the execution client. Large uploaded artifacts may also increase calldata, storage, propagation, and data-availability pressure.
+\noindent\textbf{Resource-exhaustion attempts.}
+Dynamic algorithm loading creates denial-of-service risks. A module may be large, slow to compile, memory intensive, or designed to run for a long time. A low gas setting may underprice an expensive cryptographic operation, and large uploaded artifacts may increase calldata, storage, propagation, and data-availability pressure.
 
-The design addresses these risks by keeping gas accounting deterministic, bounding module memory, applying an execution budget, validating imports and required exports, and separating module preparation from the upgrade transaction's EVM execution path. These measures reduce the immediate attack surface, but they do not fully solve economic pricing. The current prototype gas values are experimental parameters, and future work must calibrate gas pricing against execution cost, storage cost, calldata cost, and data availability cost.
+\noindent\textbf{Asynchronous readiness divergence.}
+Nodes may observe the same on-chain upgrade event but complete WASM validation, compilation, instantiation, and local persistence at different wall-clock times. A node may also fail to prepare the required artifact. If local readiness time or local wall-clock time were used for version selection, nodes executing the same block could resolve the same contract-facing call to different algorithm implementations.
 
-\subsection{Upgrade Consistency}\label{sec4.4}
-Upgrade consistency is treated as a security property of the protocol. The WASM hash identifies the artifact, on-chain metadata identifies the target version and activation height, and the Activation Block defines the common version-switching boundary. Because local wall-clock time and local readiness time are not used for version selection, nodes with the same chain view use the same version rule for a given block height.
+\subsection{Security Solutions}\label{sec4.2}
+The proposed coprocessor addresses these attack circumstances through sandboxed WASM execution, authoritative metadata recovery, deterministic resource accounting, and Activation-Block-based version selection. These controls reduce the security boundary exposed by dynamic upgrades, but they are not a formal proof of security for all runtimes, compiler toolchains, governance processes, or deployment configurations.
 
-This paper does not set up a separate consistency experiment. The consistency discussion therefore remains a protocol analysis: deterministic activation defines the intended version boundary, but it is not reported here as node-level evidence for state-root equality, arbitrary network safety, or fail-stop behavior under injected unprepared-node failures. The design requirement remains that an unprepared node must reject the required new-version execution rather than silently continue with the obsolete implementation.
+\noindent\textbf{Sandboxed WASM execution.}
+WASM narrows the execution boundary compared with a process-local plugin or shared-library interface. The module runs inside a WASM Runtime with linear memory, explicit exports, and validated imports. In the prototype, modules are invoked through a fixed \texttt{execute} export, and imported memories or unauthorized host imports are rejected. This design reduces direct access from the algorithm module to Geth process memory, local files, system networking, and host functions that are not explicitly exposed. A production deployment would still require stronger artifact admission policies, runtime diversity testing, reproducible builds, and governance rules for approving cryptographic modules.
+
+\noindent\textbf{Authoritative metadata recovery.}
+The Management Contract is treated as the authoritative source of upgrade metadata. The emitted event is used as a notification and index, while the Event Listener recovers the full metadata through \texttt{getVersionInfo} and checks the observed event fields against the contract state. The decoded WASM bytes are hashed locally and bound to the prepared version metadata, and the ABI descriptors determine how inputs and outputs are decoded and encoded. This binding reduces the risk that a node prepares an artifact or ABI interface different from the version selected during execution.
+
+\noindent\textbf{Deterministic resource accounting.}
+The design addresses resource abuse by keeping gas accounting deterministic, bounding module memory, applying an execution budget, validating imports and required exports, and separating module preparation from the upgrade transaction's EVM execution path. These measures reduce the immediate attack surface of dynamic loading. They do not fully solve economic pricing: the current prototype gas values are experimental parameters, and future work must calibrate gas pricing against execution cost, storage cost, calldata cost, and data availability cost.
+
+\noindent\textbf{Fail-closed deterministic activation.}
+Upgrade consistency is treated as a protocol security property. The Activation Block defines a chain-derived version-switching boundary, and version selection depends on the execution block height rather than local wall-clock time or local readiness time. Therefore, nodes with the same chain view apply the same version-selection rule for a given block height. At execution time, a node that has not prepared the selected version must reject the required new-version call instead of silently falling back to an obsolete implementation. This paper does not set up a separate consistency experiment; the claim remains a protocol analysis rather than node-level evidence for state-root equality, arbitrary network safety, or fail-stop behavior under injected unprepared-node failures.
 
 \section{Evaluation}\label{sec5}
 
-The evaluation asks whether the proposed coprocessor can be used as a practical execution path for upgradable contract-facing cryptographic algorithms. Following the target outline, we focus on upgrade efficiency and execution efficiency. Upgrade consistency is discussed as a protocol security property in Section~\ref{sec4.4} and is not set up as a separate experiment.
+The evaluation asks whether the proposed coprocessor can be used as a practical execution path for upgradable contract-facing cryptographic algorithms. Following the target outline, we focus on upgrade efficiency and execution efficiency. Upgrade consistency is discussed as a protocol security property in Section~\ref{sec4.2} and is not set up as a separate experiment.
+
+The prototype used in these experiments was implemented in Geth by adding the CodeStorage interface, EVM call recognition for the Management Contract entry point, the Cryptographic Coprocessor dispatcher, the activation service, version metadata storage, and the WASM Runtime path. The invocation path recognizes CodeStorage calls, calculates required gas from the registered metadata, parses the outer ABI envelope, selects the applicable algorithm version for the execution block height, passes the inner ABI-encoded input to the selected WASM module, and returns its ABI-encoded output to the EVM.
+
+The upgrade path is event-driven. \texttt{uploadCode} supports the legacy unversioned path, while \texttt{uploadCodeVersion} carries version and activation metadata. The Event Listener observes the emitted upgrade event, and the activation service decodes the uploaded WASM artifact, computes its hash, records runtime metadata, compiles and instantiates the module through the WASM Runtime, and persists the prepared-version metadata. The WASM Runtime uses a memory limit, an execution budget, import validation, and an \texttt{execute} export check. These checks define implementation safeguards for the evaluated prototype boundary, not a substitute for a complete production security policy.
 
 \subsection{Experimental Setup}\label{sec5.1}
 The experiments were run on a Geth-based private chain on Ubuntu 24.04. For the multi-node experiments, we used a five-node Clique network with one signer and four observer nodes, a block period of 5 s, and network identifier 11223344. The current experiment ledger does not record the host CPU, memory, storage device, or exact prototype commit; these metadata remain TODO for reproducibility reporting. Although 2-node and 10-node network configurations exist in the repository, the formal paper data used here come from the five-node setting and should not be described as a completed scale-out comparison.
 
 The evaluation covers seven algorithms: Add, Sha256, Blake2bSum256, Pbkdf2Sha256, Dh2048Secret, PedersenCommit, and SchnorrVerify. Add is a non-cryptographic baseline, whereas the remaining algorithms exercise hash functions, password-based key derivation, key exchange, commitments, and signature verification. For upgrade efficiency, a node is counted as complete only when its RPC endpoint returns the expected output from \texttt{CodeStorage.callFunc}. For execution efficiency, we compare three paths after setup has completed: WASM-backed Upgrade through CodeStorage, client-native Precompile, and Solidity Contract. We report \texttt{eth\_call} latency and \texttt{gasEstimate}; \texttt{gasEstimate} is obtained from \texttt{eth\_estimateGas} and is not receipt \texttt{gasUsed}.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{../image/wasm-rerun/figure_wasm_evaluation.pdf}
-\caption{WASM rerun results used in the Evaluation section. Panel a reports five-node upgrade completion latency and post-event readiness tails. Panels b and c compare \texttt{eth\_call} latency and \texttt{eth\_estimateGas} for the WASM-backed Upgrade, Solidity Contract, and Precompile paths after setup. Upgrade consistency is not plotted or reported as a separate experiment.}
-\label{fig:wasm-evaluation}
-\end{figure}
-
 \subsection{Upgrade Efficiency}\label{sec5.2}
 The upgrade-efficiency experiment measured the control-plane time from submitting a WASM upgrade transaction to the point at which all five target nodes could call the uploaded algorithm successfully. The measured timeline included transaction hash observation, sender receipt observation, receipt-derived event observation, node-level \texttt{callFunc} completion, and all-node completion. It is intentionally end-to-end and externally observable, including RPC round trips and polling intervals; it should not be read as a precise decomposition of internal WASM compilation time.
 
-Figure~\ref{fig:wasm-evaluation}a shows the latency breakdown for the seven algorithms in the WASM rerun reported here. Across the five-node Clique experiments, the total submit-to-all-complete latency ranged from 4.857 s for Pbkdf2Sha256 to 5.342 s for SchnorrVerify, with a mean of 5.022 s. The sender observed a successful transaction receipt after roughly one 5 s block interval, whereas the post-event readiness tail ranged from 3.258 ms for Add to 287.298 ms for SchnorrVerify. These results support the intended separation between on-chain upgrade publication and node-local preparation. The upgrade transaction completed before all nodes became callable, indicating that WASM artifact verification, compilation, export checking, and instantiation were outside the EVM execution path of that transaction.
+The latency breakdown for the seven algorithms in the WASM rerun reported here is as follows. Across the five-node Clique experiments, the total submit-to-all-complete latency ranged from 4.857 s for Pbkdf2Sha256 to 5.342 s for SchnorrVerify, with a mean of 5.022 s. The sender observed a successful transaction receipt after roughly one 5 s block interval, whereas the post-event readiness tail ranged from 3.258 ms for Add to 287.298 ms for SchnorrVerify. These results support the intended separation between on-chain upgrade publication and node-local preparation. The upgrade transaction completed before all nodes became callable, indicating that WASM artifact verification, compilation, export checking, and instantiation were outside the EVM execution path of that transaction.
 
-We also measured the upload cost of the event-bearing upgrade transaction and compared it with Solidity contract deployment for Add and Blake2bSum256 (Figure~\ref{fig:lab1-deployment-cost}). This auxiliary experiment measures total transaction-level setup cost; it does not isolate event-log gas from storage and calldata costs. For Add, the upgrade upload used 85,612 gas, compared with 60,918 gas for the minimal Solidity deployment, and the mean receipt latency was 1.71 s versus 1.01 s. For Blake2bSum256, the upgrade upload used 87,180 gas, whereas the Solidity deployment used 852,059 gas; the corresponding mean receipt latencies were 1.71 s and 1.01 s. Precompiled Contracts have no deployment transaction in this comparison because they are already built into the client. Because this auxiliary cost experiment covers only Add and Blake2bSum256, we do not generalize the deployment-cost trend to all algorithms.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{../image/lab1-upgrade-latency-availability/lab1_deployment_upgrade_cost.pdf}
-\caption{Upload and deployment cost for the auxiliary Lab1 cost experiment. The upgrade path uses \texttt{CodeStorage.uploadCode} and emits an upgrade event, whereas the Contract path deploys a Solidity implementation. The figure reports total transaction-level setup cost, not an isolated event-log gas component.}
-\label{fig:lab1-deployment-cost}
-\end{figure}
+We also measured the upload cost of the event-bearing upgrade transaction and compared it with Solidity contract deployment for Add and Blake2bSum256. This auxiliary experiment measures total transaction-level setup cost; it does not isolate event-log gas from storage and calldata costs. For Add, the upgrade upload used 85,612 gas, compared with 60,918 gas for the minimal Solidity deployment, and the mean receipt latency was 1.71 s versus 1.01 s. For Blake2bSum256, the upgrade upload used 87,180 gas, whereas the Solidity deployment used 852,059 gas; the corresponding mean receipt latencies were 1.71 s and 1.01 s. Precompiled Contracts have no deployment transaction in this comparison because they are already built into the client. Because this auxiliary cost experiment covers only Add and Blake2bSum256, we do not generalize the deployment-cost trend to all algorithms.
 
 The present upgrade-efficiency experiment does not measure the latency, throughput, transaction success rate, or longest block interval of unrelated EVM transactions during the preparation window. Those availability-oriented measurements require a concurrent workload between receipt observation and all-node callable completion and are left for future work.
 
 \subsection{Execution Efficiency}\label{sec5.3}
 The execution-efficiency experiment evaluated whether the WASM-backed dynamic upgrade mechanism adds substantial overhead after an algorithm has already been prepared. Each algorithm was measured with 10 warm-up calls and 100 formal \texttt{eth\_call} samples for each implementation path. The comparison therefore concerns steady-state invocation cost, not setup or upload latency.
 
-Figure~\ref{fig:wasm-evaluation}b compares mean \texttt{eth\_call} latency across Upgrade, Precompile, and Contract paths. The WASM-backed Upgrade path remained in the same millisecond-scale range as the Precompile path for six of the seven evaluated algorithms: Add, Sha256, Blake2bSum256, Pbkdf2Sha256, Dh2048Secret, and PedersenCommit ranged from 1.002 to 1.876 ms through Upgrade, compared with 0.868 to 1.013 ms through Precompile for the corresponding cases. The same data also expose an important limitation: SchnorrVerify took 188.600 ms through Upgrade, compared with 1.946 ms through Precompile and 6.425 ms through Contract. These observations support the main performance claim only in a bounded form: dynamically loaded WASM algorithms retain performance comparable to Precompiled Contracts for most evaluated benchmarks, but the SchnorrVerify tail shows that module implementation and runtime behavior can dominate the invocation cost.
+Mean \texttt{eth\_call} latency across Upgrade, Precompile, and Contract paths compares as follows. The WASM-backed Upgrade path remained in the same millisecond-scale range as the Precompile path for six of the seven evaluated algorithms: Add, Sha256, Blake2bSum256, Pbkdf2Sha256, Dh2048Secret, and PedersenCommit ranged from 1.002 to 1.876 ms through Upgrade, compared with 0.868 to 1.013 ms through Precompile for the corresponding cases. The same data also expose an important limitation: SchnorrVerify took 188.600 ms through Upgrade, compared with 1.946 ms through Precompile and 6.425 ms through Contract. These observations support the main performance claim only in a bounded form: dynamically loaded WASM algorithms retain performance comparable to Precompiled Contracts for most evaluated benchmarks, but the SchnorrVerify tail shows that module implementation and runtime behavior can dominate the invocation cost.
 
-Figure~\ref{fig:wasm-evaluation}c reports \texttt{gasEstimate} for the same calls. Upgrade and Precompile had similar gas estimates under the prototype pricing model for the evaluated WASM and Precompile paths. For Sha256, the estimates were 25,801 gas for Upgrade and 25,156 gas for Precompile; for Blake2bSum256, the same two values were observed. For complex Solidity implementations, the Contract path incurred substantially larger estimates: PedersenCommit required 853,145 gas compared with 225,695 gas for Upgrade, and SchnorrVerify required 2,301,691 gas compared with 229,437 gas for Upgrade. These gas numbers should be interpreted only as the current prototype's pricing results from \texttt{eth\_estimateGas}. They do not prove that the proposed architecture has inherently lower economic cost than official Ethereum precompile pricing, and they are not receipt-level \texttt{gasUsed} measurements.
+The \texttt{gasEstimate} for the same calls is reported below. Upgrade and Precompile had similar gas estimates under the prototype pricing model for the evaluated WASM and Precompile paths. For Sha256, the estimates were 25,801 gas for Upgrade and 25,156 gas for Precompile; for Blake2bSum256, the same two values were observed. For complex Solidity implementations, the Contract path incurred substantially larger estimates: PedersenCommit required 853,145 gas compared with 225,695 gas for Upgrade, and SchnorrVerify required 2,301,691 gas compared with 229,437 gas for Upgrade. These gas numbers should be interpreted only as the current prototype's pricing results from \texttt{eth\_estimateGas}. They do not prove that the proposed architecture has inherently lower economic cost than official Ethereum precompile pricing, and they are not receipt-level \texttt{gasUsed} measurements.
 
 \section{Related Work}\label{sec6}
 
-This work is related to EVM cryptographic extension mechanisms, blockchain runtime upgrades, and WASM execution in blockchain systems. We organize prior work by mechanism, because the main distinction is where the upgrade boundary is placed and how deterministic execution is preserved.
+% 区块链升级方案
+Existing blockchain upgrade schemes primarily replace code at the protocol or client level, where a coordinated version transition preserves a common execution rule across nodes. Cardano's hard-fork combinator moves the chain between protocol eras at designated upgrade points, while work on updatable blockchains studies synchronization between old and new chains \cite{cardanoHardForkCombinator,cardanoEvolution,ciampi2020updatable}. Soft-fork approaches instead place selected policy changes within rules that can be adopted without replacing the entire protocol \cite{zindros2021softPower}. Phoenix extends this direction by embedding upgrade code in blockchain transactions and compiling it at runtime. Polkadot stores WASM-based runtime logic on chain and activates governance-approved replacements during block synchronization \cite{wang2023phoenix,polkadotRuntimeUpgrades}. These approaches support chain-wide or client-wide evolution, but they require protocol coordination and place the replacement boundary across a substantial portion of system execution.
 
-\subsection{EVM Cryptographic Extensions}\label{sec6.1}
-Ethereum's EVM provides a deterministic bytecode execution environment for smart contracts, and gas prices the resources consumed by this execution \cite{woodEthereumYellowPaper,ethereumEVM}. Contract-level cryptographic implementations inherit the deployability of Solidity but also inherit EVM instruction-level overhead. Precompiled Contracts expose selected native routines through reserved EVM-facing addresses, giving smart contracts access to efficient client-side implementations for specific algorithms \cite{evmCodesPrecompiled,eip196,eip197}. Existing precompiles therefore demonstrate the value of native cryptographic execution, but they also illustrate the rigidity of tying algorithm availability and pricing to client and protocol changes.
+% 合约升级
+Contract-level schemes update application logic without replacing the entire blockchain client, using deployable contracts, proxy indirection, or bytecode rewriting. EVMPatch automatically patches deployed Ethereum smart contracts through bytecode rewriting and proxy-based deployment, while Solidity implementations offer application-level flexibility within the EVM \cite{rodler2021evmpatch,ethereumEVM}. LEAGAN further extends contract-level upgradeability through data separation, incremental hashing, revision control, and status-contract-based version management, enabling contract logic to evolve while preserving persistent state and supporting non-halt deployment \cite{kumar2025leagan}.Precompiled Contracts provide a complementary client-native path for selected cryptographic routines through reserved EVM-facing addresses \cite{evmCodesPrecompiled,eip196,eip197}. These mechanisms avoid some forms of client redeployment. Contract-level implementations remain constrained by EVM execution cost and state or interface compatibility, whereas adding or replacing a Precompiled Contract normally requires changes to client and protocol rules.
 
-The Cryptographic Coprocessor targets this gap. It does not replace existing precompiles or change the semantics of ordinary EVM bytecode execution. Instead, it introduces a controlled client-side boundary for contract-facing cryptographic algorithms whose implementations are supplied as WASM modules and selected by version metadata.
 
-\subsection{Blockchain Runtime Upgrades}\label{sec6.2}
-General DSU research studies how running systems can change components while preserving service continuity. KylinX uses dynamic library operating-system techniques for runtime library replacement, Mvedsua combines dynamic update with multi-version execution, PYLIVE supports on-the-fly code changes for Python services, and distributed update work has studied modular upgrades and version consistency across components \cite{zhang2018kylinx,pina2019mvedsua,huang2021pylive,ajmani2006modular,baresi2017versionConsistency}. These systems provide useful concepts, but they do not directly address the blockchain requirement that independently executing nodes must choose the same semantics for the same block height.
 
-Blockchain-specific upgrade mechanisms add this determinism requirement. Cardano's hard-fork-combinator documentation describes protocol-era transitions at designated upgrade points \cite{cardanoHardForkCombinator,cardanoEvolution}. Updatable-blockchain work studies synchronization across old and new chains \cite{ciampi2020updatable}. Zindros examines soft-fork-based policy upgrades \cite{zindros2021softPower}. Phoenix embeds upgrade code in blockchain transactions for a live-upgradable blockchain client \cite{wang2023phoenix}. EVMPatch automatically patches deployed smart contracts through bytecode rewriting and proxy-based deployment \cite{rodler2021evmpatch}. These mechanisms cover protocol upgrades, client-wide upgrade, policy update, and contract patching. The coprocessor is narrower: it upgrades contract-facing cryptographic algorithm implementations behind a stable EVM-facing interface.
-
-\subsection{WebAssembly Execution}\label{sec6.3}
-WASM has become an attractive execution substrate for blockchain systems because it provides a portable bytecode format, explicit host interfaces, and efficient runtime execution \cite{webassemblyCoreSpec}. Polkadot uses a WASM-based runtime upgrade path in which chain logic can be stored and updated through on-chain governance \cite{polkadotRuntimeUpgrades}. That approach shows the usefulness of WASM for upgradeable blockchain execution, but its scope is broad runtime logic rather than a specific class of EVM-facing cryptographic functions.
-
-The coprocessor uses WASM at a smaller boundary. A WASM module represents a cryptographic algorithm implementation, while the EVM-facing call shape and chain-level version-selection rule remain stable. This gives the prototype a uniform module payload and a controlled runtime boundary, but it does not by itself prove cross-platform determinism or sandbox security for every runtime. Those properties remain engineering and governance concerns for future deployments.
+% 动态升级
+Dynamic software-update schemes move replacement below the application layer by loading new components into a running host, with emphasis on availability, version compatibility, or isolation. KylinX supports runtime library replacement through dynamic mapping, Mvedsua combines dynamic updates with multi-version execution, PYLIVE changes Python code online, and distributed-system research addresses modular updates and version consistency \cite{zhang2018kylinx,pina2019mvedsua,huang2021pylive,ajmani2006modular,baresi2017versionConsistency}. WASM provides a portable artifact format and explicit host boundary for this style of replacement. In blockchain systems, existing WASM-based upgrades generally target broad runtime logic rather than a narrow EVM-facing cryptographic interface \cite{webassemblyCoreSpec,polkadotRuntimeUpgrades}. The Cryptographic Coprocessor addresses this narrower boundary by keeping the EVM-facing call interface stable, preparing replaceable WASM modules asynchronously, and selecting versions through chain-derived metadata and an Activation Block.
 
 \section{Conclusion}\label{sec7}
 

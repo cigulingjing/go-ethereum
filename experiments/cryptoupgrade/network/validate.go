@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -13,7 +14,8 @@ import (
 
 // ValidateOptions 控制多节点网络验证行为。
 type ValidateOptions struct {
-	Timeout time.Duration
+	Timeout      time.Duration
+	MinPeerCount int
 }
 
 // ValidationResult 是多节点网络验证的机器可读结果。
@@ -21,6 +23,7 @@ type ValidationResult struct {
 	ConfigPath        string           `json:"configPath"`
 	ChainID           uint64           `json:"chainId"`
 	ExpectedPeerCount int              `json:"expectedPeerCount"`
+	MinimumPeerCount  int              `json:"minimumPeerCount"`
 	Nodes             []NodeValidation `json:"nodes"`
 	OK                bool             `json:"ok"`
 }
@@ -47,11 +50,21 @@ func ValidateNetwork(ctx context.Context, cfg *Config, opts ValidateOptions) (*V
 		ConfigPath:        cfg.ConfigPath(),
 		ChainID:           cfg.Network.ChainID,
 		ExpectedPeerCount: max(0, len(cfg.Nodes)-1),
+		MinimumPeerCount:  requiredPeerCount(len(cfg.Nodes), opts.MinPeerCount),
 		OK:                true,
 	}
 	wait := time.Duration(cfg.Consensus.Period+1) * time.Second
-	for _, node := range cfg.Nodes {
-		nr := validateNode(ctx, cfg, node, wait)
+	results := make([]NodeValidation, len(cfg.Nodes))
+	var wg sync.WaitGroup
+	for i, node := range cfg.Nodes {
+		wg.Add(1)
+		go func(i int, node NodeConfig) {
+			defer wg.Done()
+			results[i] = validateNode(ctx, cfg, node, wait, result.MinimumPeerCount)
+		}(i, node)
+	}
+	wg.Wait()
+	for _, nr := range results {
 		if nr.Error != "" {
 			result.OK = false
 		}
@@ -68,7 +81,26 @@ func RPCURL(node NodeConfig) string {
 	return fmt.Sprintf("http://127.0.0.1:%d", node.HTTPHostPort)
 }
 
-func validateNode(ctx context.Context, cfg *Config, node NodeConfig, wait time.Duration) NodeValidation {
+func validateNode(ctx context.Context, cfg *Config, node NodeConfig, wait time.Duration, minPeerCount int) NodeValidation {
+	var last NodeValidation
+	for {
+		result := validateNodeOnce(ctx, cfg, node, wait, minPeerCount)
+		if result.Error == "" {
+			return result
+		}
+		last = result
+		select {
+		case <-ctx.Done():
+			if last.Error == "" {
+				last.Error = ctx.Err().Error()
+			}
+			return last
+		case <-time.After(500 * time.Millisecond):
+		}
+	}
+}
+
+func validateNodeOnce(ctx context.Context, cfg *Config, node NodeConfig, wait time.Duration, minPeerCount int) NodeValidation {
 	rpcURL := RPCURL(node)
 	out := NodeValidation{ID: node.ID, Role: node.Role, RPCURL: rpcURL}
 	client, err := rpc.DialContext(ctx, rpcURL)
@@ -99,7 +131,14 @@ func validateNode(ctx context.Context, cfg *Config, node NodeConfig, wait time.D
 		return out
 	}
 	out.StartBlock = uint64(start)
-	time.Sleep(wait)
+	timer := time.NewTimer(wait)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		out.Error = ctx.Err().Error()
+		return out
+	case <-timer.C:
+	}
 	var end hexutil.Uint64
 	if err := client.CallContext(ctx, &end, "eth_blockNumber"); err != nil {
 		out.Error = err.Error()
@@ -112,8 +151,13 @@ func validateNode(ctx context.Context, cfg *Config, node NodeConfig, wait time.D
 			out.Signers = append(out.Signers, signer.Hex())
 		}
 	}
-	if int(out.PeerCount) < max(0, len(cfg.Nodes)-1) {
-		out.Error = fmt.Sprintf("peer count too low: want >= %d got %d", max(0, len(cfg.Nodes)-1), out.PeerCount)
+	if err := client.CallContext(ctx, &peerCount, "net_peerCount"); err != nil {
+		out.Error = err.Error()
+		return out
+	}
+	out.PeerCount = uint64(peerCount)
+	if int(out.PeerCount) < minPeerCount {
+		out.Error = fmt.Sprintf("peer count too low: want >= %d got %d", minPeerCount, out.PeerCount)
 		return out
 	}
 	if out.EndBlock <= out.StartBlock {
@@ -121,4 +165,15 @@ func validateNode(ctx context.Context, cfg *Config, node NodeConfig, wait time.D
 		return out
 	}
 	return out
+}
+
+func requiredPeerCount(nodeCount, minPeerCount int) int {
+	fullPeerCount := max(0, nodeCount-1)
+	if minPeerCount <= 0 {
+		return fullPeerCount
+	}
+	if minPeerCount > fullPeerCount {
+		return fullPeerCount
+	}
+	return minPeerCount
 }

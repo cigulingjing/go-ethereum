@@ -30,6 +30,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types/bal"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/stagelog"
 	"github.com/ethereum/go-ethereum/internal/telemetry"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/trie"
@@ -219,6 +220,15 @@ func PostExecution(ctx context.Context, config *params.ChainConfig, number *big.
 // and uses the input parameters for its environment similar to ApplyTransaction. However,
 // this method takes an already created EVM instance as input.
 func ApplyTransactionWithEVM(msg *Message, gp *GasPool, statedb *state.StateDB, blockNumber *big.Int, blockHash common.Hash, blockTime uint64, tx *types.Transaction, evm *vm.EVM) (receipt *types.Receipt, bal *bal.ConstructionBlockAccessList, err error) {
+	if stagelog.Enabled() {
+		previous := evm.CryptoUpgradeContext
+		fields := stagelog.Fields{"txHash": tx.Hash().Hex(), "blockNumber": blockNumber.Uint64(), "phase": "transaction_execution"}
+		if blockHash != (common.Hash{}) {
+			fields["blockHash"] = blockHash.Hex()
+		}
+		evm.CryptoUpgradeContext = stagelog.With(nil, fields)
+		defer func() { evm.CryptoUpgradeContext = previous }()
+	}
 	if hooks := evm.Config.Tracer; hooks != nil {
 		if hooks.OnTxStart != nil {
 			hooks.OnTxStart(evm.GetVMContext(), tx, msg.From)

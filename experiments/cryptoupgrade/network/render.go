@@ -37,10 +37,13 @@ type NodeArtifact struct {
 }
 
 // Render 生成 genesis、static peers、节点目录、启动脚本和 compose 文件。
-// @file 生成文件放置在 build/cryptoupgrade-networks/ 目录下。
+// @file 生成文件默认放置在 experiments/cryptoupgrade/deployments/nodes/ 目录下。
 func Render(cfg *Config, opts RenderOptions) (*Artifacts, error) {
+	if opts.OutputDir == "" && cfg.Local != nil {
+		opts.OutputDir = cfg.Local.OutputDir
+	}
 	if opts.OutputDir == "" {
-		opts.OutputDir = filepath.Join("build", "cryptoupgrade-networks", cfg.Network.Name)
+		opts.OutputDir = filepath.Join("experiments", "cryptoupgrade", "deployments", "nodes")
 	}
 	if opts.Geth == "" {
 		opts.Geth = "geth"
@@ -65,11 +68,6 @@ func Render(cfg *Config, opts RenderOptions) (*Artifacts, error) {
 		return nil, err
 	}
 	configPath := filepath.Join(outDir, "network.yaml")
-	if cfg.ConfigPath() != "" {
-		if err := writeConfigSnapshot(cfg, configPath); err != nil {
-			return nil, err
-		}
-	}
 	staticPeers, err := StaticPeers(cfg)
 	if err != nil {
 		return nil, err
@@ -82,7 +80,7 @@ func Render(cfg *Config, opts RenderOptions) (*Artifacts, error) {
 		StaticPeers: staticPeers,
 	}
 	for _, node := range cfg.Nodes {
-		nodeRoot := filepath.Join(outDir, "nodes", node.ID)
+		nodeRoot := filepath.Join(outDir, node.ID)
 		datadir := filepath.Join(nodeRoot, "datadir")
 		pluginDir := filepath.Join(nodeRoot, "plugin")
 		if err := os.MkdirAll(datadir, 0755); err != nil {
@@ -103,21 +101,25 @@ func Render(cfg *Config, opts RenderOptions) (*Artifacts, error) {
 		if err := os.WriteFile(gethConfigPath, []byte(gethConfigTOML(staticPeers[node.ID])), 0644); err != nil {
 			return nil, err
 		}
-		if err := copyOptionalFile(node.NodeKey, filepath.Join(nodeRoot, "nodekey"), 0600); err != nil {
+		if node.generatedKey != "" {
+			if err := os.WriteFile(filepath.Join(nodeRoot, "nodekey"), []byte(node.generatedKey+"\n"), 0600); err != nil {
+				return nil, err
+			}
+		} else if err := copyOptionalFile(node.NodeKey, filepath.Join(nodeRoot, "nodekey"), 0600); err != nil {
 			return nil, err
 		}
-		if node.Keystore != "" {
-			if err := copyKeystore(node.Keystore, filepath.Join(datadir, "keystore")); err != nil {
-				return nil, err
+		if node.Role == "signer" {
+			switch {
+			case node.PrivateKey != "":
+				if err := importSignerKeystore(node.PrivateKey, node.Password, datadir); err != nil {
+					return nil, err
+				}
+			case node.Keystore != "":
+				if err := copyKeystore(node.Keystore, filepath.Join(datadir, "keystore")); err != nil {
+					return nil, err
+				}
 			}
-		}
-		if node.Password != "" {
-			if err := copyOptionalFile(node.Password, filepath.Join(nodeRoot, "password.txt"), 0600); err != nil {
-				return nil, err
-			}
-		}
-		if _, err := os.Stat(filepath.Join(nodeRoot, "password.txt")); os.IsNotExist(err) {
-			if err := os.WriteFile(filepath.Join(nodeRoot, "password.txt"), nil, 0600); err != nil {
+			if err := os.WriteFile(filepath.Join(nodeRoot, "password.txt"), []byte(node.Password), 0600); err != nil {
 				return nil, err
 			}
 		}
@@ -133,6 +135,9 @@ func Render(cfg *Config, opts RenderOptions) (*Artifacts, error) {
 			StaticPeersPath: staticPath,
 			StartScript:     startScript,
 		})
+	}
+	if err := writeConfigSnapshot(cfg, configPath); err != nil {
+		return nil, err
 	}
 	compose, err := ComposeYAML(cfg)
 	if err != nil {
@@ -153,8 +158,22 @@ func Render(cfg *Config, opts RenderOptions) (*Artifacts, error) {
 
 func writeConfigSnapshot(cfg *Config, path string) error {
 	// Render 输出目录与源 YAML 不同，直接复制相对路径会让快照再次加载时指向错误位置。
-	// 写入已经归一化的配置，保证 addSource、keystore 和 nodekey 等输入仍可复现。
-	raw, err := yaml.Marshal(cfg)
+	// 快照记录实际部署目录与复制后的节点资源，避免 -out 覆盖后 benchmark 仍访问源目录。
+	snapshot := *cfg
+	snapshot.Local = nil
+	snapshot.Nodes = append([]NodeConfig(nil), cfg.Nodes...)
+	for i := range snapshot.Nodes {
+		node := &snapshot.Nodes[i]
+		root := filepath.Join(filepath.Dir(path), node.ID)
+		node.Datadir = filepath.Join(root, "datadir")
+		node.PluginDir = filepath.Join(root, "plugin")
+		node.NodeKey = filepath.Join(root, "nodekey")
+		if node.PrivateKey != "" || node.Keystore != "" {
+			node.Keystore = filepath.Join(node.Datadir, "keystore")
+		}
+		node.PrivateKey = ""
+	}
+	raw, err := yaml.Marshal(&snapshot)
 	if err != nil {
 		return fmt.Errorf("marshal normalized network config: %w", err)
 	}

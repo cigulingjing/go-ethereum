@@ -2,5 +2,13 @@
 
 build/_workspace
 build/_bin
+build/bin
 build/cryptoupgrade-networks
+experiments/cryptoupgrade/deployments/nodes
+experiments/cryptoupgrade/deployments/docker-check
 tests/testdata
+
+.git
+cryptoupgrade/results
+experiments/cryptoupgrade/results
+paper

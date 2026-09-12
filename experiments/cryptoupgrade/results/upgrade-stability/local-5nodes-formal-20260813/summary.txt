@@ -1,8 +1,0 @@
-experiment=multi-node-upgrade-stability change=lab3-upgrade-stability completed=true rounds=4/4
-round=1 mode=scheduled tx=0xeaf8a817295aa254cd1c774f63cd9578358ceb768fb3e3980dfe0ad207666caa completed=true
-round=2 mode=immediate tx=0x90d073678e99afdb2ce3baca31a08438dde6fcd07d2057a4948d9c2f66c9059c completed=true
-round=3 mode=scheduled tx=0xa77690c8090ec78c90a77dfdce5068b891a0cd1f7e6b5f9c5b03ada0fcfadc5b completed=true
-round=4 mode=immediate tx=0x99935d4a901215f6bf852d8f1fbbfb7bcf98740c4439d6a8e10d4fc49652783f completed=true
-json=/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/upgrade-stability/local-5nodes-formal-20260813/result.json
-csv=/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/upgrade-stability/local-5nodes-formal-20260813/samples.csv
-summary=/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/upgrade-stability/local-5nodes-formal-20260813/summary.txt

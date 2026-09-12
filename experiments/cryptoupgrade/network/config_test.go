@@ -10,7 +10,8 @@ import (
 const (
 	testNodeKey1 = "4c0883a69102937d6231471b5dbb6204fe5129617082794e0ddb4f2b8e07cf4d"
 	testNodeKey2 = "6c8759342fb1d3c387f6d580bf95313e540c5b8f53c87e1b16e0e5f9f5a6c3a2"
-	testSigner   = "0x90F8bf6A479f320eAD074411a4B0e7944Ea8c9C1"
+	testNodeKey3 = "0000000000000000000000000000000000000000000000000000000000000001"
+	testSigner   = "0x7D81acf2C790a8133b53EB089C4E85629F0416Cf"
 )
 
 func TestLoadConfigNormalizesNetwork(t *testing.T) {
@@ -22,6 +23,9 @@ func TestLoadConfigNormalizesNetwork(t *testing.T) {
 	}
 	if cfg.Network.ChainID != 11223344 {
 		t.Fatalf("unexpected chain id: %d", cfg.Network.ChainID)
+	}
+	if cfg.Docker.CPUs != "0.50" || cfg.Docker.Memory != "768m" {
+		t.Fatalf("docker resources were not normalized: %#v", cfg.Docker)
 	}
 	if len(cfg.Nodes) != 2 {
 		t.Fatalf("unexpected node count: %d", len(cfg.Nodes))
@@ -52,12 +56,15 @@ func TestLoadConfigRejectsMissingSigner(t *testing.T) {
 	}
 }
 
-func TestLoadConfigRejectsPrivateKeyField(t *testing.T) {
+func TestLoadConfigAcceptsInlinePrivateKey(t *testing.T) {
 	dir := t.TempDir()
-	raw := testConfigYAML(dir) + "\nprivateKey: 0xabc\n"
-	_, err := LoadConfig(writeConfig(t, dir, raw))
-	if err == nil || !strings.Contains(err.Error(), "privateKey") {
-		t.Fatalf("expected privateKey rejection, got %v", err)
+	raw := strings.Replace(testConfigYAML(dir), "privateKey: ./signer.key", "privateKey: "+testNodeKey1, 1)
+	cfg, err := LoadConfig(writeConfig(t, dir, raw))
+	if err != nil {
+		t.Fatalf("LoadConfig failed: %v", err)
+	}
+	if cfg.Accounts["signer"].PrivateKey != testNodeKey1 {
+		t.Fatalf("unexpected inline private key: %q", cfg.Accounts["signer"].PrivateKey)
 	}
 }
 
@@ -87,6 +94,34 @@ func TestBuildGenesisAndStaticPeers(t *testing.T) {
 	}
 	if strings.Contains(peers["node1"][0], "@node1:") {
 		t.Fatalf("node1 peer list contains itself: %#v", peers["node1"])
+	}
+}
+
+func TestStaticPeersStarTopology(t *testing.T) {
+	dir := t.TempDir()
+	writeNodeKey(t, filepath.Join(dir, "node1.key"), testNodeKey1)
+	writeNodeKey(t, filepath.Join(dir, "node2.key"), testNodeKey2)
+	writeNodeKey(t, filepath.Join(dir, "node3.key"), testNodeKey3)
+	cfg := &Config{
+		Network: NetworkConfig{PeerTopology: "star"},
+		Nodes: []NodeConfig{
+			{ID: "node1", Role: "signer", Host: "node1", AdvertiseHost: "node1", P2PPort: 30303, NodeKey: filepath.Join(dir, "node1.key")},
+			{ID: "node2", Role: "observer", Host: "node2", AdvertiseHost: "node2", P2PPort: 30303, NodeKey: filepath.Join(dir, "node2.key")},
+			{ID: "node3", Role: "observer", Host: "node3", AdvertiseHost: "node3", P2PPort: 30303, NodeKey: filepath.Join(dir, "node3.key")},
+		},
+	}
+	peers, err := StaticPeers(cfg)
+	if err != nil {
+		t.Fatalf("StaticPeers failed: %v", err)
+	}
+	if len(peers["node1"]) != 2 {
+		t.Fatalf("signer peers = %d, want 2: %#v", len(peers["node1"]), peers["node1"])
+	}
+	if len(peers["node2"]) != 1 || !strings.Contains(peers["node2"][0], "@node1:30303") {
+		t.Fatalf("observer node2 should only peer with signer: %#v", peers["node2"])
+	}
+	if len(peers["node3"]) != 1 || !strings.Contains(peers["node3"][0], "@node1:30303") {
+		t.Fatalf("observer node3 should only peer with signer: %#v", peers["node3"])
 	}
 }
 
@@ -126,8 +161,14 @@ func TestRenderArtifacts(t *testing.T) {
 	if !strings.Contains(string(compose), "entrypoint: []") {
 		t.Fatalf("compose must clear image entrypoint before running shell command: %s", compose)
 	}
-	if !strings.Contains(string(compose), "./nodes/node1/config.toml:/config.toml:ro") {
+	if !strings.Contains(string(compose), "./node1/config.toml:/config.toml:ro") {
 		t.Fatalf("compose must mount geth config.toml: %s", compose)
+	}
+	if got := strings.Count(string(compose), `cpus: "0.50"`); got != len(cfg.Nodes) {
+		t.Fatalf("compose CPU limit count = %d, want %d: %s", got, len(cfg.Nodes), compose)
+	}
+	if got := strings.Count(string(compose), `mem_limit: "768m"`); got != len(cfg.Nodes) {
+		t.Fatalf("compose memory limit count = %d, want %d: %s", got, len(cfg.Nodes), compose)
 	}
 	gethConfig, err := os.ReadFile(artifacts.Nodes[0].GethConfigPath)
 	if err != nil {
@@ -143,16 +184,30 @@ func TestRenderArtifacts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read start script: %v", err)
 	}
-	if !strings.Contains(string(startScript), filepath.Join(out, "nodes/node1/nodekey")) {
+	if !strings.Contains(string(startScript), filepath.Join(out, "node1/nodekey")) {
 		t.Fatalf("start script does not use node-local nodekey: %s", startScript)
 	}
-	keystorePath := filepath.Join(artifacts.Nodes[0].Datadir, "keystore", testKeystoreFileName())
-	keystore, err := os.ReadFile(keystorePath)
+	keystoreDir := filepath.Join(artifacts.Nodes[0].Datadir, "keystore")
+	entries, err := os.ReadDir(keystoreDir)
 	if err != nil {
-		t.Fatalf("expected rendered signer keystore %s: %v", keystorePath, err)
+		t.Fatalf("expected rendered signer keystore dir: %v", err)
+	}
+	if len(entries) != 1 {
+		t.Fatalf("expected one keystore file, got %d", len(entries))
+	}
+	keystore, err := os.ReadFile(filepath.Join(keystoreDir, entries[0].Name()))
+	if err != nil {
+		t.Fatalf("read rendered keystore: %v", err)
 	}
 	if !strings.Contains(string(keystore), strings.TrimPrefix(strings.ToLower(testSigner), "0x")) {
 		t.Fatalf("rendered signer keystore has unexpected content: %s", keystore)
+	}
+	password, err := os.ReadFile(filepath.Join(filepath.Dir(artifacts.Nodes[0].Datadir), "password.txt"))
+	if err != nil {
+		t.Fatalf("read rendered password: %v", err)
+	}
+	if string(password) != "123456" {
+		t.Fatalf("unexpected password file content: %q", password)
 	}
 }
 
@@ -185,8 +240,7 @@ func TestGethArgsSignerAndObserverContract(t *testing.T) {
 func testConfigYAML(dir string) string {
 	writeNodeKey(tWriter{}, filepath.Join(dir, "node1.key"), testNodeKey1)
 	writeNodeKey(tWriter{}, filepath.Join(dir, "node2.key"), testNodeKey2)
-	writeFile(tWriter{}, filepath.Join(dir, "keystore", testKeystoreFileName()), `{"address":"`+strings.TrimPrefix(strings.ToLower(testSigner), "0x")+`"}`+"\n")
-	writeFile(tWriter{}, filepath.Join(dir, "password.txt"), "123456\n")
+	writeNodeKey(tWriter{}, filepath.Join(dir, "signer.key"), testNodeKey1)
 	writeFile(tWriter{}, filepath.Join(dir, "add.go"), "package algorithm\n")
 	return `
 network:
@@ -198,23 +252,27 @@ consensus:
   epoch: 30000
   signers:
     - ` + testSigner + `
+docker:
+  cpus: "0.50"
+  memory: 768m
+  expose:
+    - node: node1
+      httpHostPort: 8661
 cryptoupgrade:
   enabled: true
   addSource: ./add.go
 accounts:
   signer:
     address: ` + testSigner + `
-    keystore: ./keystore
-    password: ./password.txt
+    privateKey: ./signer.key
+    password: "123456"
 nodes:
   - id: node1
     role: signer
     host: node1
     advertiseHost: node1
     p2pPort: 30303
-    p2pHostPort: 30303
     httpPort: 8545
-    httpHostPort: 8661
     datadir: ./data/node1
     pluginDir: ./plugin/node1
     nodeKey: ./node1.key
@@ -224,17 +282,11 @@ nodes:
     host: node2
     advertiseHost: node2
     p2pPort: 30303
-    p2pHostPort: 30304
     httpPort: 8545
-    httpHostPort: 8662
     datadir: ./data/node2
     pluginDir: ./plugin/node2
     nodeKey: ./node2.key
 `
-}
-
-func testKeystoreFileName() string {
-	return "UTC--2026-08-11T00-00-00.000000000Z--" + strings.TrimPrefix(strings.ToLower(testSigner), "0x")
 }
 
 type tWriter struct{}

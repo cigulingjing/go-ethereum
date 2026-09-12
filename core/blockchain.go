@@ -45,6 +45,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/tracing"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
+	"github.com/ethereum/go-ethereum/cryptoupgrade"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/stagelog"
 	"github.com/ethereum/go-ethereum/ethdb"
 	"github.com/ethereum/go-ethereum/event"
 	"github.com/ethereum/go-ethereum/internal/syncx"
@@ -1316,6 +1318,17 @@ func (bc *BlockChain) writeHeadBlock(block *types.Block) {
 
 	bc.currentBlock.Store(block.Header())
 	headBlockGauge.Update(int64(block.NumberU64()))
+	if stagelog.Enabled() {
+		at := time.Now()
+		for _, tx := range block.Transactions() {
+			fields := cryptoupgrade.TimingFields(tx.To(), tx.Data())
+			fields["txHash"] = tx.Hash().Hex()
+			fields["blockHash"] = block.Hash().Hex()
+			fields["blockNumber"] = block.NumberU64()
+			fields["phase"] = "canonical"
+			stagelog.RecordAt(nil, "transaction_included", at, fields)
+		}
+	}
 }
 
 // stopWithoutSaving stops the blockchain service. If any imports are currently in progress

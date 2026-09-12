@@ -3,8 +3,11 @@ package event
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"math/big"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -12,6 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/activationtrace"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/model"
 )
 
@@ -93,6 +97,47 @@ func TestHandleOnlyQueriesAndDelegatesActivation(t *testing.T) {
 	}
 	if activator.calls != 1 || activator.name != "Add" || activator.info != info {
 		t.Fatalf("unexpected activation delegation: calls=%d name=%q info=%#v", activator.calls, activator.name, activator.info)
+	}
+}
+
+func TestHandleWritesActivationTrace(t *testing.T) {
+	tracePath := filepath.Join(t.TempDir(), "activation_trace.jsonl")
+	t.Setenv(activationtrace.TraceFileEnvVar, tracePath)
+	contractABI, err := abi.JSON(strings.NewReader(common.CodeStorageABI_json))
+	if err != nil {
+		t.Fatalf("parse ABI: %v", err)
+	}
+	info := model.AlgorithmInfo{Code: "encoded", Gas: 7, IType: "bytes", OType: "bytes"}
+	client := &fakeClient{contractABI: contractABI, info: info}
+	service := NewService(contractABI, common.CodeStorageAddress, common.Hash{1}, new(fakeActivator))
+	data, err := contractABI.Events["codeUploaded"].Inputs.NonIndexed().Pack("add")
+	if err != nil {
+		t.Fatalf("pack event: %v", err)
+	}
+	log := types.Log{Data: data, TxHash: common.HexToHash("0x1234"), BlockNumber: 9}
+	if err := service.Handle(context.Background(), client, log); err != nil {
+		t.Fatalf("Handle failed: %v", err)
+	}
+	raw, err := os.ReadFile(tracePath)
+	if err != nil {
+		t.Fatalf("read trace: %v", err)
+	}
+	lines := strings.Split(strings.TrimSpace(string(raw)), "\n")
+	if len(lines) != 2 {
+		t.Fatalf("unexpected trace line count %d: %s", len(lines), raw)
+	}
+	var first, second activationtrace.Event
+	if err := json.Unmarshal([]byte(lines[0]), &first); err != nil {
+		t.Fatalf("unmarshal first trace: %v", err)
+	}
+	if err := json.Unmarshal([]byte(lines[1]), &second); err != nil {
+		t.Fatalf("unmarshal second trace: %v", err)
+	}
+	if first.Stage != "event_received" || second.Stage != "activation_started" {
+		t.Fatalf("unexpected stages: %#v %#v", first, second)
+	}
+	if first.Name != "Add" || first.Version != 1 || first.TxHash != log.TxHash.Hex() || first.BlockNumber != 9 {
+		t.Fatalf("unexpected first trace: %#v", first)
 	}
 }
 

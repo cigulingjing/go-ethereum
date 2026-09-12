@@ -22,6 +22,8 @@
 /build/cache/
 /build/bin/
 /build/cryptoupgrade-networks/
+/experiments/cryptoupgrade/deployments/nodes/
+/experiments/cryptoupgrade/deployments/docker-check/
 /geth*.zip
 
 # used by the build/ci.go archive + upload tool

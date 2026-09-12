@@ -25,6 +25,7 @@ var (
 	CryptoUpgradePedersenVerifyAddress = BytesToAddress([]byte{0x57}) // 0000000000000000000000000000000000000057
 	CryptoUpgradeSchnorrPublicAddress  = BytesToAddress([]byte{0x58}) // 0000000000000000000000000000000000000058
 	CryptoUpgradeSchnorrVerifyAddress  = BytesToAddress([]byte{0x59}) // 0000000000000000000000000000000000000059
+	CryptoUpgradePolynomialMulAddress  = BytesToAddress([]byte{0x5a}) // 000000000000000000000000000000000000005a
 )
 
 var CoinbaseABI_json = `[

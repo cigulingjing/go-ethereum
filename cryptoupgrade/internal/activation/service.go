@@ -7,10 +7,13 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/activationtrace"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/model"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/wasmruntime"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/stagelog"
 )
 
 // Codec decodes an uploaded WASM artifact and can persist it to a repository-owned path.
@@ -63,7 +66,7 @@ func (s *Service) Activate(ctx context.Context, name string, info model.Algorith
 }
 
 // ActivateVersion decodes, compiles, persists and loads one uploaded algorithm version.
-func (s *Service) ActivateVersion(ctx context.Context, name string, info model.AlgorithmVersionInfo) error {
+func (s *Service) ActivateVersion(ctx context.Context, name string, info model.AlgorithmVersionInfo) (activationErr error) {
 	if s == nil || s.codec == nil || s.runtime == nil || s.repository == nil {
 		return errors.New("activation service dependencies are incomplete")
 	}
@@ -77,30 +80,80 @@ func (s *Service) ActivateVersion(ctx context.Context, name string, info model.A
 	if current, ok := s.repository.PreparedVersion(name, info.Version); ok && current == info {
 		return nil
 	}
+	activationStart := time.Now()
+	var loadedAt time.Time
+	if stagelog.Enabled() {
+		source := activationtrace.ForStage(ctx, "")
+		ctx = stagelog.With(ctx, stagelog.Fields{"flow": "upgrade", "algorithm": name, "version": info.Version,
+			"activationBlock": info.ActivationBlock, "txHash": source.TxHash, "blockNumber": source.BlockNumber, "upgradeId": stagelog.NewID()})
+		stagelog.RecordAt(ctx, "wasm_upgrade_started", activationStart, nil)
+		defer func() {
+			end := loadedAt
+			if end.IsZero() {
+				end = time.Now()
+			}
+			fields := stagelog.Fields{"durationNs": end.Sub(activationStart).Nanoseconds(), "success": activationErr == nil}
+			stage := "wasm_loaded"
+			if activationErr != nil {
+				stage = "wasm_upgrade_failed"
+				fields["error"] = activationErr.Error()
+			}
+			stagelog.RecordAt(ctx, stage, end, fields)
+		}()
+	}
+	traceEvent := activationtrace.ForStage(ctx, "")
+	traceEvent.Name = name
+	traceEvent.Version = info.Version
+	traceEvent.ActivationBlock = info.ActivationBlock
+	ctx = activationtrace.ContextWithEvent(ctx, traceEvent)
 	if err := s.repository.EnsureDirs(); err != nil {
+		recordTrace(ctx, "activation_failed", 0, func(event *activationtrace.Event) {
+			event.Error = err.Error()
+		})
 		return fmt.Errorf("prepare activation repository: %w", err)
 	}
 	wasmPath := s.versionSourcePath(name, info.Version)
+	persistStart := time.Now()
 	if err := s.codec.DecodeToFile(info.Code, wasmPath); err != nil {
+		recordTrace(ctx, "activation_failed", 0, func(event *activationtrace.Event) {
+			event.WasmPath = wasmPath
+			event.Error = err.Error()
+		})
 		return fmt.Errorf("persist algorithm %s version %d wasm: %w", name, info.Version, err)
 	}
 	rawWasm, err := os.ReadFile(wasmPath)
 	if err != nil {
+		recordTrace(ctx, "activation_failed", 0, func(event *activationtrace.Event) {
+			event.WasmPath = wasmPath
+			event.Error = err.Error()
+		})
 		return fmt.Errorf("read persisted wasm %s: %w", wasmPath, err)
 	}
 	info.WasmHash = wasmHash(rawWasm)
 	info.RuntimeName = wasmRuntimeName
 	info.RuntimeVersion = wasmRuntimeVersion
+	traceEvent.WasmHash = info.WasmHash
+	traceEvent.WasmPath = wasmPath
+	ctx = activationtrace.ContextWithEvent(ctx, traceEvent)
+	recordTrace(ctx, "wasm_persisted", time.Since(persistStart), nil)
 
 	previous, hadPrevious := s.repository.ActiveVersion(name)
 	s.repository.SetActiveVersion(name, info)
 	if err := s.repository.Save(); err != nil {
 		s.restore(name, info.Version, previous, hadPrevious)
+		recordTrace(ctx, "activation_failed", 0, func(event *activationtrace.Event) {
+			event.Error = err.Error()
+		})
 		return fmt.Errorf("persist algorithm %s version %d metadata: %w", name, info.Version, err)
 	}
 	compiledPath := s.versionCompiledPath(name, info.Version)
+	traceEvent.CompiledPath = compiledPath
+	ctx = activationtrace.ContextWithEvent(ctx, traceEvent)
 	if err := s.runtime.Activate(ctx, wasmPath, compiledPath); err != nil {
 		s.restore(name, info.Version, previous, hadPrevious)
+		recordTrace(ctx, "activation_failed", time.Since(activationStart), func(event *activationtrace.Event) {
+			event.Error = err.Error()
+		})
 		// load 失败时恢复旧 metadata，避免 receipt 或持久化状态被误认为激活完成。
 		if rollbackErr := s.repository.Save(); rollbackErr != nil {
 			return errors.Join(
@@ -110,7 +163,20 @@ func (s *Service) ActivateVersion(ctx context.Context, name string, info model.A
 		}
 		return fmt.Errorf("activate algorithm %s version %d wasm: %w", name, info.Version, err)
 	}
+	loadedAt = time.Now()
+	recordTrace(ctx, "activation_completed", time.Since(activationStart), nil)
 	return nil
+}
+
+func recordTrace(ctx context.Context, stage string, duration time.Duration, mutate func(*activationtrace.Event)) {
+	event := activationtrace.ForStage(ctx, stage)
+	if duration > 0 {
+		event.DurationMillis = float64(duration.Nanoseconds()) / float64(time.Millisecond)
+	}
+	if mutate != nil {
+		mutate(&event)
+	}
+	_ = activationtrace.Record(event)
 }
 
 func (s *Service) versionSourcePath(name string, version uint64) string {

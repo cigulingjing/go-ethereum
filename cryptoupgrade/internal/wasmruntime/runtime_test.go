@@ -5,12 +5,16 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
+
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/activationtrace"
 )
 
 func TestActivateAndExecute(t *testing.T) {
@@ -32,6 +36,48 @@ func TestActivateAndExecute(t *testing.T) {
 	}
 	if !bytes.Equal(output, []byte("ok")) {
 		t.Fatalf("unexpected output: %q", output)
+	}
+}
+
+func TestActivateWritesCompileTrace(t *testing.T) {
+	dir := t.TempDir()
+	tracePath := filepath.Join(dir, "activation_trace.jsonl")
+	t.Setenv(activationtrace.TraceFileEnvVar, tracePath)
+	wasmPath := filepath.Join(dir, "Add.wasm")
+	cachePath := filepath.Join(dir, "compiled")
+	if err := os.WriteFile(wasmPath, buildConstantModule([]byte("ok"), false, false), 0o644); err != nil {
+		t.Fatalf("write wasm: %v", err)
+	}
+	ctx := activationtrace.ContextWithEvent(context.Background(), activationtrace.Event{
+		Name:        "Add",
+		Version:     1,
+		TxHash:      "0xabc",
+		BlockNumber: 7,
+	})
+	loader := NewLoader(Config{MemoryLimitPages: 8, ExecutionBudget: time.Second})
+	if err := loader.Activate(ctx, wasmPath, cachePath); err != nil {
+		t.Fatalf("Activate failed: %v", err)
+	}
+	raw, err := os.ReadFile(tracePath)
+	if err != nil {
+		t.Fatalf("read trace: %v", err)
+	}
+	lines := strings.Split(strings.TrimSpace(string(raw)), "\n")
+	if len(lines) != 2 {
+		t.Fatalf("unexpected trace line count %d: %s", len(lines), raw)
+	}
+	var compiled, instantiated activationtrace.Event
+	if err := json.Unmarshal([]byte(lines[0]), &compiled); err != nil {
+		t.Fatalf("unmarshal compiled trace: %v", err)
+	}
+	if err := json.Unmarshal([]byte(lines[1]), &instantiated); err != nil {
+		t.Fatalf("unmarshal instantiated trace: %v", err)
+	}
+	if compiled.Stage != "wasm_compiled" || instantiated.Stage != "wasm_instantiated" {
+		t.Fatalf("unexpected trace stages: %#v %#v", compiled, instantiated)
+	}
+	if compiled.Name != "Add" || compiled.TxHash != "0xabc" || compiled.WasmPath != wasmPath || compiled.CompiledPath != cachePath {
+		t.Fatalf("unexpected compiled trace: %#v", compiled)
 	}
 }
 
@@ -216,7 +262,7 @@ func fixturePath(t *testing.T, name string) string {
 	if !ok {
 		t.Fatal("runtime.Caller failed")
 	}
-	return filepath.Join(filepath.Dir(file), "..", "..", "algorithm", "wasm", name)
+	return filepath.Join(filepath.Dir(file), "..", "..", "algorithm", "wasm", "archive", name)
 }
 
 func abiBytesInput(data []byte) []byte {

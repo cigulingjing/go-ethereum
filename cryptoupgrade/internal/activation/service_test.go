@@ -2,6 +2,7 @@ package activation
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/activationtrace"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/model"
 )
 
@@ -207,6 +209,53 @@ func TestServiceActivateVersionUsesVersionedPaths(t *testing.T) {
 	}
 	if got.RuntimeName == "" || got.RuntimeVersion == "" {
 		t.Fatalf("runtime metadata not recorded: %#v", got)
+	}
+}
+
+func TestServiceActivateWritesTrace(t *testing.T) {
+	tracePath := filepath.Join(t.TempDir(), "activation_trace.jsonl")
+	t.Setenv(activationtrace.TraceFileEnvVar, tracePath)
+	wasm := []byte{0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00}
+	sourcePath := filepath.Join(t.TempDir(), "Add.wasm")
+	compiledPath := filepath.Join(t.TempDir(), "compiled", "Add")
+	repository := &fakeRepository{
+		active:     make(map[string]model.AlgorithmInfo),
+		sourcePath: sourcePath,
+		pluginPath: compiledPath,
+	}
+	info := model.AlgorithmInfo{Code: "encoded", Gas: 7, IType: "bytes", OType: "bytes"}
+	service := NewService(
+		CodecFunc(func(string, string) error {
+			return os.WriteFile(sourcePath, wasm, 0o644)
+		}),
+		RuntimeFunc(func(context.Context, string, string) error {
+			return nil
+		}),
+		repository,
+	)
+	if err := service.Activate(context.Background(), "Add", info); err != nil {
+		t.Fatalf("Activate failed: %v", err)
+	}
+	raw, err := os.ReadFile(tracePath)
+	if err != nil {
+		t.Fatalf("read trace: %v", err)
+	}
+	lines := strings.Split(strings.TrimSpace(string(raw)), "\n")
+	if len(lines) != 2 {
+		t.Fatalf("unexpected trace line count %d: %s", len(lines), raw)
+	}
+	var persisted, completed activationtrace.Event
+	if err := json.Unmarshal([]byte(lines[0]), &persisted); err != nil {
+		t.Fatalf("unmarshal persisted trace: %v", err)
+	}
+	if err := json.Unmarshal([]byte(lines[1]), &completed); err != nil {
+		t.Fatalf("unmarshal completed trace: %v", err)
+	}
+	if persisted.Stage != "wasm_persisted" || completed.Stage != "activation_completed" {
+		t.Fatalf("unexpected trace stages: %#v %#v", persisted, completed)
+	}
+	if persisted.WasmHash != crypto.Keccak256Hash(wasm).Hex() || persisted.WasmPath != sourcePath || completed.Name != "Add" {
+		t.Fatalf("unexpected trace metadata: %#v %#v", persisted, completed)
 	}
 }
 

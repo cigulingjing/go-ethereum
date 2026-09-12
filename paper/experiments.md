@@ -13,8 +13,8 @@
 | `5.1 Experimental Setup` | Lab1、Lab2 与 WASM rerun 的共同环境说明 | 说明 Geth、Clique、节点配置、WASM runtime、算法集合和指标来源 |
 | `5.2 Upgrade Efficiency` | Lab1 + 部署 / 上传成本附属实验 | 报告升级延迟、事件后可调用时间和上传 / 部署成本 |
 | `5.3 Execution Efficiency` | Lab2 + Sha256 真实链附属实验 | 比较 WASM-backed Upgrade、Precompile 与 Solidity Contract 的 `eth_call` 延迟和 `gasEstimate` |
-| `4.4 Upgrade Consistency` | 不设置实验内容 | 仅从协议机制分析 Activation Block、链上元数据和版本选择规则带来的一致性边界 |
-| `2.3 / 3.6 / 4.2` | WASM rerun、WASM 模块与运行时实现信息 | 支撑 WebAssembly Runtime、Prototype Implementation 与 Execution Isolation 的实现叙述 |
+| `4.2 Security Solutions` | 不设置实验内容 | 仅从协议机制分析 Activation Block、链上元数据和版本选择规则带来的一致性边界 |
+| `2.3 / 3.7 / 4.2` | WASM rerun、WASM 模块与运行时实现信息 | 支撑 WebAssembly Runtime、Prototype Implementation 与 Security Solutions 的实现叙述 |
 
 `paper_outline.md` 中提到的节点规模扩展、升级期间交易成功率、最长出块间隔、State Root、fail-stop、无 Activation Block 对照或 Lab3 一致性实验，当前都不属于论文实验内容，只能写为 `TODO`、future work 或安全分析边界。
 
@@ -60,7 +60,7 @@
 
 * 验证 WASM module 替换 Go plugin 后，升级路径和执行路径仍可在同一 5 节点 Clique harness 下复现。
 * 为“统一字节码 + 受控运行时”提供当前实现层面的证据，而不是形式化证明。
-* 为 `Technical Background / WebAssembly Runtime`、`Coprocessor Architecture / Prototype Implementation`、`Security Analysis / Execution Isolation` 和 `Evaluation` 中的 WASM 相关表述提供实现支撑。
+* 为 `Technical Background / WebAssembly Runtime`、`Coprocessor Architecture / Prototype Implementation`、`Security Analysis / Security Solutions` 和 `Evaluation` 中的 WASM 相关表述提供实现支撑。
 
 ## 允许结论
 
@@ -171,26 +171,16 @@ activationObservedAt（全部目标节点完成）
 论文用图：
 
 * 目录：`paper/image/lab1-upgrade-latency-availability/`
-* 主图：`lab1_upgrade_latency_5nodes.*`
+* 主图：`lab1_upgrade_latency_algorithms_20nodes.*`
+* 扩展图：`lab1_upgrade_latency_schnorr_scale_5to40nodes.*`
 * WASM rerun 正文图：`paper/image/wasm-rerun/figure_wasm_evaluation.*`，源数据为 `paper/image/wasm-rerun/figure_wasm_evaluation_source_data.csv` 中的 Lab1 panel
-
-## 附属实验：部署 / 上传成本
-
-该图在同一图目录，但**不是** `benchupgradelatency` 的时间线实验。
-
-* 比较对象：动态升级 `uploadCode` 上传 vs Solidity 合约部署；Precompile 无部署交易
-* 覆盖算法：Add、Blake2b-256
-* 权威说明：`experiments/cryptoupgrade/docs/test_result.md`
-* 论文用图：`lab1_deployment_upgrade_cost.*`
-
-部署耗时从 `eth_sendTransaction` 统计到 receipt；调用阶段不计入本附属实验主结论。
 
 ## 允许结论
 
-* 给出 5 节点 Clique 下各阶段的控制端可观测时间开销；
+* 给出当前报告中多算法和多节点规模下各阶段的控制端可观测时间开销；
 * 比较不同算法的升级延迟与节点完成时间离散程度；
 * 说明已实现异步升级架构：升级交易先完成链上执行并获得 receipt，编译与加载随后由链下任务完成，因而不位于该升级交易的 EVM 执行关键路径；
-* 附属实验可描述上传耗时与部署 Gas 相对 Solidity 部署的差异，不得外推到全部算法。
+* SchnorrProof/SchnorrVerify 的节点规模扩展结果可作为升级开销随规模变化的补充证据。
 
 升级窗口内其他 EVM 交易的延迟/吞吐损耗不在本次实验范围，列为 future work（见 `paper/README.md`）。Discussion 可一句带过，不得当作已测结果。
 
@@ -199,7 +189,8 @@ activationObservedAt（全部目标节点完成）
 * 不得仅根据升级总时间宣称“零停机”；
 * 不得声称已测量升级阶段对其他 EVM 交易或系统可用性的损耗；
 * 不得把链下编译时间或 `eventToAllCompleteMillis` 描述为链上交易执行时间；
-* 不得比较未采集的 1/10 节点规模；
+* 不得把 20 节点全算法结果写成 5 节点实验；
+* 不得把 5/10/20/30/40 节点规模结果写成单节点实验；
 * 不得把控制端轮询延迟写成节点内部精确编译剖分。
 
 ---
@@ -321,9 +312,9 @@ Base Gas + Input-dependent Gas
 
 ---
 
-# 不纳入实验内容：Upgrade Consistency
+# 不纳入独立实验：Upgrade Consistency
 
-当前论文不设置一致性实验。`Security Analysis / Upgrade Consistency` 只能从协议机制讨论一致性边界，包括链上升级元数据、`wasmHash`、`activationHeight`、区块高度驱动的版本选择，以及未就绪节点不应静默回退到旧版本的设计要求。
+当前论文不设置一致性实验。升级一致性只在 `Security Analysis / Security Solutions` 中从协议机制讨论，包括链上升级元数据、`wasmHash`、`activationHeight`、区块高度驱动的版本选择，以及未就绪节点不应静默回退到旧版本的设计要求。
 
 仓库中已有的 `benchupgradestability`、`upgrade-stability`、`wasm-rerun-20260902-225029/lab3/` 和 `lab3_upgrade_stability_source.csv` 产物不进入论文实验体系，不出现在 `Evaluation` 中，不设置图表，不作为 formal claim 的实验支撑。
 
@@ -348,9 +339,10 @@ Base Gas + Input-dependent Gas
 | 论文大纲位置 | Design | Experiment | 验证属性 | 正式数据规模与边界 |
 | --- | --- | --- | --- | --- |
 | `3.3 Upgrade Protocol` / `3.4 Deterministic Activation` / `5.2 Upgrade Efficiency` | 链上协调 + 链下异步准备 | Lab1（+ 部署成本附属实验） | Upgrade latency / post-event readiness | 5 节点 Clique，7 算法；不得写成 2/10 节点规模实验 |
-| `3.5 Resource Accounting` / `5.3 Execution Efficiency` | Cryptographic Coprocessor + deterministic gas model | Lab2（+ 真实链附属实验） | `eth_call` latency / `gasEstimate` | 7 算法三方案；真实链仅 Sha256；SchnorrVerify 为尾部例外 |
-| `4.4 Upgrade Consistency` | Activation Block | 不设置实验 | 协议属性 / 安全边界分析 | 不报告一致性实验结果；不得引用 `scheduled` / `immediate` harness 作为 baseline |
-| `2.3 WebAssembly Runtime` / `3.6 Prototype Implementation` / `4.2 Execution Isolation` | Go plugin → WASM module | WASM rerun | WASM payload boundary / Lab1-Lab2 rerun consistency | 5 节点 Clique，7 算法，同一 harness；不构成形式化沙箱或跨平台一致性证明 |
+| `3.5 Invocation Protocol` / `5.3 Execution Efficiency` | Contract-facing call routing + WASM execution | Lab2（+ 真实链附属实验） | `eth_call` latency / `gasEstimate` | 7 算法三方案；真实链仅 Sha256；SchnorrVerify 为尾部例外 |
+| `3.6 Resource Accounting` / `5.3 Execution Efficiency` | Cryptographic Coprocessor + deterministic gas model | Lab2（+ 真实链附属实验） | `eth_call` latency / `gasEstimate` | 7 算法三方案；真实链仅 Sha256；SchnorrVerify 为尾部例外 |
+| `3.4 Deterministic Activation` / `4.2 Security Solutions` | Activation Block | 不设置实验 | 协议属性 / 安全边界分析 | 不报告一致性实验结果；不得引用 `scheduled` / `immediate` harness 作为 baseline |
+| `2.3 WebAssembly Runtime` / `3.7 Prototype Implementation` / `4.2 Security Solutions` | Go plugin → WASM module | WASM rerun | WASM payload boundary / Lab1-Lab2 rerun consistency | 5 节点 Clique，7 算法，同一 harness；不构成形式化沙箱或跨平台一致性证明 |
 
 最终论证链：
 
@@ -371,11 +363,11 @@ Deterministic Activation
         ↓
 异步准备、按区块统一生效
         ↓
-Security Analysis / Upgrade Consistency：从协议机制说明版本切换边界，不设置实验
+Security Analysis / Security Solutions：从协议机制说明版本切换边界，不设置实验
 
 WASM rerun
         ↓
 Go plugin 替换为 WASM module
         ↓
-支撑 WebAssembly Runtime、Prototype Implementation、Execution Isolation 与 WASM 路径下的 Lab1/Lab2 复现
+支撑 WebAssembly Runtime、Prototype Implementation、Security Solutions 与 WASM 路径下的 Lab1/Lab2 复现
 ```

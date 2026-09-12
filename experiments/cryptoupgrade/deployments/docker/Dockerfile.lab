@@ -10,12 +10,16 @@ RUN apk add --no-cache ca-certificates gcc git linux-headers musl-dev
 WORKDIR /go-ethereum
 
 ENV CGO_ENABLED=0
+ARG GOPROXY="https://proxy.golang.org,direct"
+ENV GOPROXY=$GOPROXY
 
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
 
 COPY . .
-RUN go run build/ci.go install ./cmd/geth
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go run build/ci.go install ./cmd/geth
 
 ENV CRYPTOUPGRADE_MODULE=/go-ethereum
 ENV GETH_CRYPTOUPGRADE_PLUGIN_DIR=/plugin

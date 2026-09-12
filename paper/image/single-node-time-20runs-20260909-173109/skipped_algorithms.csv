@@ -1,0 +1,13 @@
+algorithm,reason
+Blake2bSum384,missing comparable Go and contract implementation
+Blake2bSum512,missing comparable Go and contract implementation
+AesCBCEncrypt,Go implementation is archived and no comparable contract implementation exists
+AesCBCDecrypt,Go implementation is archived and no comparable contract implementation exists
+Dh2048Private,key-generation helper without comparable contract algorithm
+Dh2048Public,key-generation helper without comparable contract algorithm
+Ed25519Keygen,Go implementation is archived and no comparable contract implementation exists
+Ed25519PublicKey,Go implementation is archived and no comparable contract implementation exists
+Ed25519Sign,Go implementation is archived and no comparable contract implementation exists
+Ed25519Verify,Go implementation is archived and no comparable contract implementation exists
+PedersenVerify,missing comparable active Go and contract implementation
+SchnorrPublicKey,key-generation helper without comparable contract algorithm

@@ -28,9 +28,11 @@ const (
 	precompileMediumWordGas     uint64 = 600
 	precompileHeavyWordGas      uint64 = 2000
 
-	precompilePBKDF2MaxIterations = 1000000
-	precompilePBKDF2MaxKeyLength  = 1 << 20
-	precompileMaxUint64           = ^uint64(0)
+	precompilePBKDF2MaxIterations  = 1000000
+	precompilePBKDF2MaxKeyLength   = 1 << 20
+	precompilePolynomialMaxLength  = 256
+	precompilePolynomialMulStepGas = 180
+	precompileMaxUint64            = ^uint64(0)
 )
 
 type precompileHandler func([]interface{}) ([]interface{}, error)
@@ -208,6 +210,14 @@ var precompiles = mustPrecompiles([]precompileSpec{
 		requiredGas: precompileEncodedGas(precompileHeavyBaseGas, precompileHeavyWordGas),
 		handler:     precompileSchnorrVerify,
 	},
+	{
+		address:     common.CryptoUpgradePolynomialMulAddress,
+		name:        "PolynomialMul",
+		inputTypes:  []string{"uint256[]", "uint256[]", "uint256"},
+		outputTypes: []string{"uint256[]"},
+		requiredGas: precompilePolynomialMulGas,
+		handler:     precompilePolynomialMul,
+	},
 })
 
 var precompileRegistry = evmadapter.MustRegistry(
@@ -323,6 +333,28 @@ func precompilePBKDF2Gas(input []byte) uint64 {
 	return precompileSaturatingAdd(gas, precompileSaturatingMul(rounds, 25))
 }
 
+func precompilePolynomialMulGas(input []byte) uint64 {
+	gas := precompileEncodedGas(precompileMediumBaseGas, precompileMediumWordGas)(input)
+	args, err := UnpackInput(input, []string{"uint256[]", "uint256[]", "uint256"})
+	if err != nil {
+		return precompileSaturatingAdd(precompileMalformedInputGas, precompileSaturatingMul(precompileLightWordGas, precompileWords(len(input))))
+	}
+	left, err := precompileUint256Array(args, 0)
+	if err != nil {
+		return gas
+	}
+	right, err := precompileUint256Array(args, 1)
+	if err != nil {
+		return gas
+	}
+	modulus, err := precompileBig(args, 2)
+	if err != nil || modulus == nil || modulus.Sign() <= 0 {
+		return gas
+	}
+	products := precompileSaturatingMul(uint64(len(left)), uint64(len(right)))
+	return precompileSaturatingAdd(gas, precompileSaturatingMul(products, precompilePolynomialMulStepGas))
+}
+
 func precompileWords(n int) uint64 {
 	return uint64(n+31) / 32
 }
@@ -357,6 +389,14 @@ func precompileBig(args []interface{}, index int) (*big.Int, error) {
 	return v, nil
 }
 
+func precompileUint256Array(args []interface{}, index int) ([]*big.Int, error) {
+	v, ok := args[index].([]*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("argument %d has type %T, want []*big.Int", index, args[index])
+	}
+	return v, nil
+}
+
 func precompileBoundedInt(arg interface{}, min, max int) (int, bool) {
 	v, ok := arg.(*big.Int)
 	if !ok || v == nil || !v.IsInt64() {
@@ -383,6 +423,65 @@ func precompileAdd(args []interface{}) ([]interface{}, error) {
 		sum.Mod(sum, precompileUint256Mod())
 	}
 	return []interface{}{sum}, nil
+}
+
+func precompilePolynomialMul(args []interface{}) ([]interface{}, error) {
+	left, err := precompileUint256Array(args, 0)
+	if err != nil {
+		return nil, err
+	}
+	right, err := precompileUint256Array(args, 1)
+	if err != nil {
+		return nil, err
+	}
+	modulus, err := precompileBig(args, 2)
+	if err != nil {
+		return nil, err
+	}
+	result, err := polynomialMul(left, right, modulus)
+	if err != nil {
+		return nil, err
+	}
+	return []interface{}{result}, nil
+}
+
+func polynomialMul(left []*big.Int, right []*big.Int, modulus *big.Int) ([]*big.Int, error) {
+	if len(left) == 0 {
+		return nil, errors.New("PolynomialMul left polynomial is empty")
+	}
+	if len(right) == 0 {
+		return nil, errors.New("PolynomialMul right polynomial is empty")
+	}
+	if len(left) > precompilePolynomialMaxLength || len(right) > precompilePolynomialMaxLength {
+		return nil, fmt.Errorf("PolynomialMul input length exceeds %d", precompilePolynomialMaxLength)
+	}
+	if modulus == nil || modulus.Sign() <= 0 {
+		return nil, errors.New("PolynomialMul modulus must be positive")
+	}
+	result := make([]*big.Int, len(left)+len(right)-1)
+	for i := range result {
+		result[i] = new(big.Int)
+	}
+	leftCoeff := new(big.Int)
+	rightCoeff := new(big.Int)
+	term := new(big.Int)
+	for i, l := range left {
+		if l == nil || l.Sign() < 0 {
+			return nil, fmt.Errorf("PolynomialMul left coefficient %d is not uint256", i)
+		}
+		leftCoeff.Mod(l, modulus)
+		for j, r := range right {
+			if r == nil || r.Sign() < 0 {
+				return nil, fmt.Errorf("PolynomialMul right coefficient %d is not uint256", j)
+			}
+			rightCoeff.Mod(r, modulus)
+			term.Mul(leftCoeff, rightCoeff)
+			term.Mod(term, modulus)
+			result[i+j].Add(result[i+j], term)
+			result[i+j].Mod(result[i+j], modulus)
+		}
+	}
+	return result, nil
 }
 
 func precompileSha256(args []interface{}) ([]interface{}, error) {

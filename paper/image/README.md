@@ -35,14 +35,14 @@ python paper/image/generate_experiment_figures.py
 
 图片：
 
-- `lab1_upgrade_latency_5nodes.*`：5 节点 Clique 网络中，不同密码算法的端到端升级延迟和节点级完成时间。
-- `lab1_deployment_upgrade_cost.*`：Add 与 Blake2b-256 的动态升级上传成本和 Solidity 合约部署成本对比。
+- `lab1_upgrade_latency_algorithms_20nodes.*`：20 节点全算法实验中，不同密码算法的升级时延和节点级完成离散度。
+- `lab1_upgrade_latency_schnorr_scale_5to40nodes.*`：SchnorrProof/SchnorrVerify 在 5/10/20/30/40 节点下的升级时延和 WASM 编译时间。
 
 主要结论：
 
 - 多节点升级延迟主要由 receipt 之后的 activation 观测阶段贡献。
-- 同一算法下 5 个节点的完成时间聚集较紧，说明无故障局域实验环境中节点级可用时间差异较小。
-- 动态升级上传耗时高于 Solidity 合约部署耗时，但 Blake2b-256 场景中上传 Gas 明显低于 Solidity 合约部署 Gas。
+- 同一算法下节点完成时间聚集较紧，说明无故障局域实验环境中节点级可用时间差异较小。
+- SchnorrProof/SchnorrVerify 的升级时延随节点规模增加仍保持在秒级区间。
 
 ## Lab 2：密码算法执行效率
 
@@ -51,6 +51,7 @@ python paper/image/generate_experiment_figures.py
 图片：
 
 - `lab2_execution_efficiency_latency.*`：多算法 `eth_call` 延迟对比。
+- `lab2_execution_efficiency_latency_20nodes.*`：当前 20 节点 Lab2 三方案平均 `eth_call` 延迟分组柱状图，Y 轴为对数刻度。
 - `lab2_execution_efficiency_gas_estimate.*`：多算法 Gas 估算对比。
 - `lab2_real_chain_precompile_comparison.*`：SHA-256 真实链升级方案与预编译合约的 setup、调用延迟和 Gas 对比。
 
@@ -72,4 +73,4 @@ python paper/image/generate_experiment_figures.py
 
 - 该目录保留为历史产物，不作为当前论文实验图目录。
 - 正文不得设置 Lab3 一致性实验，不得引用该图证明节点版本、输出、receipt/event、chain-view 或 State Root 一致。
-- 如需讨论 Upgrade Consistency，只能在 `Security Analysis / Upgrade Consistency` 中从协议机制和设计边界展开。
+- 如需讨论 Upgrade Consistency，只能在 `Security Analysis / Security Solutions` 中从协议机制和设计边界展开。

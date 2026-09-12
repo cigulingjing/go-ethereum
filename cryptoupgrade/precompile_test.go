@@ -78,6 +78,14 @@ func TestPrecompileRunFixtures(t *testing.T) {
 		t.Fatalf("Add output mismatch: %v", addOut[0])
 	}
 
+	polyLeft := []*big.Int{big.NewInt(18), big.NewInt(2), big.NewInt(3)}
+	polyRight := []*big.Int{big.NewInt(4), big.NewInt(22)}
+	polyOut := runPrecompile(t, "PolynomialMul", polyLeft, polyRight, big.NewInt(17))[0].([]*big.Int)
+	polyExpected := []*big.Int{big.NewInt(4), big.NewInt(13), big.NewInt(5), big.NewInt(15)}
+	if !sameBigIntSlice(polyOut, polyExpected) {
+		t.Fatalf("PolynomialMul output mismatch: got %v want %v", polyOut, polyExpected)
+	}
+
 	shaOut := runPrecompile(t, "Sha256", []byte("abc"))
 	shaExpected := sha256.Sum256([]byte("abc"))
 	if !bytes.Equal(shaOut[0].([]byte), shaExpected[:]) {
@@ -137,6 +145,29 @@ func TestPrecompileRunFixtures(t *testing.T) {
 	}
 }
 
+func TestPrecompilePolynomialMulRejectsInvalidInput(t *testing.T) {
+	entry, ok := PrecompileByName("PolynomialMul")
+	if !ok {
+		t.Fatal("missing PolynomialMul precompile")
+	}
+	tests := []struct {
+		name    string
+		left    []*big.Int
+		right   []*big.Int
+		modulus *big.Int
+	}{
+		{name: "empty left", left: []*big.Int{}, right: []*big.Int{big.NewInt(1)}, modulus: big.NewInt(17)},
+		{name: "empty right", left: []*big.Int{big.NewInt(1)}, right: []*big.Int{}, modulus: big.NewInt(17)},
+		{name: "zero modulus", left: []*big.Int{big.NewInt(1)}, right: []*big.Int{big.NewInt(1)}, modulus: new(big.Int)},
+	}
+	for _, test := range tests {
+		input := mustPackABI(t, entry.InputTypes(), test.left, test.right, test.modulus)
+		if _, err := entry.Run(input); err == nil {
+			t.Fatalf("%s: expected error", test.name)
+		}
+	}
+}
+
 func runPrecompile(t *testing.T, name string, args ...interface{}) []interface{} {
 	t.Helper()
 	entry, ok := PrecompileByName(name)
@@ -149,6 +180,18 @@ func runPrecompile(t *testing.T, name string, args ...interface{}) []interface{}
 		t.Fatalf("%s failed: %v", name, err)
 	}
 	return mustUnpackABI(t, entry.OutputTypes(), output)
+}
+
+func sameBigIntSlice(a, b []*big.Int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i].Cmp(b[i]) != 0 {
+			return false
+		}
+	}
+	return true
 }
 
 func mustMakeABIArguments(t *testing.T, types []string) abi.Arguments {

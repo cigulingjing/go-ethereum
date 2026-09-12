@@ -1,0 +1,37 @@
+# 修改 nodeCount 即可调整规模；所有节点制品和数据集中在 outputDir。
+local:
+  nodeCount: 10
+  outputDir: ../nodes
+  httpPortBase: 8761
+  signerAccount: signer
+  extraArgs: [--cache, "128"]
+  # 那些节点需要暴露到宿主机网络中
+  expose:
+    - node: node1
+      httpHostPort: 8761
+network:
+  name: cryptoupgrade-local
+  chainId: 11223344
+  networkId: 11223344
+  gasLimit: 8000000
+  peerTopology: full
+consensus:
+  type: clique
+  period: 5
+  epoch: 30000
+docker:
+  image: cryptoupgrade-geth:lab
+  networkName: cryptoupgrade-local
+  cpus: "0.50"
+  memory: 768m
+cryptoupgrade:
+  enabled: true
+  # 是否使用somke测试，addSource 为smoke测试使用的算法
+  smokeTest: false
+  addSource: ../../../../cryptoupgrade/algorithm/wasm/archive/add.wasm
+accounts:
+  signer:
+    address: 0xF5F871aA6Bd253914705898c66251f994aa426FA
+    privateKey: ./signer.key
+    password: "123456"
+    balance: "30000000000000000000000"

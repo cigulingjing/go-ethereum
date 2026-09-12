@@ -1,6 +1,0 @@
-experiment=multi-node-upgrade-stability change=lab3-upgrade-stability completed=true rounds=2/2
-round=1 mode=scheduled tx=0x45ce0f4ac81913a242a89879c09340760034cb8307a48bb82a7f12b36abd6d29 completed=true
-round=2 mode=immediate tx=0x1ea06b1bc11da08ce8844e37e23b4ec34918c25b80d291ea245879734b9d2abd completed=true
-json=/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/lab3/result.json
-csv=/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/lab3/samples.csv
-summary=/home/liuqi/project/paper/go-ethereum/experiments/cryptoupgrade/results/wasm-rerun-20260902-225029/lab3/summary.txt

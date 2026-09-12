@@ -11,7 +11,9 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/activationtrace"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/model"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/stagelog"
 	"github.com/ethereum/go-ethereum/log"
 )
 
@@ -82,6 +84,9 @@ func (s *Service) Bind(ctx context.Context, client Client) {
 
 // Handle parses one CodeStorage upgrade log, queries chain metadata and delegates activation.
 func (s *Service) Handle(ctx context.Context, client Client, eventLog types.Log) error {
+	if stagelog.Enabled() {
+		ctx = stagelog.With(ctx, stagelog.Fields{"blockHash": eventLog.BlockHash.Hex(), "logIndex": eventLog.Index})
+	}
 	if s == nil || s.activator == nil {
 		return errors.New("event service activator is not configured")
 	}
@@ -96,12 +101,24 @@ func (s *Service) Handle(ctx context.Context, client Client, eventLog types.Log)
 	if name == "" {
 		return errors.New("decode codeUploaded event: empty algorithm name")
 	}
+	traceEvent := activationtrace.Event{
+		Name:        name,
+		Version:     1,
+		TxHash:      eventLog.TxHash.Hex(),
+		BlockNumber: eventLog.BlockNumber,
+	}
+	recordTrace(traceEvent, "event_received", nil)
 	info, err := s.GetInfo(ctx, client, name)
 	if err != nil {
+		recordTrace(traceEvent, "activation_failed", err)
 		return err
 	}
+	ctx = activationtrace.ContextWithEvent(ctx, traceEvent)
+	recordTrace(traceEvent, "activation_started", nil)
 	if err := s.activator.Activate(ctx, name, info); err != nil {
-		return fmt.Errorf("activate algorithm %s: %w", name, err)
+		err = fmt.Errorf("activate algorithm %s: %w", name, err)
+		recordTrace(traceEvent, "activation_failed", err)
+		return err
 	}
 	log.Info("Activated upgrade algorithm", "name", name)
 	return nil
@@ -131,18 +148,43 @@ func (s *Service) handleVersioned(ctx context.Context, client Client, eventLog t
 	if name == "" {
 		return errors.New("decode codeVersionUploaded event: empty algorithm name")
 	}
+	traceEvent := activationtrace.Event{
+		Name:            name,
+		Version:         version,
+		ActivationBlock: activationBlock,
+		TxHash:          eventLog.TxHash.Hex(),
+		BlockNumber:     eventLog.BlockNumber,
+	}
+	recordTrace(traceEvent, "event_received", nil)
 	info, err := s.GetVersionInfo(ctx, client, name, version)
 	if err != nil {
+		recordTrace(traceEvent, "activation_failed", err)
 		return err
 	}
 	if info.ActivationBlock != activationBlock {
-		return fmt.Errorf("CodeStorage version activation block mismatch for %s v%d: event=%d info=%d", name, version, activationBlock, info.ActivationBlock)
+		err := fmt.Errorf("CodeStorage version activation block mismatch for %s v%d: event=%d info=%d", name, version, activationBlock, info.ActivationBlock)
+		recordTrace(traceEvent, "activation_failed", err)
+		return err
 	}
+	ctx = activationtrace.ContextWithEvent(ctx, traceEvent)
+	recordTrace(traceEvent, "activation_started", nil)
 	if err := s.activator.ActivateVersion(ctx, name, info); err != nil {
-		return fmt.Errorf("activate algorithm %s version %d at block %d: %w", name, version, activationBlock, err)
+		err = fmt.Errorf("activate algorithm %s version %d at block %d: %w", name, version, activationBlock, err)
+		recordTrace(traceEvent, "activation_failed", err)
+		return err
 	}
 	log.Info("Activated upgrade algorithm version", "name", name, "version", version, "activationBlock", activationBlock)
 	return nil
+}
+
+func recordTrace(event activationtrace.Event, stage string, err error) {
+	event.Stage = stage
+	if err != nil {
+		event.Error = err.Error()
+	}
+	if traceErr := activationtrace.Record(event); traceErr != nil {
+		log.Warn("Failed to write cryptoupgrade activation trace", "stage", stage, "name", event.Name, "version", event.Version, "err", traceErr)
+	}
 }
 
 // GetInfo queries the authoritative CodeStorage metadata for an algorithm.

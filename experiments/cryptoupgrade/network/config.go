@@ -25,6 +25,7 @@ const (
 
 // Config 描述一个可复现的 cryptoupgrade 多节点私链网络。
 type Config struct {
+	Local         *LocalConfig             `yaml:"local,omitempty"`
 	Network       NetworkConfig            `yaml:"network"`
 	Consensus     ConsensusConfig          `yaml:"consensus"`
 	Docker        DockerConfig             `yaml:"docker"`
@@ -38,10 +39,11 @@ type Config struct {
 
 // NetworkConfig 定义所有节点共享的链参数。
 type NetworkConfig struct {
-	Name      string `yaml:"name"`
-	ChainID   uint64 `yaml:"chainId"`
-	NetworkID uint64 `yaml:"networkId"`
-	GasLimit  uint64 `yaml:"gasLimit"`
+	Name         string `yaml:"name"`
+	ChainID      uint64 `yaml:"chainId"`
+	NetworkID    uint64 `yaml:"networkId"`
+	GasLimit     uint64 `yaml:"gasLimit"`
+	PeerTopology string `yaml:"peerTopology,omitempty"`
 }
 
 // ConsensusConfig 定义私链共识参数。
@@ -54,8 +56,11 @@ type ConsensusConfig struct {
 
 // DockerConfig 定义单机容器网络的默认镜像和 Docker network 名称。
 type DockerConfig struct {
-	Image       string `yaml:"image"`
-	NetworkName string `yaml:"networkName"`
+	Image       string            `yaml:"image"`
+	NetworkName string            `yaml:"networkName"`
+	CPUs        string            `yaml:"cpus,omitempty"`
+	Memory      string            `yaml:"memory,omitempty"`
+	Expose      []HostExposeEntry `yaml:"expose,omitempty"`
 }
 
 // CryptoUpgradeConfig 控制是否在 genesis 中保留 cryptoupgrade 实验账户。
@@ -65,13 +70,13 @@ type CryptoUpgradeConfig struct {
 	AddSource string `yaml:"addSource"`
 }
 
-// AccountConfig 通过外部文件引用账户密钥，避免在 YAML 中保存私钥明文。
+// AccountConfig 描述实验账户；privateKey 可为相对路径或 32 字节 hex，password 直接写在 YAML 中。
 type AccountConfig struct {
 	Address    string `yaml:"address"`
-	Keystore   string `yaml:"keystore"`
+	PrivateKey string `yaml:"privateKey"`
 	Password   string `yaml:"password"`
 	Balance    string `yaml:"balance"`
-	PrivateKey string `yaml:"privateKey,omitempty"`
+	Keystore   string `yaml:"keystore,omitempty"` // 兼容旧配置，优先使用 privateKey
 }
 
 // NodeConfig 定义单个 geth 节点的网络地址、目录和角色。
@@ -95,15 +100,13 @@ type NodeConfig struct {
 	HTTPAPIs      []string `yaml:"httpApis"`
 	ExtraArgs     []string `yaml:"extraArgs"`
 	PrivateKey    string   `yaml:"privateKey,omitempty"`
+	generatedKey  string
 }
 
 // LoadConfig 读取并归一化多节点网络配置。
 func LoadConfig(path string) (*Config, error) {
 	raw, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err
-	}
-	if err := rejectPrivateKeyFields(raw); err != nil {
 		return nil, err
 	}
 	var cfg Config
@@ -115,6 +118,9 @@ func LoadConfig(path string) (*Config, error) {
 	abs, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
+	}
+	if cfg.Local != nil && len(cfg.Nodes) != 0 {
+		return nil, fmt.Errorf("local and nodes cannot be configured together")
 	}
 	cfg.configPath = abs
 	cfg.baseDir = filepath.Dir(abs)
@@ -141,6 +147,10 @@ func (cfg *Config) Normalize() error {
 	if cfg.Network.GasLimit == 0 {
 		cfg.Network.GasLimit = defaultGasLimit
 	}
+	cfg.Network.PeerTopology = strings.ToLower(strings.TrimSpace(cfg.Network.PeerTopology))
+	if cfg.Network.PeerTopology == "" {
+		cfg.Network.PeerTopology = "full"
+	}
 	cfg.Consensus.Type = strings.ToLower(strings.TrimSpace(cfg.Consensus.Type))
 	if cfg.Consensus.Type == "" {
 		cfg.Consensus.Type = "clique"
@@ -154,6 +164,8 @@ func (cfg *Config) Normalize() error {
 	if cfg.Docker.Image == "" {
 		cfg.Docker.Image = defaultDockerImage
 	}
+	cfg.Docker.CPUs = strings.TrimSpace(cfg.Docker.CPUs)
+	cfg.Docker.Memory = strings.TrimSpace(cfg.Docker.Memory)
 	if cfg.Docker.NetworkName == "" {
 		cfg.Docker.NetworkName = cfg.Network.Name
 	}
@@ -162,6 +174,11 @@ func (cfg *Config) Normalize() error {
 	}
 	if cfg.CryptoUpgrade.AddSource == "" {
 		cfg.CryptoUpgrade.AddSource = "cryptoupgrade/algorithm/wasm/add.wasm"
+	}
+	if cfg.Local != nil && len(cfg.Nodes) == 0 {
+		if err := cfg.expandLocal(); err != nil {
+			return err
+		}
 	}
 	for i := range cfg.Nodes {
 		node := &cfg.Nodes[i]
@@ -185,12 +202,6 @@ func (cfg *Config) Normalize() error {
 		if node.HTTPPort == 0 {
 			node.HTTPPort = defaultHTTPPort
 		}
-		if node.P2PHostPort == 0 {
-			node.P2PHostPort = node.P2PPort
-		}
-		if node.HTTPHostPort == 0 {
-			node.HTTPHostPort = node.HTTPPort
-		}
 		if len(node.HTTPAPIs) == 0 {
 			node.HTTPAPIs = []string{"web3", "eth", "net", "admin", "debug", "clique", "txpool", "miner"}
 		}
@@ -202,6 +213,9 @@ func (cfg *Config) Normalize() error {
 		}
 		if account, ok := cfg.Accounts[node.Account]; ok {
 			node.Account = account.Address
+			if node.PrivateKey == "" {
+				node.PrivateKey = account.PrivateKey
+			}
 			if node.Keystore == "" {
 				node.Keystore = account.Keystore
 			}
@@ -213,14 +227,17 @@ func (cfg *Config) Normalize() error {
 		node.PluginDir = cfg.resolvePath(node.PluginDir)
 		node.NodeKey = cfg.resolvePath(node.NodeKey)
 		node.Keystore = cfg.resolvePath(node.Keystore)
-		node.Password = cfg.resolvePath(node.Password)
+		node.PrivateKey = normalizePrivateKey(cfg, node.PrivateKey)
 	}
 	for name, account := range cfg.Accounts {
+		account.PrivateKey = normalizePrivateKey(cfg, account.PrivateKey)
 		account.Keystore = cfg.resolvePath(account.Keystore)
-		account.Password = cfg.resolvePath(account.Password)
 		cfg.Accounts[name] = account
 	}
 	cfg.CryptoUpgrade.AddSource = cfg.resolvePath(cfg.CryptoUpgrade.AddSource)
+	if err := cfg.applyHostExpose(); err != nil {
+		return err
+	}
 	return cfg.Validate()
 }
 
@@ -234,6 +251,9 @@ func (cfg *Config) Validate() error {
 	}
 	if len(cfg.Consensus.Signers) == 0 {
 		return fmt.Errorf("clique consensus requires at least one signer")
+	}
+	if cfg.Network.PeerTopology != "full" && cfg.Network.PeerTopology != "star" {
+		return fmt.Errorf("unsupported peer topology %q", cfg.Network.PeerTopology)
 	}
 	seenNodes := make(map[string]struct{})
 	seenHTTPPorts := make(map[int]string)
@@ -253,14 +273,21 @@ func (cfg *Config) Validate() error {
 			return fmt.Errorf("duplicate node id %q", node.ID)
 		}
 		seenNodes[node.ID] = struct{}{}
-		if owner, ok := seenHTTPPorts[node.HTTPHostPort]; ok {
-			return fmt.Errorf("duplicate http host port %d on nodes %s and %s", node.HTTPHostPort, owner, node.ID)
+		if node.exposedToHost() {
+			if node.HTTPHostPort < 1 || node.HTTPHostPort > 65535 {
+				return fmt.Errorf("node %s has invalid http host port %d", node.ID, node.HTTPHostPort)
+			}
+			if owner, ok := seenHTTPPorts[node.HTTPHostPort]; ok {
+				return fmt.Errorf("duplicate http host port %d on nodes %s and %s", node.HTTPHostPort, owner, node.ID)
+			}
+			seenHTTPPorts[node.HTTPHostPort] = node.ID
 		}
-		seenHTTPPorts[node.HTTPHostPort] = node.ID
-		if owner, ok := seenP2PPorts[node.P2PHostPort]; ok {
-			return fmt.Errorf("duplicate p2p host port %d on nodes %s and %s", node.P2PHostPort, owner, node.ID)
+		if node.P2PHostPort > 0 {
+			if owner, ok := seenP2PPorts[node.P2PHostPort]; ok {
+				return fmt.Errorf("duplicate p2p host port %d on nodes %s and %s", node.P2PHostPort, owner, node.ID)
+			}
+			seenP2PPorts[node.P2PHostPort] = node.ID
 		}
-		seenP2PPorts[node.P2PHostPort] = node.ID
 		if node.NodeKey == "" {
 			return fmt.Errorf("node %s requires nodeKey path", node.ID)
 		}
@@ -268,8 +295,11 @@ func (cfg *Config) Validate() error {
 			if !common.IsHexAddress(node.Account) {
 				return fmt.Errorf("signer node %s requires account address", node.ID)
 			}
-			if node.Keystore == "" || node.Password == "" {
-				return fmt.Errorf("signer node %s requires keystore and password paths", node.ID)
+			if node.Password == "" {
+				return fmt.Errorf("signer node %s requires password", node.ID)
+			}
+			if node.PrivateKey == "" && node.Keystore == "" {
+				return fmt.Errorf("signer node %s requires privateKey or keystore", node.ID)
 			}
 			signerNodes[common.HexToAddress(node.Account).Hex()] = struct{}{}
 		}
@@ -302,31 +332,3 @@ func (cfg *Config) resolvePath(path string) string {
 	return filepath.Clean(filepath.Join(cfg.baseDir, path))
 }
 
-func rejectPrivateKeyFields(raw []byte) error {
-	var doc yaml.Node
-	if err := yaml.Unmarshal(raw, &doc); err != nil {
-		return err
-	}
-	var walk func(*yaml.Node) error
-	walk = func(n *yaml.Node) error {
-		if n.Kind == yaml.MappingNode {
-			for i := 0; i+1 < len(n.Content); i += 2 {
-				key := n.Content[i].Value
-				switch strings.ToLower(strings.ReplaceAll(key, "_", "")) {
-				case "privatekey", "secretkey":
-					return fmt.Errorf("yaml field %q is not allowed; use keystore/password or nodeKey file paths", key)
-				}
-				if err := walk(n.Content[i+1]); err != nil {
-					return err
-				}
-			}
-		}
-		for _, child := range n.Content {
-			if err := walk(child); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-	return walk(&doc)
-}

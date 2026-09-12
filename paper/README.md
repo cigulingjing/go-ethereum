@@ -11,7 +11,7 @@
 ## Future work
 
 - **升级阶段对 EVM 的损耗**：在升级交易 receipt 之后、算法可调用之前，测量普通转账或其他合约调用的延迟与吞吐，并与无升级基线对比。用于论证异步激活是否扰动正在进行的 EVM 执行，而不是只论证升级交易本身不等待编译。
-- 未就绪节点 / fail-stop、无 Activation Block 对照、State Root 采集和一致性实验：不作为本次论文实验内容；仅可在 `Security Analysis / Upgrade Consistency` 中作为设计边界或 future work 说明。
+- 未就绪节点 / fail-stop、无 Activation Block 对照、State Root 采集和一致性实验：不作为本次论文实验内容；仅可在 `Security Analysis / Security Solutions` 中作为设计边界或 future work 说明。
 
 ## 目录
 

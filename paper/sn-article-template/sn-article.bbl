@@ -1,6 +1,6 @@
 %% BioMed_Central_Bib_Style_v1.01
 
-\begin{thebibliography}{29}
+\begin{thebibliography}{30}
 % BibTex style file: bmc-mathphys.bst (version 2.1), 2014-07-24
 \ifx \bisbn   \undefined \def \bisbn  #1{ISBN #1}\fi
 \ifx \binits  \undefined \def \binits#1{#1}\fi
@@ -311,6 +311,81 @@ Accessed 3 September 2026
 \endbibitem
 
 %%% 22
+\bibitem[\protect\citeauthoryear{{NMKR}}{}]{cardanoHardForkCombinator}
+\begin{botherref}
+\oauthor{\bsnm{{NMKR}}}:
+Cardano Hard-Fork-Combinator.
+\url{https://www.nmkr.io/glossary/cardano-hard-fork-combinator}.
+Accessed 21 August 2026
+\end{botherref}
+\endbibitem
+
+%%% 23
+\bibitem[\protect\citeauthoryear{{Cardano Foundation}}{}]{cardanoEvolution}
+\begin{botherref}
+\oauthor{\bsnm{{Cardano Foundation}}}:
+Cardano Evolution: About Hard Forks.
+\url{https://docs.cardano.org/about-cardano/evolution/about-hard-forks}.
+Accessed 21 August 2026
+\end{botherref}
+\endbibitem
+
+%%% 24
+\bibitem[\protect\citeauthoryear{Ciampi et~al.}{2020}]{ciampi2020updatable}
+\begin{bchapter}
+\bauthor{\bsnm{Ciampi}, \binits{M.}},
+\bauthor{\bsnm{Karayannidis}, \binits{N.}},
+\bauthor{\bsnm{Kiayias}, \binits{A.}}, \betal:
+\bctitle{Updatable blockchains}.
+In: \bbtitle{Proceedings of the 25th European Symposium on Research in Computer
+  Security},
+pp. \bfpage{590}--\blpage{609}.
+\bpublisher{Springer}, \blocation{???}
+(\byear{2020})
+\end{bchapter}
+\endbibitem
+
+%%% 25
+\bibitem[\protect\citeauthoryear{Zindros}{2021}]{zindros2021softPower}
+\begin{bchapter}
+\bauthor{\bsnm{Zindros}, \binits{D.}}:
+\bctitle{Soft power: Upgrading chain macroeconomic policy through soft forks}.
+In: \bbtitle{Proceedings of the 25th International Conference on Financial
+  Cryptography and Data Security},
+pp. \bfpage{467}--\blpage{481}.
+\bpublisher{Springer}, \blocation{???}
+(\byear{2021})
+\end{bchapter}
+\endbibitem
+
+%%% 26
+\bibitem[\protect\citeauthoryear{{Polkadot Wiki}}{}]{polkadotRuntimeUpgrades}
+\begin{botherref}
+\oauthor{\bsnm{{Polkadot Wiki}}}:
+Runtime Upgrades.
+\url{https://wiki.polkadot.network/docs/learn-runtime-upgrades}.
+Accessed 21 August 2026
+\end{botherref}
+\endbibitem
+
+%%% 27
+\bibitem[\protect\citeauthoryear{Kumar et~al.}{2025}]{kumar2025leagan}
+\begin{barticle}
+\bauthor{\bsnm{Kumar}, \binits{G.}},
+\bauthor{\bsnm{Saha}, \binits{R.}},
+\bauthor{\bsnm{Conti}, \binits{M.}},
+\bauthor{\bsnm{Buchanan}, \binits{W.J.}}:
+\batitle{Leagan: A decentralized version-control framework for upgradeable
+  smart contracts}.
+\bjtitle{IEEE Transactions on Services Computing}
+\bvolume{18}(\bissue{3}),
+\bfpage{1529}--\blpage{1542}
+(\byear{2025})
+\doiurl{10.1109/TSC.2025.3562323}
+\end{barticle}
+\endbibitem
+
+%%% 28
 \bibitem[\protect\citeauthoryear{Zhang et~al.}{2018}]{zhang2018kylinx}
 \begin{bchapter}
 \bauthor{\bsnm{Zhang}, \binits{Y.}},
@@ -325,7 +400,7 @@ pp. \bfpage{173}--\blpage{186}.
 \end{bchapter}
 \endbibitem
 
-%%% 23
+%%% 29
 \bibitem[\protect\citeauthoryear{Pina et~al.}{2019}]{pina2019mvedsua}
 \begin{bchapter}
 \bauthor{\bsnm{Pina}, \binits{L.}},
@@ -341,7 +416,7 @@ pp. \bfpage{573}--\blpage{585}.
 \end{bchapter}
 \endbibitem
 
-%%% 24
+%%% 30
 \bibitem[\protect\citeauthoryear{Huang et~al.}{2021}]{huang2021pylive}
 \begin{bchapter}
 \bauthor{\bsnm{Huang}, \binits{H.}},
@@ -353,64 +428,6 @@ pp. \bfpage{349}--\blpage{363}.
 \bpublisher{USENIX Association}, \blocation{???}
 (\byear{2021})
 \end{bchapter}
-\endbibitem
-
-%%% 25
-\bibitem[\protect\citeauthoryear{{NMKR}}{}]{cardanoHardForkCombinator}
-\begin{botherref}
-\oauthor{\bsnm{{NMKR}}}:
-Cardano Hard-Fork-Combinator.
-\url{https://www.nmkr.io/glossary/cardano-hard-fork-combinator}.
-Accessed 21 August 2026
-\end{botherref}
-\endbibitem
-
-%%% 26
-\bibitem[\protect\citeauthoryear{{Cardano Foundation}}{}]{cardanoEvolution}
-\begin{botherref}
-\oauthor{\bsnm{{Cardano Foundation}}}:
-Cardano Evolution: About Hard Forks.
-\url{https://docs.cardano.org/about-cardano/evolution/about-hard-forks}.
-Accessed 21 August 2026
-\end{botherref}
-\endbibitem
-
-%%% 27
-\bibitem[\protect\citeauthoryear{Ciampi et~al.}{2020}]{ciampi2020updatable}
-\begin{bchapter}
-\bauthor{\bsnm{Ciampi}, \binits{M.}},
-\bauthor{\bsnm{Karayannidis}, \binits{N.}},
-\bauthor{\bsnm{Kiayias}, \binits{A.}}, \betal:
-\bctitle{Updatable blockchains}.
-In: \bbtitle{Proceedings of the 25th European Symposium on Research in Computer
-  Security},
-pp. \bfpage{590}--\blpage{609}.
-\bpublisher{Springer}, \blocation{???}
-(\byear{2020})
-\end{bchapter}
-\endbibitem
-
-%%% 28
-\bibitem[\protect\citeauthoryear{Zindros}{2021}]{zindros2021softPower}
-\begin{bchapter}
-\bauthor{\bsnm{Zindros}, \binits{D.}}:
-\bctitle{Soft power: Upgrading chain macroeconomic policy through soft forks}.
-In: \bbtitle{Proceedings of the 25th International Conference on Financial
-  Cryptography and Data Security},
-pp. \bfpage{467}--\blpage{481}.
-\bpublisher{Springer}, \blocation{???}
-(\byear{2021})
-\end{bchapter}
-\endbibitem
-
-%%% 29
-\bibitem[\protect\citeauthoryear{{Polkadot Wiki}}{}]{polkadotRuntimeUpgrades}
-\begin{botherref}
-\oauthor{\bsnm{{Polkadot Wiki}}}:
-Runtime Upgrades.
-\url{https://wiki.polkadot.network/docs/learn-runtime-upgrades}.
-Accessed 21 August 2026
-\end{botherref}
 \endbibitem
 
 \end{thebibliography}

@@ -28,6 +28,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ethereum/go-ethereum/cryptoupgrade/stagelog"
 	"github.com/ethereum/go-ethereum/internal/telemetry"
 	"github.com/ethereum/go-ethereum/log"
 	"go.opentelemetry.io/otel"
@@ -177,6 +178,10 @@ func (b *batchCallBuffer) doWrite(ctx context.Context, conn jsonWriter, isErrorR
 
 // handleBatch executes all messages in a batch and returns the responses.
 func (h *handler) handleBatch(msgs []*jsonrpcMessage) {
+	receivedAt := time.Now()
+	for _, msg := range msgs {
+		msg.stageTrace = stagelog.ReceiveRPCAt(msg.Method, string(msg.ID), receivedAt)
+	}
 	// For valid batches, filter response messages and subscription notifications
 	// out of msgs here.
 	var calls []*jsonrpcMessage
@@ -297,6 +302,7 @@ func (h *handler) respondWithBatchTooLarge(cp *callProc, batch []*jsonrpcMessage
 
 // handleMsg handles a single non-batch message.
 func (h *handler) handleMsg(msg *jsonrpcMessage) {
+	msg.stageTrace = stagelog.ReceiveRPC(msg.Method, string(msg.ID))
 	msgs := []*jsonrpcMessage{msg}
 	h.handleResponses(msgs, func(msg *jsonrpcMessage) {
 		h.startCallProc(func(cp *callProc) {
@@ -516,6 +522,11 @@ func (h *handler) handleSubscriptionResult(msg *jsonrpcMessage) {
 
 // handleCallMsg executes a call message and returns the answer.
 func (h *handler) handleCallMsg(ctx *callProc, msg *jsonrpcMessage) *jsonrpcMessage {
+	if msg.stageTrace != nil {
+		local := *ctx
+		local.ctx = stagelog.With(ctx.ctx, msg.stageTrace)
+		ctx = &local
+	}
 	start := time.Now()
 	switch {
 	case msg.isNotification():
