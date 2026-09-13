@@ -44,7 +44,7 @@ type NodeValidation struct {
 // ValidateNetwork 只检查节点 RPC、chain ID、peer、出块和 Clique signer 状态。
 func ValidateNetwork(ctx context.Context, cfg *Config, opts ValidateOptions) (*ValidationResult, error) {
 	if opts.Timeout == 0 {
-		opts.Timeout = time.Duration(cfg.Consensus.Period+2) * time.Second
+		opts.Timeout = time.Duration(cfg.Consensus.CliquePeriod()+2) * time.Second
 	}
 	result := &ValidationResult{
 		ConfigPath:        cfg.ConfigPath(),
@@ -53,7 +53,7 @@ func ValidateNetwork(ctx context.Context, cfg *Config, opts ValidateOptions) (*V
 		MinimumPeerCount:  requiredPeerCount(len(cfg.Nodes), opts.MinPeerCount),
 		OK:                true,
 	}
-	wait := time.Duration(cfg.Consensus.Period+1) * time.Second
+	wait := time.Duration(cfg.Consensus.CliquePeriod()+1) * time.Second
 	results := make([]NodeValidation, len(cfg.Nodes))
 	var wg sync.WaitGroup
 	for i, node := range cfg.Nodes {
@@ -160,7 +160,8 @@ func validateNodeOnce(ctx context.Context, cfg *Config, node NodeConfig, wait ti
 		out.Error = fmt.Sprintf("peer count too low: want >= %d got %d", minPeerCount, out.PeerCount)
 		return out
 	}
-	if out.EndBlock <= out.StartBlock {
+	// period=0 时无交易不出块，不能用高度增长判断网络是否可用。
+	if cfg.Consensus.CliquePeriod() > 0 && out.EndBlock <= out.StartBlock {
 		out.Error = fmt.Sprintf("block height did not increase: start %d end %d", out.StartBlock, out.EndBlock)
 		return out
 	}

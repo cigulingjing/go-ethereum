@@ -47,11 +47,21 @@ type NetworkConfig struct {
 }
 
 // ConsensusConfig 定义私链共识参数。
+// Period 使用指针，是为了区分 YAML 未写 period（回落默认 5s）和显式 period: 0
+//（Clique 有交易即出块，不能被默认值覆盖）。
 type ConsensusConfig struct {
 	Type    string   `yaml:"type"`
-	Period  uint64   `yaml:"period"`
+	Period  *uint64  `yaml:"period"`
 	Epoch   uint64   `yaml:"epoch"`
 	Signers []string `yaml:"signers"`
+}
+
+// CliquePeriod 返回实际 Clique 出块间隔秒数。
+func (c ConsensusConfig) CliquePeriod() uint64 {
+	if c.Period == nil {
+		return defaultCliquePeriod
+	}
+	return *c.Period
 }
 
 // DockerConfig 定义单机容器网络的默认镜像和 Docker network 名称。
@@ -155,8 +165,9 @@ func (cfg *Config) Normalize() error {
 	if cfg.Consensus.Type == "" {
 		cfg.Consensus.Type = "clique"
 	}
-	if cfg.Consensus.Period == 0 {
-		cfg.Consensus.Period = defaultCliquePeriod
+	if cfg.Consensus.Period == nil {
+		p := defaultCliquePeriod
+		cfg.Consensus.Period = &p
 	}
 	if cfg.Consensus.Epoch == 0 {
 		cfg.Consensus.Epoch = defaultCliqueEpoch

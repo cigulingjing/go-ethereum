@@ -62,7 +62,7 @@ func cliqueChainConfig(cfg *Config) *params.ChainConfig {
 		LondonBlock:             new(big.Int).Set(zeroBlock),
 		TerminalTotalDifficulty: big.NewInt(math.MaxInt64),
 		Clique: &params.CliqueConfig{
-			Period: cfg.Consensus.Period,
+			Period: cfg.Consensus.CliquePeriod(),
 			Epoch:  cfg.Consensus.Epoch,
 		},
 	}

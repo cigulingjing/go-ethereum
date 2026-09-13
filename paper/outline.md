@@ -1,4 +1,4 @@
-# An Upgradable Cryptographic Coprocessor for the Ethereum Virtual Machine
+# EvoCrypt: An Upgradable Cryptographic Coprocessor for the Ethereum Virtual Machine
 
 面向以太坊虚拟机的可升级密码协处理器。
 
@@ -12,7 +12,7 @@
 
 分析现有方案的不足：
 
-- Solidity 实现执行效率低、Gas 开销高；
+- Solidity 开发密码算法难度大，并且实现以后密码算法执行效率低、Gas 开销高；
 - 预编译合约效率较高，但新增算法需要升级客户端；
 - 节点独立升级可能造成服务中断和版本不一致。
 
@@ -24,7 +24,6 @@
 - 通过指定区块高度完成版本切换。
 
 总结本文贡献：
-
 1. 设计面向 EVM 的密码协处理器架构；
 2. 设计链上协调的 WASM 密码算法升级协议；
 3. 实现原型并评估升级开销、执行时间和 Gas 消耗。
@@ -49,17 +48,7 @@
 
 介绍系统整体架构，包括 Execution Engine、Identity Hooks、Cryptographic Coprocessor、Upgrade Handler、WASM Runtime 和 WASM Modules。说明普通交易仍由 EVM 执行，只有识别到特定管理合约调用时才进入协处理器。
 
-### 3.2 Invocation Abstraction
-
-定义统一调用接口：
-
-```solidity
-callFunc(string algorithm, bytes input)
-```
-
-说明调用过程：智能合约构造算法名称和 ABI 参数，EVM 通过 Identity Hooks 识别调用，密码协处理器执行对应 WASM 模块，并将结果编码后返回 EVM。
-
-### 3.3 Upgrade Protocol
+### 3.2 Upgrade Protocol
 
 定义升级提案内容：
 
@@ -73,7 +62,6 @@ activationHeight
 
 说明升级流程：开发者提交升级提案，节点监听链上事件，Upgrade Handler 获取并校验 WASM 模块，WASM Runtime 完成加载后等待指定区块激活。
 
-### 3.4 Deterministic Activation
 
 根据区块高度选择算法版本：
 
@@ -87,7 +75,13 @@ $$
 
 说明未完成模块校验或加载的节点在激活后停止相关执行，避免继续使用旧版本。
 
-### 3.5 Resource Accounting
+
+### 3.3 Invocation Protocol
+
+定义统一调用接口，用户将调用算法以及参数序列化为输入,在合约侧调用指定合约地址的指定方法：智能合约构造算法名称和 ABI 参数，EVM 通过 Identity Hooks 识别调用，密码协处理器执行对应 WASM 模块，并将结果编码后返回 EVM。
+
+
+**调用Gas费用计算**
 
 采用类似预编译合约的 Gas 规则：
 
@@ -96,7 +90,7 @@ G_a(x)=G_{\mathrm{base},a}
 +\left\lceil\frac{L(x)}{W}\right\rceil G_{\mathrm{unit},a}.
 $$
 
-说明 Gas 由算法类型和确定性输入参数计算，不能根据节点实际 CPU 时间动态计费。
+说明 Gas 由算法类型和确定性输入参数计算，不能根据节点实际 CPU 时间动态计费。输入参数为统一接口的输入数据长度。不同算法可以定义不同的输入参数来调整gas费用与复杂度的关系。
 
 ### 3.6 Prototype Implementation
 
@@ -104,76 +98,52 @@ $$
 
 ## 4 Security Analysis
 
-### 4.1 Threat Model
+### 4.1 Attack Circumstances
 
-定义恶意 WASM 模块、资源耗尽攻击、错误升级构件和节点升级延迟等威胁。
+本文涉及到的攻击场景包括：
 
-### 4.2 Execution Isolation
+1. 虚拟机逃逸问题（Sandbox Escape），WASM执行逻辑跳出了EVM执行范围之外。
+2. 升级元数据不一致，攻击者发布与代码不相符的提案，影响正确的升级合约数据
+3. 资源耗尽攻击，
+4. 异步更新带来的状态不一致问题，
 
-分析 WASM 沙箱、线性内存和受限宿主接口如何降低虚拟机逃逸风险，说明 WASM 模块不能直接访问 Geth 进程内存、文件系统、系统网络和未授权宿主函数。
+### 4.2 Security Solutions
 
-### 4.3 Resource Abuse
+对应攻击场景的解决方案为：、
+1. WASM隔离性，防止恶意代码访问宿主机信息
+2. 合约数据是唯一正确来源，区块链不可篡改的性质，在合约记录升级metadata，所有节点依据打包完成的Event接受升级数据
+3. 动态Gas计费策略，管理合约可以调整每一个算法的**输入gas计费参数**，通过调整参数能够让gas费匹配计算资源
+4. 一致性保证机制，在 **Activation Block** 区块完成升级算法的启用，达成全网执行逻辑的共识，确保指定交易在指定区块计算结果是一直的。
 
-分析低 Gas 定价可能造成的计算资源滥用问题。说明通过确定性 Gas 计量、内存上限、调用深度限制和执行预算防止拒绝服务攻击。
 
-### 4.4 Upgrade Consistency
-
-从协议设计论证升级一致性：模块哈希确定唯一执行构件，链上提案确定目标版本，区块高度确定统一切换边界，节点本地时间不参与版本选择，未就绪节点不会继续执行旧模块。一致性作为安全属性分析，不再单独设置实验。
 
 ## 5 Evaluation
 
 ### 5.1 Experimental Setup
 
-说明 Geth 版本、共识配置、硬件环境、WASM Runtime 和节点配置。
+| 算法名字 | Go 文件大小 | WASM 文件大小 | Solidity 文件大小 | 数学难题 / 计算类型 |
+|---|---:|---:|---:|---|
+| Add | 156 B | 11.0 KB (11,287 B) | 181 B | 非密码基线；整数加法 |
+| Sha256 | 210 B | 66.7 KB (68,288 B) | 219 B | 密码哈希；SHA-256 单向压缩函数 |
+| Blake2bSum256 | 4.8 KB (4,911 B) | 8.5 KB (8,724 B) | 5.2 KB (5,340 B) | 密码哈希；BLAKE2b 单向压缩函数 |
+| Pbkdf2Sha256 | 1.3 KB (1,377 B) | 70.9 KB (72,580 B) | 2.2 KB (2,269 B) | 密钥派生；PBKDF2-HMAC-SHA256 迭代拉伸 |
+| Dh2048Secret | 1.6 KB (1,595 B) | 44.8 KB (45,919 B) | 473 B* | 密钥交换；有限域离散对数（DH-2048, RFC 3526） |
+| PedersenCommit | 1.8 KB (1,871 B) | 93.5 KB (95,780 B) | 645 B* | 承诺方案；有限域离散对数（Pedersen, mod p） |
+| SchnorrVerify | 2.1 KB (2,171 B) | 93.7 KB (95,960 B) | 962 B | 数字签名验证；有限域离散对数（Schnorr, mod p） |
+| PolynomialMul | 790 B | 7.8 KB (7,987 B) | 953 B | 代数运算；有限域多项式乘法（mod q） |
 
-| WASM 模块 | 导出入口 | Solidity 文件 | Solidity 入口 | 状态 |
-| --- | --- | --- | --- | --- |
-| `add.wasm` | `Add` | `Add.sol` | `Add` | 待按 WASM 路径重做 |
-| `blake2b.wasm` | `Sum256` | `Blake2b.sol` | `Sum256` | 待按 WASM 路径重做 |
-| `dh2048.wasm` | `Dh2048Secret` | `Dh2048.sol` | `Dh2048Secret` | 待按 WASM 路径重做 |
-| `pbkdf2_sha256.wasm` | `Pbkdf2Sha256` | `Pbkdf2Sha256.sol` | `Pbkdf2Sha256` | 待按 WASM 路径重做 |
-| `pedersen_commit.wasm` | `PedersenCommit` | `PedersenCommit.sol` | `PedersenCommit` | 待按 WASM 路径重做 |
-| `schnorr_proof.wasm` | `SchnorrVerify` | `SchnorrProof.sol` | `SchnorrVerify` | 待按 WASM 路径重做 |
-| `sha256.wasm` | `Sha256` | `Sha256.sol` | `Sha256` | 待按 WASM 路径重做 |
 
 ### 5.2 Upgrade Efficiency
 
-评估不同节点规模和密码模块下的升级开销。
-
-测量指标包括：
-
-- 提案确认时间；
-- 模块获取时间；
-- 模块校验时间；
-- WASM 加载时间；
-- 单节点准备时间；
-- 全网升级完成时间；
-- 升级期间交易成功率；
-- 最长出块间隔。
-
-图片内容
-1. 验证升级开销是否可控，以及升级期间是否能够继续提供服务。
-2. 通过与solidity合约升级时间效率进行对比，凸显出我们的升级效果。
-
-表格内容：
-1. 针对一个密码算法升级的时间进行分段，通过表格的内容列举每一个阶段需要耗费的时间
+EvoCrypt与Solidity实现的密码算法升级交易消耗执行时间对比
+EvoCrypt与Solidity实现的密码算法升级交易消耗的Gas费用对比
 
 ### 5.3 Execution Efficiency
 
-比较 WASM 密码协处理器、预编译合约和 Solidity 合约的执行效率。
 
-测量指标包括：
+EvoCrypt与Solidity升级后，以及与原生方案，密码算法执行耗时对比
+EvoCrypt与Solidity升级后，密码算法执行消耗Gas费用对比
 
-- 算法执行时间；
-- P95 执行时间；
-- Gas 消耗；
-- 相对性能提升；
-- 相对 Gas 变化。
-
-图片内容：
-1. 针对密码算法 本文方案 solidity方案 预编译合约实现执行效率进行对比
-2. 收集执行阶段消耗的Gas费用，包括solidity方案、预编译合约方案与solidity合约方案
-3. 收集WASM执行时候消耗的CPU计算以及内存占用率数据
 
 ## 6 Related Work
 
@@ -195,7 +165,5 @@ $$
 
 - 密码算法可以在节点不停机的情况下完成更新；
 - 升级开销随节点规模增长保持可控；
-- WASM 密码模块具有接近预编译合约的执行效率；
-- 相比 Solidity 实现，方案能够降低密码算法的执行开销。
-
-最后说明当前限制及未来工作，包括更完善的 WASM 确定性规范、Gas 参数校准、升级治理和更多密码算法支持。
+- WASM 密码模块具有接近原生代码实现的执行效率，在简单密码学操作中效率与solidity持平，在复杂密码学操作中好于solidity；
+- 相比 Solidity 实现，方案能够显著降低密码算法的执行开销。

@@ -15,14 +15,14 @@ func TestPolynomialMulMatchesBigIntReference(t *testing.T) {
 		{[]int64{18, 2, 3}, []int64{4, 22}, 17},
 		{makeRange(64, 100), makeRange(64, 100), 65537},
 		{makeRange(32, 16), makeRange(32, 16), 12289},
+		{makeRange(12, 12), makeRange(12, 12), 12289},
 	}
 	for _, tc := range cases {
-		left := intsToBigSlice(tc.left)
-		right := intsToBigSlice(tc.right)
-		mod := big.NewInt(tc.mod)
-		got := PolynomialMul(left, right, mod)
-		want := polynomialMulReference(left, right, mod)
-		if !sameBigIntSlice(got, want) {
+		left := intsToUint64Slice(tc.left)
+		right := intsToUint64Slice(tc.right)
+		got := PolynomialMul(left, right, uint64(tc.mod))
+		want := polynomialMulBigIntReference(intsToBigSlice(tc.left), intsToBigSlice(tc.right), big.NewInt(tc.mod))
+		if !sameUint64AndBigIntSlice(got, want) {
 			t.Fatalf("mod=%d left=%d right=%d: got %v want %v", tc.mod, len(tc.left), len(tc.right), got, want)
 		}
 	}
@@ -36,6 +36,14 @@ func makeRange(n int, max int64) []int64 {
 	return out
 }
 
+func intsToUint64Slice(values []int64) []uint64 {
+	out := make([]uint64, len(values))
+	for i, value := range values {
+		out[i] = uint64(value)
+	}
+	return out
+}
+
 func intsToBigSlice(values []int64) []*big.Int {
 	out := make([]*big.Int, len(values))
 	for i, value := range values {
@@ -44,7 +52,7 @@ func intsToBigSlice(values []int64) []*big.Int {
 	return out
 }
 
-func polynomialMulReference(left, right []*big.Int, modulus *big.Int) []*big.Int {
+func polynomialMulBigIntReference(left, right []*big.Int, modulus *big.Int) []*big.Int {
 	result := make([]*big.Int, len(left)+len(right)-1)
 	for i := range result {
 		result[i] = new(big.Int)
@@ -65,12 +73,12 @@ func polynomialMulReference(left, right []*big.Int, modulus *big.Int) []*big.Int
 	return result
 }
 
-func sameBigIntSlice(a, b []*big.Int) bool {
-	if len(a) != len(b) {
+func sameUint64AndBigIntSlice(got []uint64, want []*big.Int) bool {
+	if len(got) != len(want) {
 		return false
 	}
-	for i := range a {
-		if a[i].Cmp(b[i]) != 0 {
+	for i := range got {
+		if want[i] == nil || got[i] != want[i].Uint64() {
 			return false
 		}
 	}

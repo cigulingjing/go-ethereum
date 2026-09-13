@@ -44,12 +44,33 @@ func (miner *Miner) Stop() {
 func (miner *Miner) sealingLoop(stop <-chan struct{}, done chan<- struct{}) {
 	defer close(done)
 	log.Info("Starting local Clique sealer")
+	period := uint64(0)
+	if miner.chainConfig.Clique != nil {
+		period = miner.chainConfig.Clique.Period
+	}
+	// period=0 时有交易立即出块，不应再固定等 1s，否则测到的仍是轮询间隔。
+	idleWait := time.Second
+	if period == 0 {
+		idleWait = 10 * time.Millisecond
+	}
 	for {
 		select {
 		case <-stop:
 			log.Info("Stopped local Clique sealer")
 			return
 		default:
+		}
+		if period == 0 {
+			pending, queued := miner.txpool.Stats()
+			if pending+queued == 0 {
+				select {
+				case <-stop:
+					log.Info("Stopped local Clique sealer")
+					return
+				case <-time.After(idleWait):
+				}
+				continue
+			}
 		}
 		if err := miner.sealCliqueBlock(stop); err != nil {
 			if !errors.Is(err, errSealingStopped) {
@@ -60,7 +81,7 @@ func (miner *Miner) sealingLoop(stop <-chan struct{}, done chan<- struct{}) {
 		case <-stop:
 			log.Info("Stopped local Clique sealer")
 			return
-		case <-time.After(time.Second):
+		case <-time.After(idleWait):
 		}
 	}
 }

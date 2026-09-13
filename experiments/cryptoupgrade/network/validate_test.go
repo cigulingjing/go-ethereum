@@ -50,9 +50,10 @@ func TestValidateNetworkChecksOnlyNetworkState(t *testing.T) {
 	httpServer := httptest.NewServer(server)
 	defer httpServer.Close()
 
+	zeroPeriod := uint64(0)
 	cfg := &Config{
 		Network:   NetworkConfig{ChainID: 11223344},
-		Consensus: ConsensusConfig{Period: 0},
+		Consensus: ConsensusConfig{Period: &zeroPeriod},
 		Nodes: []NodeConfig{{
 			ID:     "node1",
 			Role:   "signer",

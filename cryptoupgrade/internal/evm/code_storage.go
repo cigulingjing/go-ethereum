@@ -13,11 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/model"
 )
 
-const (
-	codeStorageReadGas  uint64 = 3000
-	codeStorageWriteGas uint64 = 50000
-)
-
 // CodeUploadedTopic is the stable legacy codeUploaded event signature.
 var CodeUploadedTopic = crypto.Keccak256Hash([]byte("codeUploaded(string)"))
 
@@ -81,7 +76,8 @@ func (d *Dispatcher) IsCall(addr common.Address, input []byte) bool {
 	return addr == common.CodeStorageAddress && len(input) >= 4 && d.method(input[:4]) != nil
 }
 
-// RequiredGas returns the unchanged CodeStorage gas schedule.
+// RequiredGas 仅对 callFunc 收取算法元数据中的执行 Gas。
+// 升级与查询路径不在此重复定价，由标准交易固有 Gas（21000 + calldata）覆盖。
 func (d *Dispatcher) RequiredGas(input []byte) (uint64, error) {
 	if len(input) < 4 {
 		return 0, errors.New("CodeStorage input is shorter than method selector")
@@ -90,14 +86,10 @@ func (d *Dispatcher) RequiredGas(input []byte) (uint64, error) {
 	if method == nil {
 		return 0, fmt.Errorf("unknown CodeStorage selector %x", input[:4])
 	}
-	switch method.Name {
-	case "callFunc":
+	if method.Name == "callFunc" {
 		return d.caller.RequiredGasAt(input, d.blockNumber)
-	case "uploadCode", "uploadCodeVersion", "uploadCodeImmediate", "updataGas":
-		return codeStorageWriteGas + uint64(len(input))*16, nil
-	default:
-		return codeStorageReadGas + uint64(len(input))*4, nil
 	}
+	return 0, nil
 }
 
 // Run dispatches one CodeStorage call without compiling uploads in the EVM path.

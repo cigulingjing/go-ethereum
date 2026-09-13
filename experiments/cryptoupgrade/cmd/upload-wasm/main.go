@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -44,7 +43,7 @@ func main() {
 		privateKey      = flag.String("key", "", "签名私钥（32 字节 hex，可带 0x 前缀）")
 		chainIDFlag     = flag.Uint64("chain-id", 11223344, "链 ID")
 		txGas           = flag.Uint64("tx-gas", 0, "交易 Gas 上限（0 表示 estimate）")
-		waitReceipt     = flag.Duration("wait", 2*time.Minute, "等待 receipt 超时")
+		waitTimeout     = flag.Duration("wait", 2*time.Minute, "等待 receipt 超时")
 		waitActive      = flag.Bool("wait-active", true, "upload 模式完成后轮询 getActiveVersion")
 		jsonOut         = flag.String("output-json", "", "可选结果 JSON 路径")
 	)
@@ -116,6 +115,7 @@ func main() {
 	if err != nil {
 		fatal(fmt.Errorf("sign tx: %w", err))
 	}
+	sentAt := time.Now()
 	if err := client.SendTransaction(ctx, signed); err != nil {
 		fatal(fmt.Errorf("send tx: %w", err))
 	}
@@ -128,16 +128,18 @@ func main() {
 	}
 	fmt.Printf("submitted %s tx %s\n", *mode, out.TxHash)
 
-	waitCtx, cancel := context.WithTimeout(ctx, *waitReceipt)
+	waitCtx, cancel := context.WithTimeout(ctx, *waitTimeout)
 	defer cancel()
-	receipt, err := bind.WaitMinedHash(waitCtx, client, signed.Hash())
+	receipt, err := waitReceipt(waitCtx, client, signed.Hash())
 	if err != nil {
 		fatal(fmt.Errorf("wait receipt: %w", err))
 	}
+	receiptAt := time.Now()
 	out.BlockNumber = receipt.BlockNumber.Uint64()
 	out.GasUsed = receipt.GasUsed
 	out.Status = receipt.Status
 	fmt.Printf("mined in block %d status=%d gasUsed=%d\n", out.BlockNumber, out.Status, out.GasUsed)
+	fmt.Printf("submitToReceiptMs=%d\n", receiptAt.Sub(sentAt).Milliseconds())
 	if receipt.Status != types.ReceiptStatusSuccessful {
 		fatal(fmt.Errorf("transaction reverted"))
 	}
@@ -146,7 +148,10 @@ func main() {
 		if err := waitAlgorithmActive(ctx, client, name, *version); err != nil {
 			fatal(err)
 		}
+		activeAt := time.Now()
 		fmt.Printf("algorithm %s is active\n", name)
+		fmt.Printf("receiptToActiveMs=%d\n", activeAt.Sub(receiptAt).Milliseconds())
+		fmt.Printf("submitToActiveMs=%d\n", activeAt.Sub(sentAt).Milliseconds())
 	}
 
 	if *jsonOut != "" {
@@ -206,11 +211,29 @@ func parsePrivateKeyHex(raw string) (string, error) {
 }
 
 func cryptoupgradeRequiredGas(input []byte) uint64 {
-	gas, err := cryptoupgrade.RequiredGasForCodeStorageCall(input)
-	if err != nil {
-		return 8_000_000
+	// CodeStorage 升级路径不再单独定价；estimate 失败时使用保守 fallback。
+	_ = input
+	return 8_000_000
+}
+
+func waitReceipt(ctx context.Context, client *ethclient.Client, hash common.Hash) (*types.Receipt, error) {
+	// bind.WaitMined 固定 1s 轮询，period=0 时会把真实出块时间淹没掉。
+	ticker := time.NewTicker(10 * time.Millisecond)
+	defer ticker.Stop()
+	for {
+		receipt, err := client.TransactionReceipt(ctx, hash)
+		if err == nil && receipt != nil {
+			return receipt, nil
+		}
+		select {
+		case <-ctx.Done():
+			if err != nil {
+				return nil, err
+			}
+			return nil, ctx.Err()
+		case <-ticker.C:
+		}
 	}
-	return gas * 12 / 10
 }
 
 func waitAlgorithmActive(ctx context.Context, client *ethclient.Client, name string, version uint64) error {
@@ -233,7 +256,7 @@ func waitAlgorithmActive(ctx context.Context, client *ethclient.Client, name str
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case <-time.After(2 * time.Second):
+		case <-time.After(50 * time.Millisecond):
 		}
 	}
 	return fmt.Errorf("timeout waiting for %s activation", name)

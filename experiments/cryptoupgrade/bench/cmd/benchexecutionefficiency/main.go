@@ -60,6 +60,7 @@ type config struct {
 	outputJSON        string
 	polyLeftLen       int
 	polyRightLen      int
+	polyProfile       string
 	polyModulus       string
 	polyCoefMax       int
 	schemes           string
@@ -316,6 +317,7 @@ func parseFlags() config {
 	flag.StringVar(&cfg.outputJSON, "output-json", "", "write JSON result to this file; defaults under -output-dir")
 	flag.IntVar(&cfg.polyLeftLen, "poly-left-len", 4, "PolynomialMul left polynomial length")
 	flag.IntVar(&cfg.polyRightLen, "poly-right-len", 4, "PolynomialMul right polynomial length")
+	flag.StringVar(&cfg.polyProfile, "poly-profile", "", "PolynomialMul profile preset (P1..P6); overrides -poly-left-len/-poly-right-len")
 	flag.StringVar(&cfg.polyModulus, "poly-modulus", "12289", "PolynomialMul modulus")
 	flag.IntVar(&cfg.polyCoefMax, "poly-coef-max", 0, "PolynomialMul coefficient upper bound; when >0 use values in [1,max] cyclically")
 	flag.StringVar(&cfg.schemes, "schemes", "upgrade,contract,precompile", "comma-separated implementation schemes to benchmark")
@@ -323,7 +325,7 @@ func parseFlags() config {
 	return cfg
 }
 
-func (cfg config) validate() error {
+func (cfg *config) validate() error {
 	if cfg.rpc == "" {
 		return errors.New("-rpc is required")
 	}
@@ -339,6 +341,19 @@ func (cfg config) validate() error {
 	if cfg.solcPath == "" {
 		return errors.New("-solc is required")
 	}
+	return cfg.applyPolyProfile()
+}
+
+func (cfg *config) applyPolyProfile() error {
+	if cfg.polyProfile == "" {
+		return nil
+	}
+	size, ok := polyProfileSize(cfg.polyProfile)
+	if !ok {
+		return fmt.Errorf("unknown -poly-profile %q (supported: P1, P2, P3, P4, P5, P6)", cfg.polyProfile)
+	}
+	cfg.polyLeftLen = size
+	cfg.polyRightLen = size
 	return nil
 }
 
@@ -383,8 +398,8 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 		{
 			Algorithm:             "Add",
 			UpgradeName:           "Add",
-			SourcePath:            "cryptoupgrade/algorithm/wasm/add.wasm",
-			ContractSource:        "cryptoupgrade/algorithm/contracts/Add.sol",
+			SourcePath:            "experiments/cryptoupgrade/algorithm/go/wasm/add.wasm",
+			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/archive/Add.sol",
 			ContractName:          "AddContract",
 			ContractFunction:      "Add",
 			PrecompileName:        "Add",
@@ -408,8 +423,8 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 		{
 			Algorithm:             "Sha256",
 			UpgradeName:           "Sha256",
-			SourcePath:            "cryptoupgrade/algorithm/wasm/sha256.wasm",
-			ContractSource:        "cryptoupgrade/algorithm/contracts/Sha256.sol",
+			SourcePath:            "experiments/cryptoupgrade/algorithm/go/wasm/sha256.wasm",
+			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/archive/Sha256.sol",
 			ContractName:          "Sha256Contract",
 			ContractFunction:      "Sha256",
 			PrecompileName:        "Sha256",
@@ -431,8 +446,8 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 		{
 			Algorithm:             "Blake2bSum256",
 			UpgradeName:           "Sum256",
-			SourcePath:            "cryptoupgrade/algorithm/wasm/blake2b.wasm",
-			ContractSource:        "cryptoupgrade/algorithm/contracts/Blake2b.sol",
+			SourcePath:            "experiments/cryptoupgrade/algorithm/go/wasm/blake2b.wasm",
+			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/archive/Blake2b.sol",
 			ContractName:          "Blake2b",
 			ContractFunction:      "Sum256",
 			PrecompileName:        "Blake2bSum256",
@@ -454,8 +469,8 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 		{
 			Algorithm:             "Pbkdf2Sha256",
 			UpgradeName:           "Pbkdf2Sha256",
-			SourcePath:            "cryptoupgrade/algorithm/wasm/pbkdf2_sha256.wasm",
-			ContractSource:        "cryptoupgrade/algorithm/contracts/Pbkdf2Sha256.sol",
+			SourcePath:            "experiments/cryptoupgrade/algorithm/go/wasm/pbkdf2_sha256.wasm",
+			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/archive/Pbkdf2Sha256.sol",
 			ContractName:          "Pbkdf2Sha256Contract",
 			ContractFunction:      "Pbkdf2Sha256",
 			PrecompileName:        "Pbkdf2Sha256",
@@ -480,8 +495,8 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 		{
 			Algorithm:             "Dh2048Secret",
 			UpgradeName:           "Dh2048Secret",
-			SourcePath:            "cryptoupgrade/algorithm/wasm/dh2048.wasm",
-			ContractSource:        "cryptoupgrade/algorithm/contracts/Dh2048.sol",
+			SourcePath:            "experiments/cryptoupgrade/algorithm/go/wasm/dh2048.wasm",
+			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/archive/Dh2048.sol",
 			ContractName:          "Dh2048",
 			ContractFunction:      "Dh2048Secret",
 			PrecompileName:        "Dh2048Secret",
@@ -506,8 +521,8 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 		{
 			Algorithm:             "PedersenCommit",
 			UpgradeName:           "PedersenCommit",
-			SourcePath:            "cryptoupgrade/algorithm/wasm/pedersen_commit.wasm",
-			ContractSource:        "cryptoupgrade/algorithm/contracts/PedersenCommit.sol",
+			SourcePath:            "experiments/cryptoupgrade/algorithm/go/wasm/pedersen_commit.wasm",
+			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/archive/PedersenCommit.sol",
 			ContractName:          "PedersenCommitContract",
 			ContractFunction:      "PedersenCommit",
 			PrecompileName:        "PedersenCommit",
@@ -530,8 +545,8 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 		{
 			Algorithm:             "SchnorrVerify",
 			UpgradeName:           "SchnorrVerify",
-			SourcePath:            "cryptoupgrade/algorithm/wasm/schnorr_proof.wasm",
-			ContractSource:        "cryptoupgrade/algorithm/contracts/SchnorrProof.sol",
+			SourcePath:            "experiments/cryptoupgrade/algorithm/go/wasm/schnorr_proof.wasm",
+			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/archive/SchnorrProof.sol",
 			ContractName:          "SchnorrProof",
 			ContractFunction:      "SchnorrVerify",
 			PrecompileName:        "SchnorrVerify",
@@ -556,7 +571,7 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 		{
 			Algorithm:             "PolynomialMul",
 			UpgradeName:           "PolynomialMul",
-			SourcePath:            "experiments/cryptoupgrade/algorithm/go/polynomial_mul.wasm",
+			SourcePath:            "experiments/cryptoupgrade/algorithm/go/wasm/polynomial_mul.wasm",
 			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/PolynomialMul.sol",
 			ContractName:          "PolynomialMulContract",
 			ContractFunction:      "PolynomialMul",
@@ -1479,21 +1494,27 @@ func polynomialMulAlgoGas(leftLen, rightLen int) uint64 {
 	return 5000 + products*200
 }
 
+// polyProfileSize 定义 PolynomialMul 实验档位。规模已下调，使 TinyGo WASM 路径可在 P6 内稳定运行。
+var polyProfileSizeMap = map[string]int{
+	"P1": 4,  // 4×4=16
+	"P2": 6,  // 6×6=36
+	"P3": 8,  // 8×8=64
+	"P4": 9,  // 9×9=81
+	"P5": 10, // 10×10=100
+	"P6": 11, // 11×11=121；12×12 在 TinyGo WASM 下返回空结果
+}
+
+func polyProfileSize(name string) (int, bool) {
+	size, ok := polyProfileSizeMap[strings.ToUpper(strings.TrimSpace(name))]
+	return size, ok
+}
+
 func polyProfileName(leftLen, rightLen int) string {
 	if leftLen == rightLen {
-		switch leftLen {
-		case 4:
-			return "P1"
-		case 8:
-			return "P2"
-		case 16:
-			return "P3"
-		case 32:
-			return "P4"
-		case 64:
-			return "P5"
-		case 128:
-			return "P6"
+		for name, size := range polyProfileSizeMap {
+			if leftLen == size {
+				return name
+			}
 		}
 	}
 	return fmt.Sprintf("custom-%dx%d", leftLen, rightLen)
@@ -1577,6 +1598,7 @@ func parsePositiveBigInt(label, raw string) (*big.Int, error) {
 
 func defaultSolcPath() string {
 	candidates := []string{
+		"/home/lq/.local/share/svm/solc-0.8.26",
 		"../.tools/solc/solc-0.8.26",
 		"/home/liuqi/project/.tools/solc/solc-0.8.26",
 		"solc",

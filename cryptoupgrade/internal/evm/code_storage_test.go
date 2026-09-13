@@ -98,6 +98,47 @@ func (c *fakeCaller) RunAt(input []byte, _ uint64) ([]byte, error) {
 	return c.Run(input)
 }
 
+func TestRequiredGasOnlyChargesCallFunc(t *testing.T) {
+	contractABI := MustCodeStorageABI()
+	dispatcher := NewDispatcher(contractABI, &fakeState{}, new(fakeCaller))
+
+	uploadInput, err := contractABI.Pack("uploadCode", "add", "encoded", uint64(7), "bytes", "bytes")
+	if err != nil {
+		t.Fatalf("pack uploadCode: %v", err)
+	}
+	uploadGas, err := dispatcher.RequiredGas(uploadInput)
+	if err != nil {
+		t.Fatalf("RequiredGas uploadCode: %v", err)
+	}
+	if uploadGas != 0 {
+		t.Fatalf("uploadCode gas = %d, want 0", uploadGas)
+	}
+
+	readInput, err := contractABI.Pack("getGas", "Add")
+	if err != nil {
+		t.Fatalf("pack getGas: %v", err)
+	}
+	readGas, err := dispatcher.RequiredGas(readInput)
+	if err != nil {
+		t.Fatalf("RequiredGas getGas: %v", err)
+	}
+	if readGas != 0 {
+		t.Fatalf("getGas gas = %d, want 0", readGas)
+	}
+
+	callInput, err := contractABI.Pack("callFunc", "Add", []byte{})
+	if err != nil {
+		t.Fatalf("pack callFunc: %v", err)
+	}
+	callGas, err := dispatcher.RequiredGas(callInput)
+	if err != nil {
+		t.Fatalf("RequiredGas callFunc: %v", err)
+	}
+	if callGas != 1 {
+		t.Fatalf("callFunc gas = %d, want 1 from fake caller", callGas)
+	}
+}
+
 func TestUploadReceiptDoesNotMeanLocalActivation(t *testing.T) {
 	contractABI := MustCodeStorageABI()
 	state := &fakeState{

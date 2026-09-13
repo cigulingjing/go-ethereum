@@ -13,6 +13,27 @@
 实验代码只通过 `github.com/ethereum/go-ethereum/cryptoupgrade` facade 使用运行时能力。
 历史 `cryptoupgrade/results` 是只读运行快照，仍保留原路径且不应改写。
 
+## 环境配置
+
+第一步： Geth编译
+```shell
+make geth
+```
+
+第二步：WASM环境配置
+```shell
+wget https://github.com/tinygo-org/tinygo/releases/download/v0.42.0/tinygo_0.42.0_amd64.deb
+
+sudo dpkg -i tinygo_0.42.0_amd64.deb
+```
+
+第三步：foundry安装
+```shell
+curl -L https://getfoundry.sh/install | bash
+source ~/.bashrc
+foundryup
+```
+
 ## 私有网络搭建
 
 第一步：生成部署目录 render

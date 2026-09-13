@@ -113,7 +113,8 @@ func Build(ctx context.Context, source []byte, spec Spec) ([]byte, error) {
 	if tinygoBin == "" {
 		tinygoBin = "tinygo"
 	}
-	cmd := exec.CommandContext(ctx, tinygoBin, "build",
+	tinygoArgs := []string{
+		"build",
 		"-target", "wasi",
 		"-buildmode=c-shared",
 		"-scheduler=none",
@@ -121,7 +122,8 @@ func Build(ctx context.Context, source []byte, spec Spec) ([]byte, error) {
 		"-no-debug",
 		"-o", outputPath,
 		".",
-	)
+	}
+	cmd := exec.CommandContext(ctx, tinygoBin, tinygoArgs...)
 	cmd.Dir = dir
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -717,7 +719,6 @@ const uint256ArrayPolynomialWrapperTemplate = `package main
 
 import (
 	"encoding/binary"
-	"math/big"
 	"unsafe"
 )
 
@@ -726,10 +727,16 @@ const wasmWordSize = 32
 //go:wasmexport execute
 func execute(inputPtr, inputLen uint32) uint32 {
 	input := wasmMemoryBytes(inputPtr, inputLen)
-	left := wasmReadUint256ArrayArg(input, 0)
-	right := wasmReadUint256ArrayArg(input, 1)
-	modulus := wasmReadUint256Arg(input, 2)
-	if len(left) == 0 || len(right) == 0 || modulus == nil || modulus.Sign() <= 0 {
+	left, ok := wasmReadUint64ArrayArg(input, 0)
+	if !ok {
+		return 0
+	}
+	right, ok := wasmReadUint64ArrayArg(input, 1)
+	if !ok {
+		return 0
+	}
+	modulus, ok := wasmReadUint64Arg(input, 2)
+	if !ok || modulus == 0 {
 		return 0
 	}
 	result := PolynomialMul(left, right, modulus)
@@ -752,35 +759,55 @@ func wasmMemoryPointer(ptr *byte) uint32 {
 	return uint32(uintptr(unsafe.Pointer(ptr)))
 }
 
-func wasmReadUint256ArrayArg(input []byte, index int) []*big.Int {
+func wasmReadUint64ArrayArg(input []byte, index int) ([]uint64, bool) {
 	slot := wasmReadSlot(input, index)
 	if slot == nil {
-		return nil
+		return nil, false
 	}
 	offset := int(binary.BigEndian.Uint64(slot[24:32]))
 	if offset+32 > len(input) {
-		return nil
+		return nil, false
 	}
 	length := int(binary.BigEndian.Uint64(input[offset+24 : offset+32]))
 	start := offset + 32
 	end := start + length*wasmWordSize
 	if end > len(input) {
-		return nil
+		return nil, false
 	}
-	out := make([]*big.Int, length)
+	out := make([]uint64, length)
 	for i := 0; i < length; i++ {
 		elem := input[start+i*wasmWordSize : start+(i+1)*wasmWordSize]
-		out[i] = new(big.Int).SetBytes(elem)
+		value, ok := wasmDecodeUint64Word(elem)
+		if !ok {
+			return nil, false
+		}
+		out[i] = value
 	}
-	return out
+	return out, true
 }
 
-func wasmReadUint256Arg(input []byte, index int) *big.Int {
+func wasmReadUint64Arg(input []byte, index int) (uint64, bool) {
 	slot := wasmReadSlot(input, index)
 	if slot == nil {
-		return nil
+		return 0, false
 	}
-	return new(big.Int).SetBytes(slot)
+	return wasmDecodeUint64Word(slot)
+}
+
+func wasmDecodeUint64Word(word []byte) (uint64, bool) {
+	if len(word) != wasmWordSize || hasNonZeroPrefix(word[:24]) {
+		return 0, false
+	}
+	return binary.BigEndian.Uint64(word[24:32]), true
+}
+
+func hasNonZeroPrefix(word []byte) bool {
+	for _, b := range word {
+		if b != 0 {
+			return true
+		}
+	}
+	return false
 }
 
 func wasmReadSlot(input []byte, index int) []byte {
@@ -792,25 +819,19 @@ func wasmReadSlot(input []byte, index int) []byte {
 	return input[start:end]
 }
 
-func wasmEncodeABIUint256Array(values []*big.Int) []byte {
+func wasmEncodeABIUint256Array(values []uint64) []byte {
 	out := make([]byte, 64+len(values)*wasmWordSize)
 	binary.BigEndian.PutUint64(out[24:32], 32)
 	binary.BigEndian.PutUint64(out[56:64], uint64(len(values)))
 	for i, value := range values {
-		if value == nil {
-			continue
-		}
-		copy(out[64+i*wasmWordSize:64+(i+1)*wasmWordSize], wasmEncodeUint256(value))
+		copy(out[64+i*wasmWordSize:64+(i+1)*wasmWordSize], wasmEncodeUint64(value))
 	}
 	return out
 }
 
-func wasmEncodeUint256(value *big.Int) []byte {
+func wasmEncodeUint64(value uint64) []byte {
 	out := make([]byte, wasmWordSize)
-	if value == nil {
-		return out
-	}
-	value.FillBytes(out)
+	binary.BigEndian.PutUint64(out[24:32], value)
 	return out
 }
 

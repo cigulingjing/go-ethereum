@@ -56,6 +56,25 @@ func TestLoadConfigRejectsMissingSigner(t *testing.T) {
 	}
 }
 
+func TestLoadConfigPreservesExplicitZeroCliquePeriod(t *testing.T) {
+	dir := t.TempDir()
+	raw := strings.Replace(testConfigYAML(dir), "period: 1", "period: 0", 1)
+	cfg, err := LoadConfig(writeConfig(t, dir, raw))
+	if err != nil {
+		t.Fatalf("LoadConfig failed: %v", err)
+	}
+	if cfg.Consensus.CliquePeriod() != 0 {
+		t.Fatalf("explicit period 0 was overwritten: %d", cfg.Consensus.CliquePeriod())
+	}
+	genesis, err := BuildGenesis(cfg)
+	if err != nil {
+		t.Fatalf("BuildGenesis failed: %v", err)
+	}
+	if genesis.Config.Clique == nil || genesis.Config.Clique.Period != 0 {
+		t.Fatalf("genesis clique period = %+v, want 0", genesis.Config.Clique)
+	}
+}
+
 func TestLoadConfigAcceptsInlinePrivateKey(t *testing.T) {
 	dir := t.TempDir()
 	raw := strings.Replace(testConfigYAML(dir), "privateKey: ./signer.key", "privateKey: "+testNodeKey1, 1)

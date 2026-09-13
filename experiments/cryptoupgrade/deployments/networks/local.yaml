@@ -1,6 +1,6 @@
 # 修改 nodeCount 即可调整规模；所有节点制品和数据集中在 outputDir。
 local:
-  nodeCount: 10
+  nodeCount: 1
   outputDir: ../nodes
   httpPortBase: 8761
   signerAccount: signer
@@ -13,11 +13,11 @@ network:
   name: cryptoupgrade-local
   chainId: 11223344
   networkId: 11223344
-  gasLimit: 8000000
+  gasLimit: 30000000
   peerTopology: full
 consensus:
   type: clique
-  period: 5
+  period: 0
   epoch: 30000
 docker:
   image: cryptoupgrade-geth:lab
