@@ -4,7 +4,7 @@
 
 ## Abstract
 
-说明智能合约通过合约代码调用密码算法存在执行效率低、Gas 开销高的问题，而预编译合约依赖客户端升级，缺少灵活性。本文提出一种面向 EVM 的密码协处理器，通过调用旁路执行 WASM 密码模块，并利用链上提案和指定块高完成动态升级。实验从升级效率和执行效率两个方面进行评估，验证方案能够在不中断节点服务的情况下更新密码算法，并获得接近预编译合约的执行效率。
+智能合约调用密码算法时，Solidity 实现开发成本高、执行延迟与 Gas 开销大。预编译合约效率较高，但算法逻辑固化在客户端中，链上运行期缺少可替换、可演进的动态更新机制，通常只能依赖客户端重编译与协调发布。本文提出面向 EVM 的 EvoCrypt 密码协处理器：在稳定合约接口下加载可替换的 WASM 模块，并通过链上元数据与激活区块完成版本切换，从而补上预编译路径所不具备的动态升级能力。我们在 Geth 上实现原型，在本地 20 节点 Clique 私有网络（`period=0`）中测量不含共识等待的升级延迟，以及执行阶段的延迟与调用 Gas 估算。
 
 ## 1 Introduction
 
@@ -40,7 +40,7 @@
 
 ### 2.3 WebAssembly Runtime
 
-介绍 WASM 的跨平台字节码、沙箱隔离、线性内存和确定性执行特征，说明其作为密码模块载体的适用性。
+介绍 WASM 的跨平台字节码、沙箱隔离、线性内存与可移植执行语义。说明协处理器以同一 WASM 模块字节码作为权威算法载荷，在兼容运行时上不同 OS/架构节点对相同输入产生相同输出，从而支撑跨节点执行一致性与区块链状态重放要求（区别于进程内 native plugin 的平台相关二进制）。
 
 ## 3 Coprocessor Architecture
 
@@ -60,37 +60,17 @@ wasmBytes
 activationHeight
 ```
 
-说明升级流程：开发者提交升级提案，节点监听链上事件，Upgrade Handler 获取并校验 WASM 模块，WASM Runtime 完成加载后等待指定区块激活。
+说明升级流程：开发者提交升级提案，节点监听链上事件，Upgrade Handler 从 Management Contract 获取并校验 WASM 模块，WASM Runtime 完成加载；链上事件仅携带算法名、版本与激活高度，完整元数据以合约存储为准。流程见 **Algorithm 1（Activation-Block-based WASM upgrade protocol）**。
 
+版本选择：区块高度低于 Activation Block 时使用旧版本，达到或超过 Activation Block 时使用新版本；若存在多个已调度版本，则在链上记录中选择激活高度不超过当前区块高度的最新版本。
 
-根据区块高度选择算法版本：
-
-$$
-V(m,b)=
-\begin{cases}
-V_{\mathrm{old}}, & b < H,\\
-V_{\mathrm{new}}, & b \ge H.
-\end{cases}
-$$
-
-说明未完成模块校验或加载的节点在激活后停止相关执行，避免继续使用旧版本。
-
+说明采用强制升级策略：当达到 Activation Block 且链上已选中新版本时，节点不得回退旧实现；若本地尚未 prepared，则从 Management Contract 强制拉取 WASM 并完成校验、编译与实例化后再执行，而非直接返回 execution error。
 
 ### 3.3 Invocation Protocol
 
-定义统一调用接口，用户将调用算法以及参数序列化为输入,在合约侧调用指定合约地址的指定方法：智能合约构造算法名称和 ABI 参数，EVM 通过 Identity Hooks 识别调用，密码协处理器执行对应 WASM 模块，并将结果编码后返回 EVM。
+定义统一调用接口：合约构造算法名称与 ABI 参数，经 `callFunc` 发起 `STATICCALL`；Identity Hooks 识别 CodeStorage 调用，协处理器按当前块高选版、必要时强制准备、校验调用 Gas、执行 WASM 并返回 ABI 编码结果。流程见 **Algorithm 2（Contract-to-coprocessor invocation protocol）**。
 
-
-**调用Gas费用计算**
-
-采用类似预编译合约的 Gas 规则：
-
-$$
-G_a(x)=G_{\mathrm{base},a}
-+\left\lceil\frac{L(x)}{W}\right\rceil G_{\mathrm{unit},a}.
-$$
-
-说明 Gas 由算法类型和确定性输入参数计算，不能根据节点实际 CPU 时间动态计费。输入参数为统一接口的输入数据长度。不同算法可以定义不同的输入参数来调整gas费用与复杂度的关系。
+**调用 Gas 费用计算**：采用类似预编译合约的确定性规则——基础 Gas 加与输入长度相关的线性项；Gas 由算法类型与输入数据长度计算，不能按节点 CPU 时间动态计费；各算法版本在链上元数据中注册对应参数。
 
 ### 3.6 Prototype Implementation
 
@@ -112,8 +92,8 @@ $$
 对应攻击场景的解决方案为：、
 1. WASM隔离性，防止恶意代码访问宿主机信息
 2. 合约数据是唯一正确来源，区块链不可篡改的性质，在合约记录升级metadata，所有节点依据打包完成的Event接受升级数据
-3. 动态Gas计费策略，管理合约可以调整每一个算法的**输入gas计费参数**，通过调整参数能够让gas费匹配计算资源
-4. 一致性保证机制，在 **Activation Block** 区块完成升级算法的启用，达成全网执行逻辑的共识，确保指定交易在指定区块计算结果是一直的。
+3. 调用阶段确定性 Gas 计费：链上元数据为每个算法版本注册调用 Gas 参数，协处理器在 `callFunc` 执行时按输入长度等确定性规则扣费，而非按升级上传交易的 EVM Gas 机制建模
+4. 一致性保证机制：在 **Activation Block** 按 \(b<H\) / \(b\ge H\) 统一选版；未 prepared 时**强制拉取并完成升级**，禁止静默回退旧版本。
 
 
 
@@ -121,28 +101,32 @@ $$
 
 ### 5.1 Experimental Setup
 
-| 算法名字 | Go 文件大小 | WASM 文件大小 | Solidity 文件大小 | 数学难题 / 计算类型 |
-|---|---:|---:|---:|---|
-| Add | 156 B | 11.0 KB (11,287 B) | 181 B | 非密码基线；整数加法 |
-| Sha256 | 210 B | 66.7 KB (68,288 B) | 219 B | 密码哈希；SHA-256 单向压缩函数 |
-| Blake2bSum256 | 4.8 KB (4,911 B) | 8.5 KB (8,724 B) | 5.2 KB (5,340 B) | 密码哈希；BLAKE2b 单向压缩函数 |
-| Pbkdf2Sha256 | 1.3 KB (1,377 B) | 70.9 KB (72,580 B) | 2.2 KB (2,269 B) | 密钥派生；PBKDF2-HMAC-SHA256 迭代拉伸 |
-| Dh2048Secret | 1.6 KB (1,595 B) | 44.8 KB (45,919 B) | 473 B* | 密钥交换；有限域离散对数（DH-2048, RFC 3526） |
-| PedersenCommit | 1.8 KB (1,871 B) | 93.5 KB (95,780 B) | 645 B* | 承诺方案；有限域离散对数（Pedersen, mod p） |
-| SchnorrVerify | 2.1 KB (2,171 B) | 93.7 KB (95,960 B) | 962 B | 数字签名验证；有限域离散对数（Schnorr, mod p） |
-| PolynomialMul | 790 B | 7.8 KB (7,987 B) | 953 B | 代数运算；有限域多项式乘法（mod q） |
+实验在 20 节点 Clique 私有链（`period=0`，chain ID 11223344）上进行，客户端为修改版 Geth v1.17.5-unstable（commit df28d2ab8），Go 1.25.7 编译；Solidity 使用 solc 0.8.26，WASM 使用 TinyGo 0.42.0 构建。升级延迟为控制端可观测的 setup 时间，**不含共识与出块等待**；执行阶段指标为 `eth_call` 延迟与 `eth_estimateGas` 对 `callFunc` 返回的 `gasEstimate`（非 receipt `gasUsed`）。主机硬件规格待补全以便完全复现。
 
+下表列出 8 个被测算法在三路径上的实现体量（均为源文件或模块字节数，单位 B），以及各自在评测中的**作用**。Go 大小指 `experiments/cryptoupgrade/algorithm/go/` 下 Native 参考源码；WASM 为上传的 TinyGo 模块；Solidity 为 `contracts/src/` 下基准合约 `.sol` 源文件大小。Dh2048Secret、PedersenCommit 的 Solidity 列为薄封装合约体积，模运算逻辑在共享库 `BigMod.sol`（8524 B）中；部署 bytecode 与 Gas 以链接后完整实现为准。
+
+| 算法名字 | Go (B) | WASM (B) | Solidity (B) | 作用 |
+|---|---:|---:|---:|---|
+| Add | 156 | 11287 | 181 | 非密码基线 |
+| Sha256 | 210 | 68288 | 219 | 密码哈希 |
+| Blake2bSum256 | 4911 | 8724 | 5340 | 密码哈希 |
+| Pbkdf2Sha256 | 1377 | 72580 | 2269 | 密钥派生 |
+| Dh2048Secret | 1595 | 45919 | 473* | 密钥交换 |
+| PedersenCommit | 1871 | 95780 | 645* | 承诺方案 |
+| SchnorrVerify | 2171 | 95960 | 962 | 数字签名验证 |
+| PolynomialMul | 790 | 7987 | 953 | 代数运算 |
+
+\* 仅统计算法合约 `.sol` 源文件；模运算见共享 `BigMod.sol`。
+
+对比方案：升级效率比较 EvoCrypt（WASM 升级上传）与 Solidity 合约部署的 **setup 延迟**及对应 setup 交易的 **`gasEstimate`**（普通 EVM 交易计价，非协议层升级 Gas 机制）；执行效率在 setup 完成后比较 EvoCrypt、**Native algorithm** 与 Solidity Contract 的 `callFunc` 延迟与调用 Gas。
 
 ### 5.2 Upgrade Efficiency
 
-EvoCrypt与Solidity实现的密码算法升级交易消耗执行时间对比
-EvoCrypt与Solidity实现的密码算法升级交易消耗的Gas费用对比
+EvoCrypt 与 Solidity 实现密码算法可调用化过程的 setup 延迟对比，以及 upload/部署交易的 `gasEstimate` 对比（Figure upgrade-latency / upgrade-gas）；协议设计不对升级交易单独定义协处理器 Gas 规则，仅调用阶段使用链上 invocation gas 元数据。
 
 ### 5.3 Execution Efficiency
 
-
-EvoCrypt与Solidity升级后，以及与原生方案，密码算法执行耗时对比
-EvoCrypt与Solidity升级后，密码算法执行消耗Gas费用对比
+EvoCrypt 与 Solidity 升级后，以及与 Native 方案，密码算法执行耗时与调用 Gas 对比
 
 
 ## 6 Related Work

@@ -5,8 +5,11 @@
 重新生成命令：
 
 ```bash
-python paper/image/generate_experiment_figures.py
+python paper/image/generate_experiment_figures.py              # 全部图
+python paper/image/generate_experiment_figures.py upgrade-gas  # 只生成指定图
 ```
+
+可选图名：`upgrade-gas`、`upgrade-latency`、`execution-gas`、`execution-latency`。
 
 每张图均提供 `.svg`、`.pdf`、`.png`、`.tiff` 四种格式：
 

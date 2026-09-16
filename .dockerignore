@@ -6,6 +6,9 @@ build/bin
 build/cryptoupgrade-networks
 experiments/cryptoupgrade/deployments/nodes
 experiments/cryptoupgrade/deployments/docker-check
+# 运行时链数据（容器内 root 写入，且体积大），不应进入构建上下文
+experiments/cryptoupgrade/nodes
+experiments/cryptoupgrade/nodes-1node
 tests/testdata
 
 .git

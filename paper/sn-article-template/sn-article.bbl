@@ -86,10 +86,10 @@ Ethereum Yellow Paper. Accessed 21 August 2026
 \endbibitem
 
 %%% 4
-\bibitem[\protect\citeauthoryear{{Ethereum Foundation}}{}]{ethereumEVM}
+\bibitem[\protect\citeauthoryear{{Ethereum.org}}{}]{ethereumEVM}
 \begin{botherref}
-\oauthor{\bsnm{{Ethereum Foundation}}}:
-Ethereum Virtual Machine.
+\oauthor{\bsnm{{Ethereum.org}}}:
+Ethereum Virtual Machine ({EVM}).
 \url{https://ethereum.org/developers/docs/evm/}.
 Accessed 21 August 2026
 \end{botherref}
@@ -140,17 +140,18 @@ Updated 5 August 2026. Accessed 21 August 2026
 \bibitem[\protect\citeauthoryear{Buterin}{2016}]{buterin2016eip150}
 \begin{botherref}
 \oauthor{\bsnm{Buterin}, \binits{V.}}:
-{EIP-150}: Gas Cost Changes for IO-heavy Operations.
-\url{https://eips.ethereum.org/EIPS/eip-150}.
-Accessed 21 August 2026
+{EIP-150}: Gas Cost Changes for {IO}-Heavy Operations.
+Ethereum Improvement Proposals, no. 150.
+  \url{https://eips.ethereum.org/EIPS/eip-150}.
+Created 24 September 2016. Accessed 21 August 2026
 (2016)
 \end{botherref}
 \endbibitem
 
 %%% 9
-\bibitem[\protect\citeauthoryear{{evm.codes}}{}]{evmCodesPrecompiled}
+\bibitem[\protect\citeauthoryear{{EVM Codes}}{}]{evmCodesPrecompiled}
 \begin{botherref}
-\oauthor{\bsnm{{evm.codes}}}:
+\oauthor{\bsnm{{EVM Codes}}}:
 Precompiled Contracts.
 \url{https://www.evm.codes/precompiled}.
 Accessed 21 August 2026
@@ -184,29 +185,30 @@ Accessed 21 August 2026
 \bauthor{\bsnm{Davi}, \binits{L.}}:
 \bctitle{{EVMPatch}: Timely and automated patching of ethereum smart
   contracts}.
-In: \bbtitle{Proceedings of the 30th USENIX Security Symposium},
+In: \bbtitle{30th USENIX Security Symposium (USENIX Security 21)},
 pp. \bfpage{1289}--\blpage{1306}.
-\bpublisher{USENIX Association}, \blocation{???}
+\bpublisher{USENIX Association},
+\blocation{Berkeley, CA, USA}
 (\byear{2021}).
 \burl{https://www.usenix.org/conference/usenixsecurity21/presentation/rodler}
 \end{bchapter}
 \endbibitem
 
 %%% 12
-\bibitem[\protect\citeauthoryear{{Ethereum
-  Foundation}}{}]{ethereumSmartContracts}
+\bibitem[\protect\citeauthoryear{{Ethereum.org}}{2026}]{ethereumSmartContracts}
 \begin{botherref}
-\oauthor{\bsnm{{Ethereum Foundation}}}:
+\oauthor{\bsnm{{Ethereum.org}}}:
 Introduction to Smart Contracts.
 \url{https://ethereum.org/developers/docs/smart-contracts/}.
-Accessed 21 August 2026
+Updated 25 February 2026. Accessed 21 August 2026
+(2026)
 \end{botherref}
 \endbibitem
 
 %%% 13
-\bibitem[\protect\citeauthoryear{{Ethereum Foundation}}{}]{ethereumAccounts}
+\bibitem[\protect\citeauthoryear{{Ethereum.org}}{}]{ethereumAccounts}
 \begin{botherref}
-\oauthor{\bsnm{{Ethereum Foundation}}}:
+\oauthor{\bsnm{{Ethereum.org}}}:
 Ethereum Accounts.
 \url{https://ethereum.org/developers/docs/accounts/}.
 Accessed 21 August 2026
@@ -214,52 +216,60 @@ Accessed 21 August 2026
 \endbibitem
 
 %%% 14
-\bibitem[\protect\citeauthoryear{{Ethereum Improvement Proposals}}{}]{eip196}
+\bibitem[\protect\citeauthoryear{Reitwiessner}{2017}]{eip196}
 \begin{botherref}
-\oauthor{\bsnm{{Ethereum Improvement Proposals}}}:
-EIP-196: Precompiled contracts for addition and scalar multiplication on the
-  elliptic curve alt\_bn128.
-\url{https://eips.ethereum.org/EIPS/eip-196}.
-Accessed 21 August 2026
+\oauthor{\bsnm{Reitwiessner}, \binits{C.}}:
+{EIP-196}: Precompiled Contracts for Addition and Scalar Multiplication on the
+  Elliptic Curve alt\_bn128.
+Ethereum Improvement Proposals, no. 196.
+  \url{https://eips.ethereum.org/EIPS/eip-196}.
+Final. Accessed 21 August 2026
+(2017)
 \end{botherref}
 \endbibitem
 
 %%% 15
-\bibitem[\protect\citeauthoryear{{Ethereum Improvement Proposals}}{}]{eip197}
+\bibitem[\protect\citeauthoryear{Buterin and Reitwiessner}{2017}]{eip197}
 \begin{botherref}
-\oauthor{\bsnm{{Ethereum Improvement Proposals}}}:
-EIP-197: Precompiled contracts for optimal ate pairing check on the elliptic
-  curve alt\_bn128.
-\url{https://eips.ethereum.org/EIPS/eip-197}.
-Accessed 21 August 2026
+\oauthor{\bsnm{Buterin}, \binits{V.}},
+\oauthor{\bsnm{Reitwiessner}, \binits{C.}}:
+{EIP-197}: Precompiled Contracts for Optimal Ate Pairing Check on the Elliptic
+  Curve alt\_bn128.
+Ethereum Improvement Proposals, no. 197.
+  \url{https://eips.ethereum.org/EIPS/eip-197}.
+Final. Accessed 21 August 2026
+(2017)
 \end{botherref}
 \endbibitem
 
 %%% 16
-\bibitem[\protect\citeauthoryear{{Ethereum Improvement Proposals}}{}]{eip1109}
+\bibitem[\protect\citeauthoryear{Baylina}{2018}]{eip1109}
 \begin{botherref}
-\oauthor{\bsnm{{Ethereum Improvement Proposals}}}:
-EIP-1109: PRECOMPILEDCALL opcode (Remove CALL costs for precompiled contracts).
-\url{https://eips.ethereum.org/EIPS/eip-1109}.
-Accessed 21 August 2026
+\oauthor{\bsnm{Baylina}, \binits{J.}}:
+{EIP-1109}: {PRECOMPILEDCALL} Opcode (Remove {CALL} Costs for Precompiled
+  Contracts).
+Ethereum Improvement Proposals, no. 1109.
+  \url{https://eips.ethereum.org/EIPS/eip-1109}.
+Stagnant. Accessed 21 August 2026
+(2018)
 \end{botherref}
 \endbibitem
 
 %%% 17
-\bibitem[\protect\citeauthoryear{{Ethereum
-  Foundation}}{}]{ethereumNodeArchitecture}
+\bibitem[\protect\citeauthoryear{{Ethereum.org}}{2026}]{ethereumNodeArchitecture}
 \begin{botherref}
-\oauthor{\bsnm{{Ethereum Foundation}}}:
+\oauthor{\bsnm{{Ethereum.org}}}:
 Node Architecture.
 \url{https://ethereum.org/developers/docs/nodes-and-clients/node-architecture/}.
-Accessed 21 August 2026
+Updated 25 March 2026. Accessed 21 August 2026
+(2026)
 \end{botherref}
 \endbibitem
 
 %%% 18
-\bibitem[\protect\citeauthoryear{{go-ethereum}}{}]{gethHome}
+\bibitem[\protect\citeauthoryear{{The go-ethereum Authors}}{}]{gethHome}
 \begin{botherref}
-\oauthor{\bsnm{{go-ethereum}}}:
+\oauthor{\bsnm{{The go-ethereum Authors}}}:
 Go Ethereum.
 \url{https://geth.ethereum.org/}.
 Accessed 21 August 2026
@@ -273,11 +283,15 @@ Accessed 21 August 2026
 \bauthor{\bsnm{Liskov}, \binits{B.}},
 \bauthor{\bsnm{Shrira}, \binits{L.}}:
 \bctitle{Modular software upgrades for distributed systems}.
-In: \bbtitle{Proceedings of the 20th European Conference on Object-Oriented
-  Programming},
+In: \beditor{\bsnm{Thomas}, \binits{D.}} (ed.)
+\bbtitle{ECOOP 2006 -- Object-Oriented Programming}.
+\bsertitle{Lecture Notes in Computer Science},
+vol. \bseriesno{4067},
 pp. \bfpage{452}--\blpage{476}.
-\bpublisher{Springer}, \blocation{???}
-(\byear{2006})
+\bpublisher{Springer},
+\blocation{Berlin, Heidelberg}
+(\byear{2006}).
+\doiurl{10.1007/11785477_26}
 \end{bchapter}
 \endbibitem
 
@@ -306,17 +320,19 @@ pp. \bfpage{452}--\blpage{476}.
 \oauthor{\bsnm{{World Wide Web Consortium}}}:
 {WebAssembly Core Specification}.
 \url{https://www.w3.org/TR/wasm-core-2/}.
-Accessed 3 September 2026
+W3C Candidate Recommendation Draft. Accessed 3 September 2026
 \end{botherref}
 \endbibitem
 
 %%% 22
-\bibitem[\protect\citeauthoryear{{NMKR}}{}]{cardanoHardForkCombinator}
+\bibitem[\protect\citeauthoryear{{Input
+  Output}}{2020}]{cardanoHardForkCombinator}
 \begin{botherref}
-\oauthor{\bsnm{{NMKR}}}:
-Cardano Hard-Fork-Combinator.
-\url{https://www.nmkr.io/glossary/cardano-hard-fork-combinator}.
-Accessed 21 August 2026
+\oauthor{\bsnm{{Input Output}}}:
+Combinator Makes Easy Work of Hard Forks.
+\url{https://iohk.io/en/blog/posts/2020/07/23/combinator-makes-easy-work-of-hard-forks/}.
+Accessed 15 September 2026
+(2020)
 \end{botherref}
 \endbibitem
 
@@ -324,9 +340,9 @@ Accessed 21 August 2026
 \bibitem[\protect\citeauthoryear{{Cardano Foundation}}{}]{cardanoEvolution}
 \begin{botherref}
 \oauthor{\bsnm{{Cardano Foundation}}}:
-Cardano Evolution: About Hard Forks.
+About Hard Forks.
 \url{https://docs.cardano.org/about-cardano/evolution/about-hard-forks}.
-Accessed 21 August 2026
+Accessed 15 September 2026
 \end{botherref}
 \endbibitem
 
@@ -335,13 +351,21 @@ Accessed 21 August 2026
 \begin{bchapter}
 \bauthor{\bsnm{Ciampi}, \binits{M.}},
 \bauthor{\bsnm{Karayannidis}, \binits{N.}},
-\bauthor{\bsnm{Kiayias}, \binits{A.}}, \betal:
+\bauthor{\bsnm{Kiayias}, \binits{A.}},
+\bauthor{\bsnm{Zindros}, \binits{D.}}:
 \bctitle{Updatable blockchains}.
-In: \bbtitle{Proceedings of the 25th European Symposium on Research in Computer
-  Security},
+In: \beditor{\bsnm{Chen}, \binits{L.}},
+\beditor{\bsnm{Li}, \binits{N.}},
+\beditor{\bsnm{Liang}, \binits{K.}},
+\beditor{\bsnm{Schneider}, \binits{S.A.}} (eds.)
+\bbtitle{Computer Security -- ESORICS 2020}.
+\bsertitle{Lecture Notes in Computer Science},
+vol. \bseriesno{12309},
 pp. \bfpage{590}--\blpage{609}.
-\bpublisher{Springer}, \blocation{???}
-(\byear{2020})
+\bpublisher{Springer},
+\blocation{Cham}
+(\byear{2020}).
+\doiurl{10.1007/978-3-030-59013-0_29}
 \end{bchapter}
 \endbibitem
 
@@ -350,21 +374,34 @@ pp. \bfpage{590}--\blpage{609}.
 \begin{bchapter}
 \bauthor{\bsnm{Zindros}, \binits{D.}}:
 \bctitle{Soft power: Upgrading chain macroeconomic policy through soft forks}.
-In: \bbtitle{Proceedings of the 25th International Conference on Financial
-  Cryptography and Data Security},
+In: \beditor{\bsnm{Bernhard}, \binits{M.}},
+\beditor{\bsnm{Bracciali}, \binits{A.}},
+\beditor{\bsnm{Gudgeon}, \binits{L.}},
+\beditor{\bsnm{Haines}, \binits{T.}},
+\beditor{\bsnm{Klages-Mundt}, \binits{A.}},
+\beditor{\bsnm{Matsuo}, \binits{S.}},
+\beditor{\bsnm{Perez}, \binits{D.}},
+\beditor{\bsnm{Sala}, \binits{M.}},
+\beditor{\bsnm{Werner}, \binits{S.}} (eds.)
+\bbtitle{Financial Cryptography and Data Security. FC 2021 International
+  Workshops}.
+\bsertitle{Lecture Notes in Computer Science},
+vol. \bseriesno{12676},
 pp. \bfpage{467}--\blpage{481}.
-\bpublisher{Springer}, \blocation{???}
-(\byear{2021})
+\bpublisher{Springer},
+\blocation{Berlin, Heidelberg}
+(\byear{2021}).
+\doiurl{10.1007/978-3-662-63958-0_36}
 \end{bchapter}
 \endbibitem
 
 %%% 26
-\bibitem[\protect\citeauthoryear{{Polkadot Wiki}}{}]{polkadotRuntimeUpgrades}
+\bibitem[\protect\citeauthoryear{{Polkadot}}{}]{polkadotRuntimeUpgrades}
 \begin{botherref}
-\oauthor{\bsnm{{Polkadot Wiki}}}:
+\oauthor{\bsnm{{Polkadot}}}:
 Runtime Upgrades.
-\url{https://wiki.polkadot.network/docs/learn-runtime-upgrades}.
-Accessed 21 August 2026
+\url{https://docs.polkadot.com/parachains/maintain/runtime-upgrades/}.
+Accessed 15 September 2026
 \end{botherref}
 \endbibitem
 
@@ -375,7 +412,7 @@ Accessed 21 August 2026
 \bauthor{\bsnm{Saha}, \binits{R.}},
 \bauthor{\bsnm{Conti}, \binits{M.}},
 \bauthor{\bsnm{Buchanan}, \binits{W.J.}}:
-\batitle{Leagan: A decentralized version-control framework for upgradeable
+\batitle{{LEAGAN}: A decentralized version-control framework for upgradeable
   smart contracts}.
 \bjtitle{IEEE Transactions on Services Computing}
 \bvolume{18}(\bissue{3}),
@@ -390,13 +427,21 @@ Accessed 21 August 2026
 \begin{bchapter}
 \bauthor{\bsnm{Zhang}, \binits{Y.}},
 \bauthor{\bsnm{Crowcroft}, \binits{J.}},
-\bauthor{\bsnm{Li}, \binits{D.}}, \betal:
+\bauthor{\bsnm{Li}, \binits{D.}},
+\bauthor{\bsnm{Zhang}, \binits{C.}},
+\bauthor{\bsnm{Li}, \binits{H.}},
+\bauthor{\bsnm{Wang}, \binits{Y.}},
+\bauthor{\bsnm{Yu}, \binits{K.}},
+\bauthor{\bsnm{Xiong}, \binits{Y.}},
+\bauthor{\bsnm{Chen}, \binits{G.}}:
 \bctitle{{KylinX}: A dynamic library operating system for simplified and
   efficient cloud virtualization}.
-In: \bbtitle{Proceedings of the 2018 USENIX Annual Technical Conference},
+In: \bbtitle{2018 USENIX Annual Technical Conference (USENIX ATC 18)},
 pp. \bfpage{173}--\blpage{186}.
-\bpublisher{USENIX Association}, \blocation{???}
-(\byear{2018})
+\bpublisher{USENIX Association},
+\blocation{Berkeley, CA, USA}
+(\byear{2018}).
+\burl{https://www.usenix.org/conference/atc18/presentation/zhang-yiming}
 \end{bchapter}
 \endbibitem
 
@@ -405,14 +450,17 @@ pp. \bfpage{173}--\blpage{186}.
 \begin{bchapter}
 \bauthor{\bsnm{Pina}, \binits{L.}},
 \bauthor{\bsnm{Andronidis}, \binits{A.}},
-\bauthor{\bsnm{Hicks}, \binits{M.}}, \betal:
-\bctitle{Mvedsua: Higher availability dynamic software updates via
+\bauthor{\bsnm{Hicks}, \binits{M.}},
+\bauthor{\bsnm{Cadar}, \binits{C.}}:
+\bctitle{{MVEDSUA}: Higher availability dynamic software updates via
   multi-version execution}.
 In: \bbtitle{Proceedings of the Twenty-Fourth International Conference on
   Architectural Support for Programming Languages and Operating Systems},
 pp. \bfpage{573}--\blpage{585}.
-\bpublisher{Association for Computing Machinery}, \blocation{???}
-(\byear{2019})
+\bpublisher{Association for Computing Machinery},
+\blocation{New York, NY, USA}
+(\byear{2019}).
+\doiurl{10.1145/3293882.3330551}
 \end{bchapter}
 \endbibitem
 
@@ -421,12 +469,15 @@ pp. \bfpage{573}--\blpage{585}.
 \begin{bchapter}
 \bauthor{\bsnm{Huang}, \binits{H.}},
 \bauthor{\bsnm{Xiang}, \binits{C.}},
-\bauthor{\bsnm{Zhong}, \binits{L.}}, \betal:
+\bauthor{\bsnm{Zhong}, \binits{L.}},
+\bauthor{\bsnm{Zhou}, \binits{Y.}}:
 \bctitle{{PYLIVE}: On-the-fly code change for python-based online services}.
-In: \bbtitle{Proceedings of the 2021 USENIX Annual Technical Conference},
+In: \bbtitle{2021 USENIX Annual Technical Conference (USENIX ATC 21)},
 pp. \bfpage{349}--\blpage{363}.
-\bpublisher{USENIX Association}, \blocation{???}
-(\byear{2021})
+\bpublisher{USENIX Association},
+\blocation{Berkeley, CA, USA}
+(\byear{2021}).
+\burl{https://www.usenix.org/conference/atc21/presentation/huang}
 \end{bchapter}
 \endbibitem
 

@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
+import os
 import re
+import sys
 from pathlib import Path
 
 import matplotlib as mpl
@@ -38,6 +40,7 @@ def apply_style() -> None:
         {
             "font.family": "sans-serif",
             "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans", "sans-serif"],
+            "svg.fonttype": "none",
             "pdf.fonttype": 42,
             "font.size": 7,
             "axes.spines.right": False,
@@ -150,12 +153,26 @@ def grouped_bar(
     fig_w = max(3.4, 0.42 * n + 1.2)
     fig, ax = plt.subplots(figsize=(fig_w, 2.6))
 
+    # 对数轴上从 0 起画的 bar 会生成延伸到天外的矩形路径（log(0) 无定义），
+    # 其白色描边在 PDF 几何中穿过坐标轴下方的刻度标签。改为从轴下限起画，
+    # 视觉不变但路径有限。上下限按 matplotlib 对数默认边距（log 空间 5%）确定。
+    bar_bottom = 0.0
+    y_limits: tuple[float, float] | None = None
+    if log_y:
+        all_values = [v for _, vals, _ in series for v in vals]
+        log_lo, log_hi = np.log10(min(all_values)), np.log10(max(all_values))
+        margin = 0.05 * (log_hi - log_lo)
+        y_limits = (float(10 ** (log_lo - margin)), float(10 ** (log_hi + margin)))
+        bar_bottom = y_limits[0]
+
     for idx, (name, values, color) in enumerate(series):
         offset = (idx - (n_series - 1) / 2) * width
+        heights = [v - bar_bottom for v in values] if log_y else values
         ax.bar(
             x + offset,
-            values,
+            heights,
             width=width,
+            bottom=bar_bottom,
             label=name,
             color=color,
             edgecolor="white",
@@ -164,10 +181,20 @@ def grouped_bar(
         )
 
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, rotation=35, ha="right")
+    ax.set_xticklabels(labels, rotation=35, ha="right", rotation_mode="anchor")
+    # 分类轴不需要刻度线；保留刻度线会穿过旋转后标签的包围盒。
+    ax.tick_params(axis="x", which="both", length=0)
     ax.set_ylabel(ylabel)
     if log_y:
         ax.set_yscale("log")
+        if y_limits is not None:
+            ax.set_ylim(*y_limits)
+        # 对数轴使用纯文本刻度标签：mathtext 上下标会以约 0.7 倍字号渲染，
+        # 跌破 5 pt 字号下限；数据均为正，无需非正数保护。
+        ax.yaxis.set_major_formatter(
+            mpl.ticker.FuncFormatter(lambda v, _: f"{v / 1e6:g}M" if v >= 1e6 else f"{v / 1e3:g}k")
+        )
+        ax.yaxis.set_minor_formatter(mpl.ticker.NullFormatter())
     ax.grid(axis="y", color="#E6E6E6", linewidth=0.6, zorder=0)
     ax.legend(loc="upper left", bbox_to_anchor=(0, 1.02), ncol=n_series, handlelength=1.2)
 
@@ -177,14 +204,40 @@ def grouped_bar(
 
 
 def save_figure(fig: plt.Figure, stem: str) -> None:
+    # 导出前执行多面板对齐门禁：单面板图记录 NOT APPLICABLE，
+    # 多面板几何异常时阻断导出，避免交付错位版面。
+    scripts_dir = os.environ.get(
+        "NATURE_FIGURE_SCRIPTS",
+        str(Path.home() / ".agents" / "skills" / "nature-figure" / "scripts"),
+    )
+    if scripts_dir not in sys.path:
+        sys.path.insert(0, scripts_dir)
+    try:
+        from audit_panel_alignment import require_matplotlib_panel_alignment
+    except ImportError:
+        require_matplotlib_panel_alignment = None
+    if require_matplotlib_panel_alignment is not None:
+        require_matplotlib_panel_alignment(
+            fig,
+            json_out=OUT_DIR / f"{stem}.alignment.json",
+            tolerance_pt=1.5,
+            gutter_tolerance_pt=1.5,
+            strict=True,
+        )
+
+    svg_path = OUT_DIR / f"{stem}.svg"
     pdf_path = OUT_DIR / f"{stem}.pdf"
     png_path = OUT_DIR / f"{stem}.png"
+    fig.savefig(svg_path, bbox_inches="tight")
     fig.savefig(pdf_path, bbox_inches="tight")
     fig.savefig(png_path, dpi=600, bbox_inches="tight")
-    print(f"Wrote {pdf_path.name}, {png_path.name}")
+    print(f"Wrote {svg_path.name}, {pdf_path.name}, {png_path.name}")
 
 
 def main() -> None:
+    # 可选参数：只重新生成指定图，避免覆盖其他仍有效的实验图。
+    only = sys.argv[1] if len(sys.argv) > 1 else None
+
     if not DATA_XLSX.exists():
         raise FileNotFoundError(f"Missing data file: {DATA_XLSX}")
 
@@ -192,57 +245,61 @@ def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
     # Chart 1: upgrade gas — EvoCrypt vs Solidity
-    algos, upgrade_gas, contract_gas = load_upgrade_gas()
-    grouped_bar(
-        algos,
-        [
-            ("EvoCrypt", upgrade_gas, PALETTE["evocrypt"]),
-            ("Solidity", contract_gas, PALETTE["solidity"]),
-        ],
-        ylabel="Upgrade gas",
-        stem="figure_upgrade_gas_comparison",
-        log_y=True,
-    )
+    if only in (None, "upgrade-gas"):
+        algos, upgrade_gas, contract_gas = load_upgrade_gas()
+        grouped_bar(
+            algos,
+            [
+                ("EvoCrypt", upgrade_gas, PALETTE["evocrypt"]),
+                ("Solidity", contract_gas, PALETTE["solidity"]),
+            ],
+            ylabel="Upgrade gas",
+            stem="figure_upgrade_gas_comparison",
+            log_y=True,
+        )
 
     # Chart 2: upgrade latency — EvoCrypt vs Solidity
-    algos, upgrade_lat, contract_lat = load_upgrade_latency()
-    grouped_bar(
-        algos,
-        [
-            ("EvoCrypt", upgrade_lat, PALETTE["evocrypt"]),
-            ("Solidity", contract_lat, PALETTE["solidity"]),
-        ],
-        ylabel="Upgrade latency (ms)",
-        stem="figure_upgrade_latency_comparison",
-        log_y=False,
-    )
+    if only in (None, "upgrade-latency"):
+        algos, upgrade_lat, contract_lat = load_upgrade_latency()
+        grouped_bar(
+            algos,
+            [
+                ("EvoCrypt", upgrade_lat, PALETTE["evocrypt"]),
+                ("Solidity", contract_lat, PALETTE["solidity"]),
+            ],
+            ylabel="Upgrade latency (ms)",
+            stem="figure_upgrade_latency_comparison",
+            log_y=False,
+        )
 
     # Chart 3: execution gas after upgrade — EvoCrypt vs Solidity
-    algos, exec_upgrade_gas, exec_contract_gas = load_execution_gas()
-    grouped_bar(
-        algos,
-        [
-            ("EvoCrypt", exec_upgrade_gas, PALETTE["evocrypt"]),
-            ("Solidity", exec_contract_gas, PALETTE["solidity"]),
-        ],
-        ylabel="Execution gas",
-        stem="figure_execution_gas_comparison",
-        log_y=True,
-    )
+    if only in (None, "execution-gas"):
+        algos, exec_upgrade_gas, exec_contract_gas = load_execution_gas()
+        grouped_bar(
+            algos,
+            [
+                ("EvoCrypt", exec_upgrade_gas, PALETTE["evocrypt"]),
+                ("Solidity", exec_contract_gas, PALETTE["solidity"]),
+            ],
+            ylabel="Execution gas",
+            stem="figure_execution_gas_comparison",
+            log_y=True,
+        )
 
     # Chart 4: execution latency — EvoCrypt vs Solidity vs Native
-    algos, exec_upgrade, exec_contract, exec_native = load_execution_latency()
-    grouped_bar(
-        algos,
-        [
-            ("EvoCrypt", exec_upgrade, PALETTE["evocrypt"]),
-            ("Solidity", exec_contract, PALETTE["solidity"]),
-            ("Native", exec_native, PALETTE["native"]),
-        ],
-        ylabel="Execution latency (ms)",
-        stem="figure_execution_latency_comparison",
-        log_y=True,
-    )
+    if only in (None, "execution-latency"):
+        algos, exec_upgrade, exec_contract, exec_native = load_execution_latency()
+        grouped_bar(
+            algos,
+            [
+                ("EvoCrypt", exec_upgrade, PALETTE["evocrypt"]),
+                ("Solidity", exec_contract, PALETTE["solidity"]),
+                ("Native algorithm", exec_native, PALETTE["native"]),
+            ],
+            ylabel="Execution latency (ms)",
+            stem="figure_execution_latency_comparison",
+            log_y=True,
+        )
 
 
 if __name__ == "__main__":

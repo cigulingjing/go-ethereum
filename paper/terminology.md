@@ -55,7 +55,12 @@ terminology.md文档核心是统一英文与中文用词。
 | gasEstimate | Gas 估算 | `eth_estimateGas` 返回的调用成本估算，不等同于 receipt `gasUsed` |
 | eth_call latency | `eth_call` 延迟 | 通过 RPC 触发 EVM 调用路径的观测耗时，不是纯算法核函数时间 |
 | gas pricing mechanism | Gas 定价机制 | 为执行、存储、calldata 和数据可用性等资源设定链上费用的规则 |
+| opcode-level gas pricing | 指令级 Gas 定价 | EVM 对展开后的每条指令逐一累计计费的定价方式 |
+| algorithm-level gas pricing | 算法级 Gas 定价 | 协处理器按链上版本元数据中注册的调用 Gas 对一次算法调用收取确定性费用的定价策略 |
+| gas amplification | Gas 放大 | 复杂密码算法被展开为大量 EVM 指令后，逐指令计费使 Gas 随指令数而非算法计算量增长的现象 |
 | resource accounting | 资源计费 | 基于算法类型和确定性输入参数计算协处理器调用 Gas 的规则，不依赖节点本地 CPU 时间 |
 | denial-of-service (DoS) attack | 拒绝服务攻击（DoS） | 攻击者通过大量请求、交易或资源占用降低系统可用性的攻击 |
 | data availability saturation attack | 数据可用性饱和攻击 | 通过过量数据提交或传播需求占满区块链数据可用性资源的攻击风险 |
 | implementation-language compatibility | 实现语言兼容性 | 支持不同语言编写或编译的算法模块在统一调用边界下被加载、验证和执行 |
+| committee-gated upgrade admission | 委员会门控的升级准入 | 仅当委员会就升级提案内容达成共识后，Management Contract 才接受该提案的访问控制规则 |
+| committee consensus | 委员会共识 | 委员会成员就算法名称、版本、artifact、调用 Gas、ABI 描述与激活区块等提案内容达成一致的治理前提 |

@@ -40,7 +40,7 @@ foundryup
 
 ```shell
 go run /home/liuqi/project/go-ethereum/experiments/cryptoupgrade/cmd/render \
-  -config /home/liuqi/project/go-ethereum/experiments/cryptoupgrade/deployments/networks/local.yaml \
+  -config /home/liuqi/project/go-ethereum/experiments/cryptoupgrade/deployments/local.yaml \
   -geth "$(pwd)/build/bin/geth"
 ```
 
