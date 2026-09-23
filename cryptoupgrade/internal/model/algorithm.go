@@ -2,6 +2,14 @@ package model
 
 import "strings"
 
+// Aigis-sig2 没有合适的 Solidity 对照实现，固定作为 EvoCrypt WASM 试点算法。
+const (
+	AigisSig2VerifyName  = "AigisSig2Verify"
+	AigisSig2VerifyIType = "bytes,bytes,bytes"
+	AigisSig2VerifyOType = "bool"
+	AigisSig2VerifyGas   = 200000
+)
+
 // AlgorithmInfo 描述动态算法在链上提交并由节点本地激活的元数据。
 // 该类型只承载跨模块数据，升级状态和持久化流程由上层模块管理。
 type AlgorithmInfo struct {
@@ -44,6 +52,16 @@ func Versioned(info AlgorithmInfo, version, activationBlock uint64) AlgorithmVer
 // LegacyVersion wraps metadata in the compatibility version used by uploadCode.
 func LegacyVersion(info AlgorithmInfo) AlgorithmVersionInfo {
 	return Versioned(info, 1, 0)
+}
+
+// AigisSig2VerifyInfo 构造 Aigis-sig2 验签的链上元数据；code 为 EncodeWasm 后的压缩字节。
+func AigisSig2VerifyInfo(code string) AlgorithmInfo {
+	return AlgorithmInfo{
+		Code:  code,
+		Gas:   AigisSig2VerifyGas,
+		IType: AigisSig2VerifyIType,
+		OType: AigisSig2VerifyOType,
+	}
 }
 
 // InputTypes 返回算法输入参数的 Solidity ABI 类型列表。

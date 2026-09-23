@@ -16,6 +16,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto/blake2b"
 	evmadapter "github.com/ethereum/go-ethereum/cryptoupgrade/internal/evm"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/pqcnative"
 )
 
 // precompile 计费规则保持独立，避免影响动态升级路径的 gas 元数据。
@@ -217,6 +218,14 @@ var precompiles = mustPrecompiles([]precompileSpec{
 		outputTypes: []string{"uint256[]"},
 		requiredGas: precompilePolynomialMulGas,
 		handler:     precompilePolynomialMul,
+	},
+	{
+		address:     common.CryptoUpgradeAigisSig2VerifyAddress,
+		name:        "AigisSig2Verify",
+		inputTypes:  []string{"bytes", "bytes", "bytes"},
+		outputTypes: []string{"bool"},
+		requiredGas: precompileEncodedGas(precompileHeavyBaseGas, precompileHeavyWordGas),
+		handler:     precompileAigisSig2Verify,
 	},
 })
 
@@ -763,6 +772,29 @@ func precompileEd25519Sign(args []interface{}) ([]interface{}, error) {
 		return nil, fmt.Errorf("Ed25519 private key length %d, want %d", len(privateKey), ed25519.PrivateKeySize)
 	}
 	return []interface{}{ed25519.Sign(ed25519.PrivateKey(privateKey), message)}, nil
+}
+
+func precompileAigisSig2Verify(args []interface{}) ([]interface{}, error) {
+	if !pqcnative.Enabled() {
+		return nil, fmt.Errorf("AigisSig2Verify requires CGO")
+	}
+	publicKey, err := precompileBytes(args, 0)
+	if err != nil {
+		return nil, err
+	}
+	message, err := precompileBytes(args, 1)
+	if err != nil {
+		return nil, err
+	}
+	signature, err := precompileBytes(args, 2)
+	if err != nil {
+		return nil, err
+	}
+	ok, err := pqcnative.Verify(publicKey, message, signature)
+	if err != nil {
+		return nil, err
+	}
+	return []interface{}{ok}, nil
 }
 
 func precompileEd25519Verify(args []interface{}) ([]interface{}, error) {

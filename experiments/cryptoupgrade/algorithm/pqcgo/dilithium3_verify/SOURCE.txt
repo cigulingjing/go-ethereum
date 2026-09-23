@@ -1,0 +1,4 @@
+algorithm=dilithium3_verify
+source=experiments/pqcc/pqmagic
+built=2026-09-22T01:59:31Z
+command=experiments/cryptoupgrade/algorithm/pqcgo/build.sh

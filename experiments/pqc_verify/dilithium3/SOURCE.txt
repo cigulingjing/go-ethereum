@@ -1,0 +1,3 @@
+algorithm=dilithium3_verify
+extracted_from=experiments/pqcc/pqmagic/sig/dilithium/std
+wrapper=experiments/pqcc/pqcsign_wrapper.c verify(DILITHIUM)

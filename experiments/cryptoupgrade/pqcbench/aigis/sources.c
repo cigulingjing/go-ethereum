@@ -1,0 +1,11 @@
+/* CGO 只编译 pqcgo/aigis_sig2_verify/native/ 快照，不引用未归档源码。 */
+#include "randombytes.c"
+#include "fips202.c"
+#include "ntt.c"
+#include "reduce.c"
+#include "rounding.c"
+#include "poly.c"
+#include "polyvec.c"
+#include "packing.c"
+#include "sign.c"
+#include "verify.c"

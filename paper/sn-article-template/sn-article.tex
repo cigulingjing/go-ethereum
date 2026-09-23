@@ -162,7 +162,7 @@ Ethereum currently offers two common routes for executing cryptographic logic. A
 
 This split leaves a capability gap relative to those Solidity obstacles. When a required algorithm is not available as a precompile, in-contract Solidity remains the default deployment path, yet it remains poorly matched to expensive cryptographic computation. Precompiled Contracts improve execution efficiency for a fixed set of routines but are difficult to update independently of the client release process and do not by themselves address algorithm evolution requirements such as post-quantum migration. More generally, smart contract engineering already faces persistent challenges around correctness, cost, and maintainability \cite{zou2021smartContracts}. Prior work has examined live-upgradable blockchain clients and automated smart-contract patching \cite{wang2023phoenix,rodler2021evmpatch}, showing the broader relevance of upgradeability in blockchain software. For cryptographic algorithms, however, the challenge is to support algorithm replacement without changing the semantics of historical execution or allowing different nodes to select different algorithm versions at the same block height. A process-local plugin or shared-library boundary ties execution to platform-specific native binaries and weakens the goal that every node apply the same algorithm semantics at the same block. Existing approaches do not directly provide a low-intrusion mechanism for replacing contract-facing cryptographic implementations with a uniform, portable module payload while preserving deterministic activation across nodes.
 
-This paper proposes a general Cryptographic Coprocessor architecture for smart-contract-enabled blockchain clients. The coprocessor decouples the contract-facing cryptographic algorithm interface from the WASM module implementation managed by the client. Smart contracts invoke a stable EVM-facing interface to obtain cryptographic results without embedding the algorithm in contract bytecode, while the client maintains replaceable WASM algorithm modules behind that interface. The upgrade path combines on-chain coordination with off-chain asynchronous preparation: an upgrade transaction records metadata and emits an event, while client-side listeners verify, compile, and instantiate the target WASM module outside the EVM execution critical path of that transaction. To prevent nodes from switching versions according to local readiness time, the protocol separates asynchronous upgrade preparation from deterministic activation through an Activation Block. Because algorithm execution is moved behind the coprocessor boundary, the invocation path charges a deterministic algorithm-level gas price registered in the on-chain version metadata instead of metering an expanded EVM instruction sequence, so contract-facing cryptographic calls are not subject to gas amplification.
+This paper proposes a general Cryptographic Coprocessor architecture for smart-contract-enabled blockchain clients. The coprocessor decouples the contract-facing cryptographic algorithm interface from the WASM module implementation managed by the client. Smart contracts invoke a stable EVM-facing interface to obtain cryptographic results without embedding the algorithm in contract bytecode, while the client maintains replaceable WASM algorithm modules behind that interface. The upgrade path combines on-chain coordination with off-chain asynchronous preparation: an upgrade transaction records metadata and emits an event, while client-side listeners verify, compile, and instantiate the target WASM module outside the EVM execution critical path of that transaction. To prevent nodes from switching versions according to local readiness time, the protocol separates asynchronous upgrade preparation from deterministic activation through an Activation Block. Because algorithm execution is moved behind the coprocessor boundary, the invocation path charges a deterministic algorithm-level gas schedule registered in the on-chain version metadata instead of metering an expanded EVM instruction sequence, so contract-facing cryptographic calls are not subject to gas amplification.
 
 The main contributions of this article are summarized as follows.
 \begin{itemize}
@@ -191,7 +191,7 @@ This runtime boundary is useful for cryptographic algorithm modules because it s
 
 \section{EvoCrypt Design}\label{sec3}
 
-The Cryptographic Coprocessor is designed to provide runtime-upgradable WASM implementations for contract-facing cryptographic algorithms without turning the entire blockchain client into a dynamically updated component. Algorithm logic is shipped as portable WASM bytecode rather than per-node native binaries, so heterogeneous clients can execute the same module artifact under the same version-selection rule. The scope is deliberately narrow: ordinary transactions continue to execute through the EVM under unchanged opcode-level pricing, and only selected cryptographic algorithm implementations behind a stable contract-facing interface are prepared, loaded, and selected as replaceable WASM modules. Calls through that interface are charged a deterministic algorithm-level gas price recorded in the version metadata, so invocation cost is decoupled from the instruction footprint that an equivalent in-contract implementation would expand into.
+The Cryptographic Coprocessor provides runtime-upgradable WASM implementations for contract-facing cryptographic algorithms without turning the entire blockchain client into a dynamically updated component. We specify the design by three objects reused by the protocols below: a version metadata record $\mu_{a,v}$, a height-based version selector $v^{*}(a,b)$, and an algorithm-level gas schedule $G(a,v,x)$. Algorithm logic is shipped as portable WASM bytecode rather than per-node native binaries, so heterogeneous clients execute the same module artifact under the same selection rule. Ordinary transactions continue through the EVM under unchanged opcode-level pricing. Only selected cryptographic implementations behind a stable contract-facing interface are prepared, loaded, and selected as replaceable WASM modules.
 
 \subsection{Overview}\label{sec3.1}
 Figure~\ref{fig:overview} shows the main modules. The Execution Engine executes ordinary EVM transactions. Identity Hooks recognize calls to the Management Contract entry point used by the prototype and route only those calls into the coprocessor boundary. The Cryptographic Coprocessor manages ABI decoding, algorithm lookup, version selection, gas metadata, and WASM invocation. The Upgrade Handler listens for on-chain upgrade events and prepares node-local artifacts. The WASM Runtime compiles and instantiates modules under a controlled import/export and memory boundary, and WASM Modules contain the replaceable algorithm implementations.
@@ -203,52 +203,115 @@ Figure~\ref{fig:overview} shows the main modules. The Execution Engine executes 
 \label{fig:overview}
 \end{figure}
 
-The on-chain layer contains the Management Contract, event log, version metadata, and Activation Block. The Management Contract abstracts the CodeStorage contract used in the prototype: its invocation interface exposes the contract-facing call entry, and its upgrade interface publishes the algorithm name, version, encoded WASM artifact, ABI type metadata, invocation gas metadata, and activation height. Clients derive the module hash from the decoded artifact during local preparation. The client-side layer contains the Execution Engine, Identity Hooks, Cryptographic Coprocessor, Upgrade Handler, WASM Runtime, and local module workspace. This split keeps the chain as the authoritative coordination surface while leaving module preparation as node-local work.
+The on-chain layer contains the Management Contract, event log, version metadata, and Activation Block. The Management Contract abstracts the CodeStorage contract used in the prototype: its invocation interface exposes the contract-facing call entry, and its upgrade interface publishes the metadata record defined in~\eqref{eq:version-metadata}. Clients derive the module hash from the decoded artifact during local preparation. The client-side layer contains the Execution Engine, Identity Hooks, Cryptographic Coprocessor, Upgrade Handler, WASM Runtime, and local module workspace. This split keeps the chain as the authoritative coordination surface while leaving module preparation as node-local work. Section~\ref{sec3.2} defines the metadata record and the upgrade protocol that publishes it. Section~\ref{sec3.3} defines the invocation path and the gas schedule that charges a call to the selected version.
 
 \subsection{Upgrade Protocol}\label{sec3.2}
-An upgrade starts from an on-chain proposal. In the versioned path, the proposal is submitted through \texttt{uploadCodeVersion} by a committee-authorized proposer, and the Management Contract admits the proposal only after the committee reaches consensus on its contents. The proposal contains the module identifier, module version, encoded WASM artifact, activation height, invocation gas metadata, and ABI input-output type descriptions. During transaction execution, the Management Contract validates and stores this metadata and emits a versioned upgrade event. The EVM path does not compile or instantiate the WASM module; it records the authoritative metadata and publishes an event that clients can observe. Table~\ref{tab:proposal-add} illustrates these fields for a proposal that registers version~1 of the Add algorithm.
+An upgrade starts from an on-chain proposal. In the versioned path, a committee-authorized proposer submits the proposal through \texttt{uploadCodeVersion}, and the Management Contract admits it only after the committee reaches consensus on its contents. During transaction execution, the contract stores the admitted record and emits a versioned upgrade event. The EVM path does not compile or instantiate the WASM module; it records the authoritative metadata and publishes an event that clients can observe.
 
-Each client runs an Event Listener for Management Contract upgrade events. When a listener observes a versioned event, it queries the authoritative metadata from the contract, checks that the event and stored metadata agree on the version and activation height, and delegates preparation to the Upgrade Handler. The Upgrade Handler decodes the uploaded artifact into the local WASM workspace, computes and records the artifact hash, asks the WASM Runtime to compile and instantiate the module, checks the required export, and records the resulting artifact as a prepared version.
+\begin{definition}[Version metadata]
+\label{def:version-metadata}
+Let $a$ be an algorithm name and $v$ a version number. An admitted upgrade is the metadata record
+\begin{equation}
+\mu_{a,v}=\bigl(a,\,v,\,C_{a,v},\,h_{a,v},\,g^{(0)}_{a,v},\,\lambda_{a,v},\,\tau^{\mathrm{in}}_{a,v},\,\tau^{\mathrm{out}}_{a,v},\,H_{a,v}\bigr),
+\label{eq:version-metadata}
+\end{equation}
+where $C_{a,v}$ is the compiled WASM bytecode, $h_{a,v}=\mathrm{Keccak256}(C_{a,v})$ is the module hash, $g^{(0)}_{a,v}$ is the initial gas fee, $\lambda_{a,v}$ is the gas slope parameter, $\tau^{\mathrm{in}}_{a,v}$ and $\tau^{\mathrm{out}}_{a,v}$ are the ABI input and output type descriptors, and $H_{a,v}$ is the Activation Block height. The Management Contract stores an encoding of these fields. Each node recomputes $h_{a,v}$ from the decoded bytecode during preparation and binds that hash to the prepared version.
+\end{definition}
 
-This workflow separates on-chain coordination from node-local preparation. The chain provides one upgrade proposal and a stable metadata source, while each node independently verifies and prepares the same WASM artifact under a mandatory-upgrade policy: once a node observes a valid upgrade event, it must complete preparation of the advertised $(a,v)$ before treating the version as callable, rather than deferring readiness indefinitely or serving calls with a local-preparation failure response. A failed preparation attempt therefore triggers retry from authoritative metadata and does not roll back the already executed upgrade transaction. This separation is the basis for asynchronous upgrade preparation and explains why the upgrade transaction itself does not wait for WASM compilation.
+Table~\ref{tab:version-metadata} summarizes the components of $\mu_{a,v}$. Write $\mathcal{V}_{a}$ for the set of versions already registered for algorithm $a$. The chain is the sole source of $\mu_{a,v}$; the upgrade event carries only $\langle a,v,H_{a,v}\rangle$ as a notification index.
 
-An upgrade proposal for algorithm name $a$ and version number $v$ stores the encoded WASM artifact, invocation gas metadata, ABI input and output type descriptors, and Activation Block height on chain. Each node decodes the artifact bytes, derives a Keccak-256 module hash, and adds $(a,v)$ to its local prepared set only after compilation, instantiation, and validation of the required \texttt{execute} export succeed. The emitted upgrade event carries only the algorithm name, version number, and activation height. Clients treat the event as a notification, recover the full metadata from the Management Contract through \texttt{getVersionInfo}, and reject preparation when the event fields disagree with stored contract state. Algorithm~\ref{alg:upgrade-protocol} summarizes the protocol flow.
+\begin{table}[ht]
+\centering
+\caption{Components of the version metadata record $\mu_{a,v}$.}\label{tab:version-metadata}
+\begin{tabular}{llp{0.55\textwidth}}
+\toprule
+Symbol & Field & Role \\
+\midrule
+$a$ & algorithm name & Identifier of the contract-facing algorithm. \\
+$v$ & algorithm version & Monotone version number within $\mathcal{V}_{a}$. \\
+$C_{a,v}$ & WASM bytecode & Compiled module artifact executed by the runtime. \\
+$h_{a,v}$ & module hash & Keccak-256 digest of $C_{a,v}$, bound at preparation. \\
+$g^{(0)}_{a,v}$ & initial gas fee & Constant term of the invocation schedule~\eqref{eq:gas-price}. \\
+$\lambda_{a,v}$ & gas slope parameter & Per-byte coefficient of the invocation schedule. \\
+$\tau^{\mathrm{in}}_{a,v}$ & input type & ABI descriptor of the call-stage inner input. \\
+$\tau^{\mathrm{out}}_{a,v}$ & output type & ABI descriptor of the returned result. \\
+$H_{a,v}$ & activation height & First block at which version $v$ may become active. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Each client runs an Event Listener for Management Contract upgrade events. When a listener observes $\langle a,v,H\rangle$, it recovers $\mu_{a,v}$ through \texttt{getVersionInfo}, checks that the event and stored record agree on $v$ and $H_{a,v}$, and delegates preparation to the Upgrade Handler. The handler decodes $C_{a,v}$, computes $h_{a,v}$, asks the WASM Runtime to compile and instantiate the module, validates the required \texttt{execute} export, and records $(a,v)$ as a prepared version.
+
+This workflow separates on-chain coordination from node-local preparation. The chain provides one admitted record $\mu_{a,v}$, while each node independently verifies and prepares the same artifact. Under the mandatory-upgrade policy, a node that observes a valid upgrade event must complete preparation of $(a,v)$ before treating that version as callable. A failed attempt retries from the contract record and does not roll back the already executed upgrade transaction. The upgrade transaction therefore does not wait for WASM compilation. Algorithm~\ref{alg:upgrade-protocol} summarizes the protocol.
 
 \begin{algorithm}[!tb]
 \caption{\textbf{Activation-Block-based WASM upgrade protocol.}}
 \label{alg:upgrade-protocol}
 \begin{algorithmic}[1]
-\Require Proposal $(a,v,C,g,\tau^{\mathrm{in}},\tau^{\mathrm{out}},H)$; node set $\mathcal{N}$
+\Require Metadata $\mu_{a,v}$ as in~\eqref{eq:version-metadata}; node set $\mathcal{N}$
 \Ensure Prepared set updated on every $n_i\in\mathcal{N}$
-\State committee-authorized proposer submits \texttt{uploadCodeVersion}$(a,v,C,g,\tau^{\mathrm{in}},\tau^{\mathrm{out}},H)$
-\State Management Contract stores metadata; emits event $\langle a,v,H\rangle$
+\State committee-authorized proposer submits \texttt{uploadCodeVersion}$(\mu_{a,v})$
+\State Management Contract stores $\mu_{a,v}$; emits event $\langle a,v,H_{a,v}\rangle$
 \ForAll{$n_i\in\mathcal{N}$}
-    \State observe event $\langle a,v,H\rangle$; fetch metadata $\mu'_{a,v}$ from Management Contract
+    \State observe $\langle a,v,H_{a,v}\rangle$; fetch $\mu'_{a,v}$ from Management Contract
     \If{event fields disagree with $\mu'_{a,v}$}
         \State reject $(a,v)$
     \Else
-        \State decode and hash $C$
+        \State decode $C_{a,v}$; set $h_{a,v}\gets\mathrm{Keccak256}(C_{a,v})$
         \Repeat
             \State compile and instantiate; validate \texttt{execute} export
         \Until{preparation succeeds}
-        \State persist hash and metadata; mark $(a,v)$ prepared
+        \State persist $h_{a,v}$ and $\mu_{a,v}$; mark $(a,v)$ prepared
     \EndIf
 \EndFor
 \end{algorithmic}
 \end{algorithm}
 
-Asynchronous preparation creates a consistency problem if nodes switch algorithm versions as soon as their local WASM module is ready. Two nodes may observe the same chain but finish compilation at different physical times. If local readiness determined the active version, the same contract call at the same block height could execute different module implementations. The coprocessor therefore separates preparation time from activation time through an Activation Block.
+Asynchronous preparation would break execution consistency if nodes switched versions as soon as local compilation finished. Two nodes may observe the same chain but complete preparation at different wall-clock times. The coprocessor therefore separates preparation from activation through $H_{a,v}$. Figure~\ref{fig:upgrade-protocol} shows this two-phase timeline on the blockchain node network.
 
-For a single scheduled replacement, execution at block height $b$ uses the previous implementation when $b$ is below the activation height and the new implementation when $b$ reaches or exceeds that height. When multiple versions exist, the node selects the newest version whose activation height is not greater than $b$ among all versions recorded on chain for the same algorithm. This rule makes activation deterministic with respect to chain height: given the same chain view and metadata, nodes apply the same version-selection rule for the same block. The protocol follows a forced-upgrade policy rather than silent fallback: once the activation height is reached, a node must execute the selected new version and must not continue to serve the obsolete implementation for calls that require the new semantics. If the selected version is not yet prepared when a call arrives or when the activation height is processed, the node synchronously reloads metadata from the Management Contract, decodes the WASM artifact, and completes validation, compilation, and instantiation before proceeding.
+\begin{figure}[!tb]
+\centering
+\includegraphics[width=\textwidth]{../image/upgrade_protocol.pdf}
+\caption{Node-local preparation and deterministic network-wide activation of an EvoCrypt upgrade.}
+\label{fig:upgrade-protocol}
+\end{figure}
+
+The Upgrade Block is the block that includes the admitted \texttt{uploadCodeVersion} transaction and emits $\langle a,v,H_{a,v}\rangle$. After that inclusion, each node independently captures the event, recovers $\mu_{a,v}$, and completes the off-chain Load--Verify--Ready sequence of Algorithm~\ref{alg:upgrade-protocol}. Invocations in this interval still use the previously selected version: local readiness does not change which implementation is served. When the chain reaches the Activation Block $H_{a,v}$, nodes that share the same chain view bind version $v$ together. The next definition makes this height-based switch precise.
+
+\begin{definition}[Active version]
+\label{def:active-version}
+Let $\mathcal{V}_{a}$ be the registered version set of algorithm $a$, and let $b$ be the execution block height. The version used at height $b$ is
+\begin{equation}
+v^{*}(a,b)=
+\underset{v \in \mathcal{V}_{a}}{\arg\max}
+\left\{
+\left(H_{a,v},\,v\right)
+\;\middle|\;
+H_{a,v} \leq b
+\right\}.
+\label{eq:version-select}
+\end{equation}
+The $\arg\max$ is lexicographic on the pair $(H_{a,v},v)$: among versions whose activation height does not exceed $b$, the rule prefers the latest activation height and, for a tied height, the larger version number. If the feasible set is empty, no version is active and the invocation fails with a missing-version error.
+\end{definition}
+
+Equation~\eqref{eq:version-select} makes activation a function of chain height rather than local readiness. Given the same chain view and the same $\{\mu_{a,v}\}_{v\in\mathcal{V}_{a}}$, every node computes the same $v^{*}(a,b)$. The protocol is a forced upgrade: once $v^{*}(a,b)$ is defined, a node must execute that version and must not serve an obsolete implementation. If $(a,v^{*}(a,b))$ is not yet prepared when a call arrives or when height $b$ is processed, the node reloads $\mu_{a,v^{*}(a,b)}$ from the Management Contract and completes validation, compilation, and instantiation before proceeding.
 
 \subsection{Invocation Protocol}\label{sec3.3}
-The Invocation Protocol provides a uniform contract-facing interface for invoking selected cryptographic algorithms. A caller supplies the target algorithm and ABI-encoded input through this interface, while the smart contract remains independent of the compiled artifact's location, implementation language, and local loading state. The contract depends only on the stable EVM-facing boundary and the ABI-level input-output contract associated with the selected algorithm version. If the chain-selected version is not yet locally prepared, the coprocessor performs a forced preparation step that reloads the WASM artifact from authoritative metadata and completes compilation before execution, rather than silently redirecting the call to an obsolete implementation.
+The Invocation Protocol exposes a uniform contract-facing interface. A caller supplies the algorithm name $a$ and an ABI-encoded input $x$ that conforms to $\tau^{\mathrm{in}}_{a,v^{*}(a,b)}$. The contract does not depend on the artifact location, implementation language, or local loading state. It depends only on the EVM-facing boundary and on the ABI contract of the selected version. If $v^{*}(a,b)$ is not yet prepared, the coprocessor reloads $\mu_{a,v^{*}(a,b)}$ and completes compilation before execution, rather than redirecting the call to an obsolete implementation.
 
-Inside the client, the EVM integration boundary recognizes the CodeStorage target and the \texttt{callFunc} selector before the coprocessor parses the outer calldata and normalizes the algorithm name. The inner \texttt{input} remains ABI-encoded across the host--runtime boundary: a dynamically upgraded WASM module receives these bytes through its \texttt{execute} export and returns an ABI-encoded result, whereas a built-in routine may decode and re-encode the values in the host. In both cases, the selected result is returned to the EVM call frame.
+Inside the client, the EVM integration boundary recognizes the CodeStorage target and the \texttt{callFunc} selector, then parses the outer calldata and normalizes $a$. The inner input $x$ remains ABI-encoded across the host--runtime boundary: a dynamically upgraded WASM module receives these bytes through its \texttt{execute} export and returns an ABI-encoded result, whereas a built-in routine may decode and re-encode the values in the host. In both cases the selected result is returned to the EVM call frame. Replacing an implementation therefore does not change the contract-facing call shape, provided that $\tau^{\mathrm{in}}_{a,v}$ and $\tau^{\mathrm{out}}_{a,v}$ remain compatible.
 
-This abstraction decouples contract-facing cryptographic algorithm interfaces from WASM module implementations. Replacing an implementation does not require changing the contract-facing call shape, provided that the registered metadata and ABI-level input-output contract remain compatible. The EVM integration layer also does not need to understand the internal logic of every cryptographic algorithm; it needs a stable dispatch boundary, a gas query, and a deterministic return value for the selected version.
+At the data plane, a caller encodes the typed parameters with $\tau^{\mathrm{in}}_{a,v^{*}(a,b)}$, wraps them in a \texttt{callFunc(string,bytes)} envelope, and issues a read-only \texttt{STATICCALL} to CodeStorage. Calls whose selector is \texttt{callFunc} enter the invocation path; other CodeStorage selectors continue through metadata or management dispatch; all other addresses follow ordinary EVM routing. The dispatcher parses $(a,x)$, computes $v^{*}(a,b)$ by~\eqref{eq:version-select}, and blocks on forced preparation when the mandatory-upgrade policy applies. It then charges the deterministic fee defined below, executes the selected WASM module, and returns the ABI-encoded output. Invalid calldata, a missing version, insufficient gas, or a runtime failure surface as explicit errors. Algorithm~\ref{alg:invocation-protocol} summarizes this flow.
 
-At the data plane, a caller contract encodes the typed algorithm parameters with the registered input descriptor, wraps them in a \texttt{callFunc(string,bytes)} envelope, and issues a read-only \texttt{STATICCALL} to the CodeStorage gateway. Calls whose selector is \texttt{callFunc} enter the invocation path; other CodeStorage selectors continue through metadata or management dispatch; all other addresses follow ordinary EVM routing. The dispatcher parses the algorithm name and inner payload, selects the applicable version from the current block height, and blocks on forced preparation until the selected version is ready when the mandatory-upgrade policy applies, rather than returning a node-local preparation failure to the caller. It then checks that the available call gas covers the metadata-defined requirement, charges that deterministic gas amount, executes the WASM module, and returns the ABI-encoded output. Invalid calldata, missing versions, insufficient gas, or runtime failure surface as explicit errors rather than silent fallback. Algorithm~\ref{alg:invocation-protocol} summarizes the data-plane flow.
+\begin{definition}[Algorithm-level gas schedule]
+\label{def:gas-schedule}
+Each algorithm version uses an independent pricing rule. A call with inner input $x$ against version $v$ of algorithm $a$ is charged
+\begin{equation}
+G(a,v,x)=g^{(0)}_{a,v}+\lambda_{a,v}\cdot |x|,
+\label{eq:gas-price}
+\end{equation}
+where $|x|$ is the byte length of the call-stage inner input, $g^{(0)}_{a,v}$ is the initial gas fee, and $\lambda_{a,v}$ is the gas slope parameter registered in $\mu_{a,v}$. The charged amount does not depend on node-local CPU time or on the number of WASM instructions executed inside the module.
+\end{definition}
 
 \begin{algorithm}[!tb]
 \caption{\textbf{Contract-to-coprocessor invocation protocol.}}
@@ -263,24 +326,25 @@ At the data plane, a caller contract encodes the typed algorithm parameters with
 \If{calldata parsing fails}
     \State \textbf{return} ABI error
 \EndIf
-\State parse $(a,x)$ from $d$; select version $v$ at height $b$
+\State parse $(a,x)$ from $d$; set $v\gets v^{*}(a,b)$ by~\eqref{eq:version-select}
 \If{no applicable version $v$}
     \State \textbf{return} missing-version error
 \EndIf
 \If{$(a,v)$ not prepared}
     \Repeat
-        \State forcibly reload metadata and prepare $(a,v)$
+        \State forcibly reload $\mu_{a,v}$ and prepare $(a,v)$
     \Until{$(a,v)$ prepared}
 \EndIf
-\If{$g$ below registered price}
+\State $G_{\mathrm{req}}\gets G(a,v,x)$ by~\eqref{eq:gas-price}
+\If{$g<G_{\mathrm{req}}$}
     \State \textbf{return} out-of-gas error
 \EndIf
-\State charge registered price; $y\gets$ WASM$(a,v,x)$
+\State charge $G_{\mathrm{req}}$; $y\gets\mathrm{WASM}(a,v,x)$
 \State \textbf{return} $y$, or runtime error on failure
 \end{algorithmic}
 \end{algorithm}
 
-This charging rule is what removes opcode-level gas amplification from the invocation path. The charged amount comes from the invocation gas metadata registered with the selected algorithm version on chain, not from metering the WASM module's internal execution, and it is identical for every node resolving the same version at the same block height. The price is therefore an explicit per-version policy parameter: it can be set to reflect the algorithm's resource class rather than the expanded instruction count of an equivalent EVM implementation. The algorithm-level price is charged only on the \texttt{callFunc} path, while upgrade and metadata transactions remain under ordinary transaction pricing.
+Equation~\eqref{eq:gas-price} is what removes opcode-level gas amplification from the invocation path. The fee is computed from the selected version's registered coefficients and from $|x|$, not from metering the module's internal execution, and it is identical for every node that resolves the same $v^{*}(a,b)$ on the same input. The pair $(g^{(0)}_{a,v},\lambda_{a,v})$ is therefore an explicit per-version policy: it can reflect the algorithm's resource class rather than the expanded instruction count of an equivalent EVM implementation. The algorithm-level schedule is charged only on the \texttt{callFunc} path. Upgrade and metadata transactions remain under ordinary transaction pricing. The coefficients used in Section~\ref{sec5} are experimental parameters; they demonstrate this charging mechanism rather than a calibrated economic optimum.
 
 \section{Security Analysis}\label{sec4}
 
@@ -312,10 +376,10 @@ WASM narrows the execution boundary compared with a process-local plugin or shar
 The Management Contract is treated as the authoritative source of upgrade metadata. The emitted event is used as a notification and index, while the Event Listener recovers the full metadata through \texttt{getVersionInfo} and checks the observed event fields against the contract state. The decoded WASM bytes are hashed locally and bound to the prepared version metadata, and the ABI descriptors determine how inputs and outputs are decoded and encoded. This binding reduces the risk that a node prepares an artifact or ABI interface different from the version selected during execution.
 
 \noindent\textbf{Deterministic resource accounting.}
-Invocation gas is determined entirely by the algorithm-level price registered in the on-chain version metadata, not by EVM metering of the module's execution logic. Every node resolving the same algorithm version at the same block height reads the same registered price from the Management Contract, so the consistency of gas charging reduces to the consistency of the contract state, which the underlying consensus protocol already provides: nodes cannot disagree on the charged amount for a given call without disagreeing on the chain itself. The design further bounds module memory, applies an execution budget, validates imports and required exports, and separates module preparation from the upgrade transaction's EVM execution path. These measures reduce the immediate attack surface of dynamic loading. They do not fully solve economic pricing: the current prototype invocation gas values are experimental parameters, and future work must calibrate call-path gas pricing against execution cost rather than treating upgrade-upload transaction cost as part of the coprocessor pricing model. Accordingly, the evaluation in Section~\ref{sec5} demonstrates the pricing mechanism itself, namely that invocation cost is decoupled from the expanded EVM instruction count, together with the metered Solidity comparison side; the claimed benefit is this capability extension, not a validated magnitude of gas savings.
+Invocation gas is determined by the algorithm-level schedule~\eqref{eq:gas-price} registered in $\mu_{a,v}$, not by EVM metering of the module's execution logic. Every node resolving the same $v^{*}(a,b)$ on the same inner input $x$ evaluates the same pair $(g^{(0)}_{a,v},\lambda_{a,v})$ from the Management Contract, so the consistency of gas charging reduces to the consistency of the contract state, which the underlying consensus protocol already provides: nodes cannot disagree on $G(a,v^{*}(a,b),x)$ without disagreeing on the chain itself. The design further bounds module memory, applies an execution budget, validates imports and required exports, and separates module preparation from the upgrade transaction's EVM execution path. These measures reduce the immediate attack surface of dynamic loading. They do not fully solve economic pricing: the current prototype invocation gas values are experimental parameters, and future work must calibrate call-path gas pricing against execution cost rather than treating upgrade-upload transaction cost as part of the coprocessor pricing model. Accordingly, the evaluation in Section~\ref{sec5} demonstrates the pricing mechanism itself, namely that invocation cost is decoupled from the expanded EVM instruction count, together with the metered Solidity comparison side; the claimed benefit is this capability extension, not a validated magnitude of gas savings.
 
 \noindent\textbf{Forced upgrade at the Activation Block.}
-Upgrade consistency is treated as a protocol security property. The Activation Block defines a chain-derived version-switching boundary, and version selection depends on the execution block height rather than local wall-clock time or local readiness time. Therefore, nodes with the same chain view apply the same version-selection rule for a given block height. Once the selected version applies, a node must not silently fall back to an obsolete implementation. If local preparation is incomplete when the Activation Block is reached or when a requiring call is executed, the node forcibly reloads the WASM artifact from authoritative metadata and completes preparation before serving the new version. This paper does not set up a separate consistency experiment; the claim remains a protocol analysis rather than node-level evidence for state-root equality, arbitrary network safety, or behavior when forced preparation cannot complete.
+Upgrade consistency is treated as a protocol security property. Version selection follows~\eqref{eq:version-select}: it depends on the execution block height rather than local wall-clock time or local readiness time. Therefore, nodes with the same chain view compute the same $v^{*}(a,b)$. Once that version applies, a node must not silently fall back to an obsolete implementation. If local preparation is incomplete when the Activation Block is reached or when a requiring call is executed, the node forcibly reloads $\mu_{a,v^{*}(a,b)}$ from authoritative metadata and completes preparation before serving the new version. This paper does not set up a separate consistency experiment; the claim remains a protocol analysis rather than node-level evidence for state-root equality, arbitrary network safety, or behavior when forced preparation cannot complete.
 
 \section{Evaluation}\label{sec5}
 
@@ -410,7 +474,7 @@ Dynamic software-update schemes move replacement below the application layer by 
 
 \section{Conclusion}\label{sec7}
 
-This paper presented an upgradable Cryptographic Coprocessor for the EVM. The central contribution is to separate a stable contract-facing invocation interface from client-side WASM module implementations, so that cryptographic algorithms can be managed as replaceable modules while ordinary EVM execution remains outside the upgrade mechanism. By routing calls through that interface instead of in-contract Solidity implementations, the design targets both the engineering difficulty and the opcode-level gas amplification that motivate the Solidity baselines evaluated in Section~\ref{sec5}, replacing per-instruction metering with a deterministic algorithm-level gas price registered on chain. The upgrade protocol combines on-chain proposals, off-chain asynchronous WASM preparation, and Activation-Block-based deterministic activation.
+This paper presented an upgradable Cryptographic Coprocessor for the EVM. The central contribution is to separate a stable contract-facing invocation interface from client-side WASM module implementations, so that cryptographic algorithms can be managed as replaceable modules while ordinary EVM execution remains outside the upgrade mechanism. By routing calls through that interface instead of in-contract Solidity implementations, the design targets both the engineering difficulty and the opcode-level gas amplification that motivate the Solidity baselines evaluated in Section~\ref{sec5}, replacing per-instruction metering with the algorithm-level schedule~\eqref{eq:gas-price}. The upgrade protocol combines on-chain metadata~\eqref{eq:version-metadata}, off-chain asynchronous WASM preparation, and the height-based selector~\eqref{eq:version-select}.
 
 The Geth prototype supports the design under the evaluated private-chain scenarios. The upgrade-efficiency experiment showed that publishing algorithms through the coprocessor upload path reduced network-wide upgrade duration---client-side Geth handling only, excluding network propagation and consensus---relative to redeploying equivalent Solidity implementations on several complex workloads, with SchnorrVerify as the clearest example. The execution-efficiency experiment showed that Native algorithm remained the fastest path, while EvoCrypt stayed within the millisecond range on lightweight algorithms and outperformed Solidity on DH-2048, PedersenCommit, and SchnorrVerify; SchnorrVerify nevertheless remained the clearest tail case relative to Native algorithm. Upgrade consistency remains a protocol property discussed through the Activation Block and forced-upgrade preparation policy rather than a separate experiment.
 

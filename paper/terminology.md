@@ -32,6 +32,7 @@ terminology.md文档核心是统一英文与中文用词。
 | dynamic software update (DSU) | 动态软件升级 | 程序或服务持续运行期间更新代码、组件或执行逻辑的通用软件升级技术 |
 | asynchronous upgrade preparation | 异步升级准备 | 节点在链下异步完成算法编译、加载和本地准备的过程 |
 | deterministic activation | 确定性激活 | 节点依据统一链上规则在指定区块高度切换算法版本 |
+| Upgrade Block | 升级区块 | 包含已准入升级交易并发布升级事件的区块 |
 | Activation Block | 激活区块 | 新算法版本开始生效的链上区块高度 |
 | WASM module | WASM 模块 | 编译为 WebAssembly 字节码并在受控运行时中执行的算法模块 |
 | WASM bytecode | WASM 字节码 | WASM module 的可序列化字节载荷，用于上传、哈希校验、编译和实例化 |
@@ -57,6 +58,9 @@ terminology.md文档核心是统一英文与中文用词。
 | gas pricing mechanism | Gas 定价机制 | 为执行、存储、calldata 和数据可用性等资源设定链上费用的规则 |
 | opcode-level gas pricing | 指令级 Gas 定价 | EVM 对展开后的每条指令逐一累计计费的定价方式 |
 | algorithm-level gas pricing | 算法级 Gas 定价 | 协处理器按链上版本元数据中注册的调用 Gas 对一次算法调用收取确定性费用的定价策略 |
+| version metadata record | 版本元数据记录 | 链上登记的算法版本描述 $\mu_{a,v}$，含名称、版本、WASM 字节码、模块哈希、初始 Gas、Gas 浮动参数、输入/输出类型与激活高度 |
+| initial gas fee | 初始 Gas 费用 | 算法级计价规则中的常数项 $g^{(0)}_{a,v}$ |
+| gas slope parameter | Gas 浮动参数 | 算法级计价规则中与调用阶段输入字节长度相乘的系数 $\lambda_{a,v}$ |
 | gas amplification | Gas 放大 | 复杂密码算法被展开为大量 EVM 指令后，逐指令计费使 Gas 随指令数而非算法计算量增长的现象 |
 | resource accounting | 资源计费 | 基于算法类型和确定性输入参数计算协处理器调用 Gas 的规则，不依赖节点本地 CPU 时间 |
 | denial-of-service (DoS) attack | 拒绝服务攻击（DoS） | 攻击者通过大量请求、交易或资源占用降低系统可用性的攻击 |

@@ -53,7 +53,8 @@ const (
 	// non-trivial consequences: larger transactions are significantly harder and
 	// more expensive to propagate; larger transactions also take more resources
 	// to validate whether they fit into the pool or not.
-	txMaxSize = 4 * txSlotSize // 128KB
+	// 私链实验需要上传 Groth16 BN254 WASM，压缩后仍超过 128KB。
+	txMaxSize = 16 * txSlotSize // 512KB
 )
 
 var (

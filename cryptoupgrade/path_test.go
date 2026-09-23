@@ -122,7 +122,7 @@ func TestActivateAlgorithmPropagatesDirectoryInitError(t *testing.T) {
 	}
 }
 
-func withRuntimePluginPaths(t *testing.T, paths pluginPaths, pathErr error) {
+func withRuntimePluginPaths(t testing.TB, paths pluginPaths, pathErr error) {
 	t.Helper()
 
 	oldPaths := runtimePluginPaths

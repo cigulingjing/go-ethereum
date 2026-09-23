@@ -99,8 +99,7 @@ Accessed 21 August 2026
 \bibitem[\protect\citeauthoryear{Shor}{1999}]{shor1999}
 \begin{barticle}
 \bauthor{\bsnm{Shor}, \binits{P.W.}}:
-\batitle{Polynomial-time algorithms for prime factorization and discrete
-  logarithms on a quantum computer}.
+\batitle{Polynomial-time algorithms for prime factorization and discrete logarithms on a quantum computer}.
 \bjtitle{SIAM Review}
 \bvolume{41}(\bissue{2}),
 \bfpage{303}--\blpage{332}
@@ -114,8 +113,7 @@ Accessed 21 August 2026
 \begin{bchapter}
 \bauthor{\bsnm{Grover}, \binits{L.K.}}:
 \bctitle{A fast quantum mechanical algorithm for database search}.
-In: \bbtitle{Proceedings of the Twenty-Eighth Annual ACM Symposium on Theory of
-  Computing},
+In: \bbtitle{Proceedings of the Twenty-Eighth Annual ACM Symposium on Theory of Computing},
 pp. \bfpage{212}--\blpage{219}.
 \bpublisher{Association for Computing Machinery},
 \blocation{New York, NY, USA}
@@ -125,8 +123,7 @@ pp. \bfpage{212}--\blpage{219}.
 \endbibitem
 
 %%% 7
-\bibitem[\protect\citeauthoryear{{National Institute of Standards and
-  Technology}}{2026}]{nistPqcProject}
+\bibitem[\protect\citeauthoryear{{National Institute of Standards and Technology}}{2026}]{nistPqcProject}
 \begin{botherref}
 \oauthor{\bsnm{{National Institute of Standards and Technology}}}:
 Post-Quantum Cryptography.
@@ -141,8 +138,7 @@ Updated 5 August 2026. Accessed 21 August 2026
 \begin{botherref}
 \oauthor{\bsnm{Buterin}, \binits{V.}}:
 {EIP-150}: Gas Cost Changes for {IO}-Heavy Operations.
-Ethereum Improvement Proposals, no. 150.
-  \url{https://eips.ethereum.org/EIPS/eip-150}.
+Ethereum Improvement Proposals, no. 150. \url{https://eips.ethereum.org/EIPS/eip-150}.
 Created 24 September 2016. Accessed 21 August 2026
 (2016)
 \end{botherref}
@@ -183,8 +179,7 @@ Accessed 21 August 2026
 \bauthor{\bsnm{Li}, \binits{W.}},
 \bauthor{\bsnm{Karame}, \binits{G.O.}},
 \bauthor{\bsnm{Davi}, \binits{L.}}:
-\bctitle{{EVMPatch}: Timely and automated patching of ethereum smart
-  contracts}.
+\bctitle{{EVMPatch}: Timely and automated patching of ethereum smart contracts}.
 In: \bbtitle{30th USENIX Security Symposium (USENIX Security 21)},
 pp. \bfpage{1289}--\blpage{1306}.
 \bpublisher{USENIX Association},
@@ -219,10 +214,8 @@ Accessed 21 August 2026
 \bibitem[\protect\citeauthoryear{Reitwiessner}{2017}]{eip196}
 \begin{botherref}
 \oauthor{\bsnm{Reitwiessner}, \binits{C.}}:
-{EIP-196}: Precompiled Contracts for Addition and Scalar Multiplication on the
-  Elliptic Curve alt\_bn128.
-Ethereum Improvement Proposals, no. 196.
-  \url{https://eips.ethereum.org/EIPS/eip-196}.
+{EIP-196}: Precompiled Contracts for Addition and Scalar Multiplication on the Elliptic Curve alt\_bn128.
+Ethereum Improvement Proposals, no. 196. \url{https://eips.ethereum.org/EIPS/eip-196}.
 Final. Accessed 21 August 2026
 (2017)
 \end{botherref}
@@ -233,10 +226,8 @@ Final. Accessed 21 August 2026
 \begin{botherref}
 \oauthor{\bsnm{Buterin}, \binits{V.}},
 \oauthor{\bsnm{Reitwiessner}, \binits{C.}}:
-{EIP-197}: Precompiled Contracts for Optimal Ate Pairing Check on the Elliptic
-  Curve alt\_bn128.
-Ethereum Improvement Proposals, no. 197.
-  \url{https://eips.ethereum.org/EIPS/eip-197}.
+{EIP-197}: Precompiled Contracts for Optimal Ate Pairing Check on the Elliptic Curve alt\_bn128.
+Ethereum Improvement Proposals, no. 197. \url{https://eips.ethereum.org/EIPS/eip-197}.
 Final. Accessed 21 August 2026
 (2017)
 \end{botherref}
@@ -246,10 +237,8 @@ Final. Accessed 21 August 2026
 \bibitem[\protect\citeauthoryear{Baylina}{2018}]{eip1109}
 \begin{botherref}
 \oauthor{\bsnm{Baylina}, \binits{J.}}:
-{EIP-1109}: {PRECOMPILEDCALL} Opcode (Remove {CALL} Costs for Precompiled
-  Contracts).
-Ethereum Improvement Proposals, no. 1109.
-  \url{https://eips.ethereum.org/EIPS/eip-1109}.
+{EIP-1109}: {PRECOMPILEDCALL} Opcode (Remove {CALL} Costs for Precompiled Contracts).
+Ethereum Improvement Proposals, no. 1109. \url{https://eips.ethereum.org/EIPS/eip-1109}.
 Stagnant. Accessed 21 August 2026
 (2018)
 \end{botherref}
@@ -296,15 +285,13 @@ pp. \bfpage{452}--\blpage{476}.
 \endbibitem
 
 %%% 20
-\bibitem[\protect\citeauthoryear{Baresi
-  et~al.}{2017}]{baresi2017versionConsistency}
+\bibitem[\protect\citeauthoryear{Baresi et~al.}{2017}]{baresi2017versionConsistency}
 \begin{barticle}
 \bauthor{\bsnm{Baresi}, \binits{L.}},
 \bauthor{\bsnm{Ghezzi}, \binits{C.}},
 \bauthor{\bsnm{Ma}, \binits{X.}},
 \bauthor{\bsnm{Panzica La~Manna}, \binits{V.}}:
-\batitle{Efficient dynamic updates of distributed components through version
-  consistency}.
+\batitle{Efficient dynamic updates of distributed components through version consistency}.
 \bjtitle{IEEE Transactions on Software Engineering}
 \bvolume{43}(\bissue{4}),
 \bfpage{340}--\blpage{358}
@@ -314,8 +301,7 @@ pp. \bfpage{452}--\blpage{476}.
 \endbibitem
 
 %%% 21
-\bibitem[\protect\citeauthoryear{{World Wide Web
-  Consortium}}{}]{webassemblyCoreSpec}
+\bibitem[\protect\citeauthoryear{{World Wide Web Consortium}}{}]{webassemblyCoreSpec}
 \begin{botherref}
 \oauthor{\bsnm{{World Wide Web Consortium}}}:
 {WebAssembly Core Specification}.
@@ -325,8 +311,7 @@ W3C Candidate Recommendation Draft. Accessed 3 September 2026
 \endbibitem
 
 %%% 22
-\bibitem[\protect\citeauthoryear{{Input
-  Output}}{2020}]{cardanoHardForkCombinator}
+\bibitem[\protect\citeauthoryear{{Input Output}}{2020}]{cardanoHardForkCombinator}
 \begin{botherref}
 \oauthor{\bsnm{{Input Output}}}:
 Combinator Makes Easy Work of Hard Forks.
@@ -383,8 +368,7 @@ In: \beditor{\bsnm{Bernhard}, \binits{M.}},
 \beditor{\bsnm{Perez}, \binits{D.}},
 \beditor{\bsnm{Sala}, \binits{M.}},
 \beditor{\bsnm{Werner}, \binits{S.}} (eds.)
-\bbtitle{Financial Cryptography and Data Security. FC 2021 International
-  Workshops}.
+\bbtitle{Financial Cryptography and Data Security. FC 2021 International Workshops}.
 \bsertitle{Lecture Notes in Computer Science},
 vol. \bseriesno{12676},
 pp. \bfpage{467}--\blpage{481}.
@@ -412,8 +396,7 @@ Accessed 15 September 2026
 \bauthor{\bsnm{Saha}, \binits{R.}},
 \bauthor{\bsnm{Conti}, \binits{M.}},
 \bauthor{\bsnm{Buchanan}, \binits{W.J.}}:
-\batitle{{LEAGAN}: A decentralized version-control framework for upgradeable
-  smart contracts}.
+\batitle{{LEAGAN}: A decentralized version-control framework for upgradeable smart contracts}.
 \bjtitle{IEEE Transactions on Services Computing}
 \bvolume{18}(\bissue{3}),
 \bfpage{1529}--\blpage{1542}
@@ -434,8 +417,7 @@ Accessed 15 September 2026
 \bauthor{\bsnm{Yu}, \binits{K.}},
 \bauthor{\bsnm{Xiong}, \binits{Y.}},
 \bauthor{\bsnm{Chen}, \binits{G.}}:
-\bctitle{{KylinX}: A dynamic library operating system for simplified and
-  efficient cloud virtualization}.
+\bctitle{{KylinX}: A dynamic library operating system for simplified and efficient cloud virtualization}.
 In: \bbtitle{2018 USENIX Annual Technical Conference (USENIX ATC 18)},
 pp. \bfpage{173}--\blpage{186}.
 \bpublisher{USENIX Association},
@@ -452,10 +434,8 @@ pp. \bfpage{173}--\blpage{186}.
 \bauthor{\bsnm{Andronidis}, \binits{A.}},
 \bauthor{\bsnm{Hicks}, \binits{M.}},
 \bauthor{\bsnm{Cadar}, \binits{C.}}:
-\bctitle{{MVEDSUA}: Higher availability dynamic software updates via
-  multi-version execution}.
-In: \bbtitle{Proceedings of the Twenty-Fourth International Conference on
-  Architectural Support for Programming Languages and Operating Systems},
+\bctitle{{MVEDSUA}: Higher availability dynamic software updates via multi-version execution}.
+In: \bbtitle{Proceedings of the Twenty-Fourth International Conference on Architectural Support for Programming Languages and Operating Systems},
 pp. \bfpage{573}--\blpage{585}.
 \bpublisher{Association for Computing Machinery},
 \blocation{New York, NY, USA}

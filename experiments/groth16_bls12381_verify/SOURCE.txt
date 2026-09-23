@@ -1,0 +1,3 @@
+algorithm=groth16_bls12381_verify
+extracted_from=experiments/gnark/backend/groth16/bls12-381/verify.go
+pairing=e(Ar,Bs)*e(Krs,-delta)*e(L_pub,-gamma)=e(alpha,beta)

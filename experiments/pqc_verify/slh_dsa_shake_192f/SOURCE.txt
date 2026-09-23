@@ -1,0 +1,3 @@
+algorithm=slh_dsa_shake_192f_verify
+extracted_from=experiments/pqcc/pqmagic/sig/slh_dsa/std
+wrapper=experiments/pqcc/pqcsign_wrapper.c verify(SLH_DSA)

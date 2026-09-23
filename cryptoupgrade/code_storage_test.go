@@ -186,7 +186,7 @@ func TestUpdataGasUpdatesUploadedAndActiveMetadata(t *testing.T) {
 	}
 }
 
-func resetAlgorithmInfoForTest(t *testing.T) {
+func resetAlgorithmInfoForTest(t testing.TB) {
 	t.Helper()
 
 	oldRepository := runtimeAlgorithmRepository

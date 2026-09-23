@@ -1,0 +1,7 @@
+algorithm=groth16_bn254_verify
+curve=bn254
+extracted_from=experiments/gnark/backend/groth16/bn254/verify.go
+pairing=e(Ar,Bs)*e(Krs,-delta)*e(L_pub,-gamma)*e(alpha,-beta)=1
+mcl=MCL_BN_SNARK1
+flags=-O3 -std=c++14 -DNDEBUG -DMCL_DONT_USE_XBYAK -DMCL_BINT_ASM=0 -DMCL_MSM=0 -DMCL_FP_BIT=256 -DMCL_FR_BIT=256
+command=experiments/cryptoupgrade/algorithm/zkgo/build.sh

@@ -1,0 +1,12 @@
+/* SHAKE / randombytes / verify.c 来自 ../common；其余为 ML-DSA-65 实现。 */
+#include "randombytes.c"
+#include "fips202.c"
+#include "ntt.c"
+#include "reduce.c"
+#include "rounding.c"
+#include "poly.c"
+#include "polyvec.c"
+#include "packing.c"
+#include "symmetric-shake.c"
+#include "sign.c"
+#include "verify.c"
