@@ -12,7 +12,7 @@ import (
 )
 
 func TestPolynomialMulWasmExecute(t *testing.T) {
-	wasmPath := filepath.Join("..", "..", "..", "experiments", "cryptoupgrade", "algorithm", "go", "polynomial_mul.wasm")
+	wasmPath := filepath.Join("..", "..", "..", "experiments", "cryptoupgrade", "algorithm", "go", "wasm", "polynomial_mul.wasm")
 	if _, err := os.Stat(wasmPath); err != nil {
 		t.Skipf("polynomial_mul.wasm fixture unavailable: %v", err)
 	}
@@ -49,7 +49,7 @@ func TestPolynomialMulWasmExecute(t *testing.T) {
 }
 
 func TestPolynomialMulWasmExecuteP6Profile(t *testing.T) {
-	wasmPath := filepath.Join("..", "..", "..", "experiments", "cryptoupgrade", "algorithm", "go", "polynomial_mul.wasm")
+	wasmPath := filepath.Join("..", "..", "..", "experiments", "cryptoupgrade", "algorithm", "go", "wasm", "polynomial_mul.wasm")
 	if _, err := os.Stat(wasmPath); err != nil {
 		t.Skipf("polynomial_mul.wasm fixture unavailable: %v", err)
 	}

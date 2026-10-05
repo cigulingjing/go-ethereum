@@ -1,4 +1,4 @@
 algorithm=dilithium3_verify
-source=experiments/pqcc/pqmagic
+source=external PQMagic source (PQMAGIC_SRC)
 built=2026-09-22T01:59:31Z
 command=experiments/cryptoupgrade/algorithm/pqcgo/build.sh

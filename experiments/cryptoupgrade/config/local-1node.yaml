@@ -1,0 +1,36 @@
+# 单节点实验网络：用于真实交易 Gas 测量等不需要多节点互联的实验。
+# 与 local.yaml 的 20 节点配置相互独立，渲染输出到 output/network/local-1node。
+local:
+  nodeCount: 1
+  outputDir: ../output/network/local-1node
+  httpPortBase: 8761
+  signerAccount: signer
+  extraArgs: [--cache, "128"]
+  expose:
+    - node: node1
+      httpHostPort: 8761
+network:
+  name: cryptoupgrade-local
+  chainId: 11223344
+  networkId: 11223344
+  gasLimit: 30000000
+  peerTopology: full
+consensus:
+  type: clique
+  period: 0
+  epoch: 30000
+docker:
+  image: cryptoupgrade-geth:lab
+  networkName: cryptoupgrade-local
+  cpus: "0.50"
+  memory: 768m
+cryptoupgrade:
+  enabled: true
+  smokeTest: false
+  addSource: ../algorithm/go/wasm/add.wasm
+accounts:
+  signer:
+    address: 0xF5F871aA6Bd253914705898c66251f994aa426FA
+    privateKey: ./signer.key
+    password: "123456"
+    balance: "30000000000000000000000"

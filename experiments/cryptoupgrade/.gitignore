@@ -2,7 +2,6 @@
 
 
 *.key
-deployments/nodes-20
-deployments/nodes-30
-deployments/nodes-40
-results/
+/output/
+/deployments/
+/results/

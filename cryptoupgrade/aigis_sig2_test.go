@@ -11,7 +11,7 @@ import (
 
 func TestAigisSig2WASMUpgradeAndCall(t *testing.T) {
 	if len(model.AigisSig2VerifyWASM) == 0 {
-		t.Fatal("missing embedded Aigis WASM (run experiments/pqcc/wasi/build.sh)")
+		t.Fatal("missing embedded Aigis WASM (run experiments/cryptoupgrade/algorithm/pqcgo/build.sh)")
 	}
 
 	dir := t.TempDir()

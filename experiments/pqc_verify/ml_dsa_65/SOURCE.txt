@@ -1,3 +1,0 @@
-algorithm=ml_dsa_65_verify
-extracted_from=experiments/pqcc/pqmagic/sig/ml_dsa/std
-wrapper=experiments/pqcc/pqcsign_wrapper.c verify(ML_DSA)

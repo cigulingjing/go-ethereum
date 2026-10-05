@@ -55,7 +55,7 @@ snapshot_blst() {
   cat > "$algo_dir/SOURCE.txt" <<EOF
 algorithm=groth16_bls12381_verify
 curve=bls12-381
-extracted_from=experiments/gnark/backend/groth16/bls12-381/verify.go
+extracted_from=gnark backend groth16/bls12-381 verify reference
 pairing=e(Ar,Bs)*e(Krs,-delta)*e(L_pub,-gamma)*e(alpha,-beta)=1
 blst=$BLST_VER
 flags=$BLST_CFLAGS
@@ -75,7 +75,7 @@ snapshot_mcl() {
   cat > "$algo_dir/SOURCE.txt" <<EOF
 algorithm=groth16_bn254_verify
 curve=bn254
-extracted_from=experiments/gnark/backend/groth16/bn254/verify.go
+extracted_from=gnark backend groth16/bn254 verify reference
 pairing=e(Ar,Bs)*e(Krs,-delta)*e(L_pub,-gamma)*e(alpha,-beta)=1
 mcl=MCL_BN_SNARK1
 flags=$MCL_CXXFLAGS

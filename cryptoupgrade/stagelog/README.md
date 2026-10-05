@@ -7,8 +7,8 @@
 已有网络设置了 `GETH_CRYPTOUPGRADE_PLUGIN_DIR`，重新构建 Geth/镜像后自动写入各节点的 `plugin/stage_timing.jsonl`。默认本地网络的宿主机路径为：
 
 ```text
-experiments/cryptoupgrade/deployments/nodes/node1/plugin/stage_timing.jsonl
-experiments/cryptoupgrade/deployments/nodes/node2/plugin/stage_timing.jsonl
+experiments/cryptoupgrade/output/network/local/node1/plugin/stage_timing.jsonl
+experiments/cryptoupgrade/output/network/local/node2/plugin/stage_timing.jsonl
 ...
 ```
 

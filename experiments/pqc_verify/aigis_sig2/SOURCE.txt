@@ -1,3 +1,0 @@
-algorithm=aigis_sig2_verify
-extracted_from=experiments/pqcc/pqmagic/sig/aigis-sig/std
-wrapper=experiments/pqcc/pqcsign_wrapper.c verify(AIGIS_SIG)

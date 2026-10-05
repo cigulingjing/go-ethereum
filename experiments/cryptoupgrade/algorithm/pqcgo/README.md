@@ -13,7 +13,7 @@ Solidity 不适合对照的后量子验签归档。每个算法一个目录：
 
 ```bash
 experiments/cryptoupgrade/algorithm/pqcgo/build.sh
-go run ./experiments/pqc_verify
+go run ./experiments/cryptoupgrade/scripts/benchpqccgowasm
 ```
 
-四个算法也可一次跑完：`go run ./experiments/cryptoupgrade/bench/cmd/benchpqccgowasm`。
+四个算法也可一次跑完：`go run ./experiments/cryptoupgrade/scripts/benchpqccgowasm`。

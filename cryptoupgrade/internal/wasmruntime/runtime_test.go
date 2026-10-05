@@ -262,7 +262,7 @@ func fixturePath(t *testing.T, name string) string {
 	if !ok {
 		t.Fatal("runtime.Caller failed")
 	}
-	return filepath.Join(filepath.Dir(file), "..", "..", "algorithm", "wasm", "archive", name)
+	return filepath.Join(filepath.Dir(file), "..", "..", "..", "experiments", "cryptoupgrade", "algorithm", "go", "wasm", name)
 }
 
 func abiBytesInput(data []byte) []byte {

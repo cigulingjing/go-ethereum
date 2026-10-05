@@ -4,11 +4,9 @@ package pqcnative
 
 /*
 #cgo CFLAGS: -O3 -std=gnu11 -DAIGIS_SIG_MODE=2 -DUSE_SHAKE
-#cgo CFLAGS: -I${SRCDIR}/../../../experiments/pqcc/pqmagic
-#cgo CFLAGS: -I${SRCDIR}/../../../experiments/pqcc/pqmagic/include
-#cgo CFLAGS: -I${SRCDIR}/../../../experiments/pqcc/pqmagic/sig/aigis-sig/std
-#cgo CFLAGS: -I${SRCDIR}/../../../experiments/pqcc/pqmagic/utils
-#cgo CFLAGS: -I${SRCDIR}/../../../experiments/pqcc/pqmagic/hash/keccak
+#cgo CFLAGS: -I${SRCDIR}/../../../experiments/cryptoupgrade/algorithm/pqcgo/aigis_sig2_verify/native
+#cgo CFLAGS: -I${SRCDIR}/../../../experiments/cryptoupgrade/algorithm/pqcgo/aigis_sig2_verify/native/include
+#cgo CFLAGS: -I${SRCDIR}/../../../experiments/cryptoupgrade/algorithm/pqcgo/aigis_sig2_verify/native/utils
 #include "verify.h"
 */
 import "C"

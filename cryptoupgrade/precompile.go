@@ -17,6 +17,11 @@ import (
 	"github.com/ethereum/go-ethereum/crypto/blake2b"
 	evmadapter "github.com/ethereum/go-ethereum/cryptoupgrade/internal/evm"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/pqcnative"
+	"github.com/ethereum/go-ethereum/experiments/cryptoupgrade/core/pqcbench/dilithium3"
+	"github.com/ethereum/go-ethereum/experiments/cryptoupgrade/core/pqcbench/mldsa65"
+	"github.com/ethereum/go-ethereum/experiments/cryptoupgrade/core/pqcbench/slhdsa"
+	"github.com/ethereum/go-ethereum/experiments/cryptoupgrade/core/zkbench/groth16bls12381"
+	"github.com/ethereum/go-ethereum/experiments/cryptoupgrade/core/zkbench/groth16bn254"
 )
 
 // precompile 计费规则保持独立，避免影响动态升级路径的 gas 元数据。
@@ -226,6 +231,47 @@ var precompiles = mustPrecompiles([]precompileSpec{
 		outputTypes: []string{"bool"},
 		requiredGas: precompileEncodedGas(precompileHeavyBaseGas, precompileHeavyWordGas),
 		handler:     precompileAigisSig2Verify,
+	},
+	// PQC算法，预编译合约
+	{
+		address:     common.CryptoUpgradeDilithium3VerifyAddress,
+		name:        "Dilithium3Verify",
+		inputTypes:  []string{"bytes", "bytes", "bytes"},
+		outputTypes: []string{"bool"},
+		requiredGas: precompileEncodedGas(precompileHeavyBaseGas, precompileHeavyWordGas),
+		handler:     precompileDilithium3Verify,
+	},
+	{
+		address:     common.CryptoUpgradeMlDsa65VerifyAddress,
+		name:        "MlDsa65Verify",
+		inputTypes:  []string{"bytes", "bytes", "bytes"},
+		outputTypes: []string{"bool"},
+		requiredGas: precompileEncodedGas(precompileHeavyBaseGas, precompileHeavyWordGas),
+		handler:     precompileMlDsa65Verify,
+	},
+	{
+		address:     common.CryptoUpgradeSlhDsaVerifyAddress,
+		name:        "SlhDsaShake192fVerify",
+		inputTypes:  []string{"bytes", "bytes", "bytes"},
+		outputTypes: []string{"bool"},
+		requiredGas: precompileEncodedGas(precompileHeavyBaseGas, precompileHeavyWordGas),
+		handler:     precompileSlhDsaVerify,
+	},
+	{
+		address:     common.CryptoUpgradeGroth16Bls12381Address,
+		name:        "Groth16Bls12381Verify",
+		inputTypes:  []string{"bytes", "bytes", "bytes"},
+		outputTypes: []string{"bool"},
+		requiredGas: precompileEncodedGas(precompileHeavyBaseGas, precompileHeavyWordGas),
+		handler:     precompileGroth16Bls12381Verify,
+	},
+	{
+		address:     common.CryptoUpgradeGroth16Bn254Address,
+		name:        "Groth16Bn254Verify",
+		inputTypes:  []string{"bytes", "bytes", "bytes"},
+		outputTypes: []string{"bool"},
+		requiredGas: precompileEncodedGas(precompileHeavyBaseGas, precompileHeavyWordGas),
+		handler:     precompileGroth16Bn254Verify,
 	},
 })
 
@@ -791,6 +837,75 @@ func precompileAigisSig2Verify(args []interface{}) ([]interface{}, error) {
 		return nil, err
 	}
 	ok, err := pqcnative.Verify(publicKey, message, signature)
+	if err != nil {
+		return nil, err
+	}
+	return []interface{}{ok}, nil
+}
+
+// Hander方法函数
+func precompileDilithium3Verify(args []interface{}) ([]interface{}, error) {
+	return precompileNativeSignatureVerify("Dilithium3Verify", dilithium3.Enabled(), dilithium3.Verify, args)
+}
+
+func precompileMlDsa65Verify(args []interface{}) ([]interface{}, error) {
+	return precompileNativeSignatureVerify("MlDsa65Verify", mldsa65.Enabled(), mldsa65.Verify, args)
+}
+
+func precompileSlhDsaVerify(args []interface{}) ([]interface{}, error) {
+	return precompileNativeSignatureVerify("SlhDsaShake192fVerify", slhdsa.Enabled(), slhdsa.Verify, args)
+}
+
+func precompileGroth16Bls12381Verify(args []interface{}) ([]interface{}, error) {
+	return precompileNativeGrothVerify("Groth16Bls12381Verify", groth16bls12381.Enabled(), groth16bls12381.Verify, args)
+}
+
+func precompileGroth16Bn254Verify(args []interface{}) ([]interface{}, error) {
+	return precompileNativeGrothVerify("Groth16Bn254Verify", groth16bn254.Enabled(), groth16bn254.Verify, args)
+}
+
+type nativeSignatureVerifier func([]byte, []byte, []byte) (bool, error)
+
+func precompileNativeSignatureVerify(name string, enabled bool, verify nativeSignatureVerifier, args []interface{}) ([]interface{}, error) {
+	if !enabled {
+		return nil, fmt.Errorf("%s requires CGO", name)
+	}
+	publicKey, err := precompileBytes(args, 0)
+	if err != nil {
+		return nil, err
+	}
+	message, err := precompileBytes(args, 1)
+	if err != nil {
+		return nil, err
+	}
+	signature, err := precompileBytes(args, 2)
+	if err != nil {
+		return nil, err
+	}
+	ok, err := verify(publicKey, message, signature)
+	if err != nil {
+		return nil, err
+	}
+	return []interface{}{ok}, nil
+}
+
+func precompileNativeGrothVerify(name string, enabled bool, verify nativeSignatureVerifier, args []interface{}) ([]interface{}, error) {
+	if !enabled {
+		return nil, fmt.Errorf("%s requires CGO", name)
+	}
+	verificationKey, err := precompileBytes(args, 0)
+	if err != nil {
+		return nil, err
+	}
+	publicInput, err := precompileBytes(args, 1)
+	if err != nil {
+		return nil, err
+	}
+	proof, err := precompileBytes(args, 2)
+	if err != nil {
+		return nil, err
+	}
+	ok, err := verify(verificationKey, publicInput, proof)
 	if err != nil {
 		return nil, err
 	}

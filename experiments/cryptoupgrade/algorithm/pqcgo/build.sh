@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
-PQMAGIC="$ROOT/experiments/pqcc/pqmagic"
+PQMAGIC="${PQMAGIC_SRC:-}"
 HARNESS="$(cd "$(dirname "$0")/_harness" && pwd)"
 PQCGo="$(cd "$(dirname "$0")" && pwd)"
 BUILD="${PQC_BUILD_DIR:-$PQCGo/_build}"
@@ -13,6 +13,11 @@ ALGOS="${PQC_ALGOS:-aigis_sig2_verify dilithium3_verify ml_dsa_65_verify slh_dsa
 
 if [ ! -x "$WASI_SDK_PATH/bin/clang" ]; then
   echo "wasi-sdk clang not found at $WASI_SDK_PATH/bin/clang" >&2
+  exit 1
+fi
+
+if [ -z "$PQMAGIC" ] || [ ! -d "$PQMAGIC" ]; then
+  echo "PQMAGIC source is required; set PQMAGIC_SRC to an external PQMagic source tree" >&2
   exit 1
 fi
 
@@ -230,7 +235,7 @@ build_native_lib() {
   ar rcs "$dest/libverify.a" "$objdir"/*.o
   cat > "$PQCGo/$algo/SOURCE.txt" <<EOF
 algorithm=$algo
-source=experiments/pqcc/pqmagic
+source=external PQMagic source (PQMAGIC_SRC)
 built=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 command=experiments/cryptoupgrade/algorithm/pqcgo/build.sh
 EOF

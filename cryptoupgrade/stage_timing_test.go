@@ -17,7 +17,7 @@ func TestStageTimingWASMCall(t *testing.T) {
 	path := filepath.Join(dir, "stage.jsonl")
 	t.Setenv(stagelog.FileEnv, path)
 	t.Cleanup(stagelog.Close)
-	code, err := EncodeWasmFile("algorithm/wasm/archive/add.wasm")
+	code, err := EncodeWasmFile("../experiments/cryptoupgrade/algorithm/go/wasm/add.wasm")
 	if err != nil {
 		t.Fatal(err)
 	}

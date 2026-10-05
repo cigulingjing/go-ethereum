@@ -26,13 +26,12 @@ BLS12-381 用 blst；BN254 / Ethereum alt_bn128 用 mcl `MCL_BN_SNARK1`。
 
 ```bash
 experiments/cryptoupgrade/algorithm/zkgo/build.sh
-go run ./experiments/groth16_bls12381_verify
-go run ./experiments/groth16_bn254_verify
+go test ./experiments/cryptoupgrade/core/zkbench/...
 ```
 
 只构建 BN254：
 
 ```bash
 ZKGO_ALGOS=groth16_bn254_verify experiments/cryptoupgrade/algorithm/zkgo/build.sh
-go run ./experiments/groth16_bn254_verify
+go test ./experiments/cryptoupgrade/core/zkbench/groth16bn254
 ```
