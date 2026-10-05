@@ -224,6 +224,7 @@ var precompiles = mustPrecompiles([]precompileSpec{
 		requiredGas: precompilePolynomialMulGas,
 		handler:     precompilePolynomialMul,
 	},
+	// Post-quantum algorithms
 	{
 		address:     common.CryptoUpgradeAigisSig2VerifyAddress,
 		name:        "AigisSig2Verify",
@@ -232,7 +233,6 @@ var precompiles = mustPrecompiles([]precompileSpec{
 		requiredGas: precompileEncodedGas(precompileHeavyBaseGas, precompileHeavyWordGas),
 		handler:     precompileAigisSig2Verify,
 	},
-	// PQC算法，预编译合约
 	{
 		address:     common.CryptoUpgradeDilithium3VerifyAddress,
 		name:        "Dilithium3Verify",
@@ -257,6 +257,7 @@ var precompiles = mustPrecompiles([]precompileSpec{
 		requiredGas: precompileEncodedGas(precompileHeavyBaseGas, precompileHeavyWordGas),
 		handler:     precompileSlhDsaVerify,
 	},
+	// Zero-knowledge proof algorithms
 	{
 		address:     common.CryptoUpgradeGroth16Bls12381Address,
 		name:        "Groth16Bls12381Verify",

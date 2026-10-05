@@ -3,6 +3,7 @@ pragma solidity ^0.8.26;
 
 /// @notice Solidity-side adapter used to exercise cryptoupgrade precompiles.
 /// The precompile receives ABI-encoded bytes arguments and returns ABI bool.
+/// @dev Provided to the testing party for verifying the callFunc algorithm, when developing new algorithm.
 contract CryptoUpgradePrecompileVerify {
     function verify(
         address precompile,

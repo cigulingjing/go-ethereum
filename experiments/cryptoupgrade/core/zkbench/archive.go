@@ -38,6 +38,7 @@ func testdataDir(zkgoRoot, algorithm string) string {
 	return filepath.Join(zkgoRoot, algorithm, "testdata")
 }
 
+// Check .wasm file and test vectors whether in zkgoRoot directory.
 func CheckArtifacts(zkgoRoot, algorithm string) error {
 	native := NativeDir(zkgoRoot, algorithm)
 	if err := requireSourceTree(native); err != nil {

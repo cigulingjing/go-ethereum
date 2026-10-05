@@ -129,6 +129,41 @@ CGO_ENABLED=1 go run ./experiments/cryptoupgrade/scripts/benchnodeexec \
 
 常用参数：`-key-file`，`-stage-log`，`-output`，`-chain-id`。默认 stage log 位于 `output/network/local-1node/node1/plugin/stage_timing.jsonl`。
 
+### `benchgroth16bls12381`
+
+启动一个新客户端后，对 Groth16/BLS12-381 的 EvoCrypt WASM 和客户端 precompile 进行同输入、多次采样测试。
+结果目录必须显式指定，便于把一次本地实验的输入和结果集中保存：
+
+```bash
+CODE=groth16-bls12381-evocrypt-precompile-$(date +%Y%m%d-%H%M%S)
+CGO_ENABLED=1 go run ./experiments/cryptoupgrade/scripts/benchgroth16bls12381 \
+  -root "$(pwd)" \
+  -rpc http://127.0.0.1:8545 \
+  -stage-log "$(pwd)/experiments/cryptoupgrade/output/network/<client-code>/node1/plugin/stage_timing.jsonl" \
+  -output "$(pwd)/experiments/cryptoupgrade/results/$CODE" \
+  -warmup 10 -n 100
+```
+
+结果目录包含 `inputs/`、`result.json` 和 `result.txt`；节点 datadir、WASM runtime 缓存和原始 stage log 仍留在 `output/network/`，不会混入实验结果。
+
+### `benchprecompile` 六算法 EvoCrypt/precompile 对照测试
+
+在同一个新启动的本地单节点上，依次测试 Aigis-Sig2、Dilithium3、ML-DSA-65、SLH-DSA-SHAKE-192f、Groth16/BLS12-381 和 Groth16/BN254。每个算法使用相同的输入向量分别调用 EvoCrypt WASM 和客户端 native precompile，并记录节点内部执行时间与 `eth_call` 往返时间。
+
+```bash
+RUN_CODE="pqc-groth16-precompile-$(date +%Y%m%d-%H%M%S)"
+export RUN_CODE
+CGO_ENABLED=1 go run ./experiments/cryptoupgrade/scripts/benchprecompile \
+  -root "$(pwd)" \
+  -rpc http://127.0.0.1:8545 \
+  -stage-log "$(pwd)/experiments/cryptoupgrade/output/network/<client-code>/node1/plugin/stage_timing.jsonl" \
+  -output-root "$(pwd)/experiments/cryptoupgrade/results" \
+  -run-code "$RUN_CODE" \
+  -warmup 10 -n 50
+```
+
+结果分别写入 `experiments/cryptoupgrade/results/<algorithm>/<run-code>/`，每个目录包含 `inputs/`、`result.json` 和 `result.txt`。可用 `-algorithms` 指定逗号分隔的算法名；省略时默认执行上述六个算法。
+
 ## EVM 与交易测试
 
 ### `benchexecutionefficiency`
