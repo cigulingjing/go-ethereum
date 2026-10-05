@@ -15,11 +15,6 @@ Baresi, L., Ghezzi, C., Ma, X., Panzica La~Manna, V.: Efficient dynamic updates
   Software Engineering  \textbf{43}(4),  340--358 (2017).
   \doi{10.1109/TSE.2016.2592915}
 
-\bibitem{buterin2016eip150}
-Buterin, V.: {EIP-150}: Gas cost changes for {IO}-heavy operations. Ethereum
-  Improvement Proposals, no. 150. \url{https://eips.ethereum.org/EIPS/eip-150}
-  (2016), created 24 September 2016. Accessed 21 August 2026
-
 \bibitem{eip197}
 Buterin, V., Reitwiessner, C.: {EIP-197}: Precompiled contracts for optimal ate
   pairing check on the elliptic curve alt\_bn128. Ethereum Improvement
