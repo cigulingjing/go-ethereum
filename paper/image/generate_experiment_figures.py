@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate paper figures from paper/实验数据.xlsx (four sheets)."""
+"""Generate paper figures from paper/image/lab_result.xlsx (four sheets)."""
 
 from __future__ import annotations
 
@@ -14,13 +14,13 @@ import numpy as np
 from openpyxl import load_workbook
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA_XLSX = ROOT / "实验数据.xlsx"
 OUT_DIR = Path(__file__).resolve().parent
+DATA_XLSX = OUT_DIR / "lab_result.xlsx"
 
 PALETTE = {
     "evocrypt": "#0F4D92",
     "solidity": "#767676",
-    "native": "#42949E",
+    "precompile": "#42949E",
 }
 
 ALGO_DISPLAY = {
@@ -99,14 +99,14 @@ def load_execution_latency() -> tuple[list[str], list[float], list[float], list[
 
 def load_execution_gas() -> tuple[list[str], list[float], list[float]]:
     rows = read_sheet_rows("执行消耗gas")[1:]
-    algos, upgrade, contract = [], [], []
+    algos, upgrade, precompile = [], [], []
     for row in rows:
         if len(row) < 3:
             continue
         algos.append(str(row[0]).strip())
         upgrade.append(parse_number(row[1]))
-        contract.append(parse_number(row[2]))
-    return algos, upgrade, contract
+        precompile.append(parse_number(row[2]))
+    return algos, upgrade, precompile
 
 
 def load_upgrade_latency() -> tuple[list[str], list[float], list[float]]:
@@ -253,7 +253,7 @@ def main() -> None:
                 ("EvoCrypt", upgrade_gas, PALETTE["evocrypt"]),
                 ("Solidity", contract_gas, PALETTE["solidity"]),
             ],
-            ylabel="Upgrade gas",
+            ylabel="Estimated gas",
             stem="figure_upgrade_gas_comparison",
             log_y=True,
         )
@@ -272,31 +272,31 @@ def main() -> None:
             log_y=False,
         )
 
-    # Chart 3: execution gas after upgrade — EvoCrypt vs Solidity
+    # Chart 3: execution gas after upgrade — EvoCrypt vs Precompile
     if only in (None, "execution-gas"):
         algos, exec_upgrade_gas, exec_contract_gas = load_execution_gas()
         grouped_bar(
             algos,
             [
                 ("EvoCrypt", exec_upgrade_gas, PALETTE["evocrypt"]),
-                ("Solidity", exec_contract_gas, PALETTE["solidity"]),
+                ("Precompile", exec_contract_gas, PALETTE["precompile"]),
             ],
-            ylabel="Execution gas",
+            ylabel="Estimated gas",
             stem="figure_execution_gas_comparison",
             log_y=True,
         )
 
-    # Chart 4: execution latency — EvoCrypt vs Solidity vs Native
+    # Chart 4: execution latency — EvoCrypt vs Solidity vs Precompile
     if only in (None, "execution-latency"):
-        algos, exec_upgrade, exec_contract, exec_native = load_execution_latency()
+        algos, exec_upgrade, exec_contract, exec_precompile = load_execution_latency()
         grouped_bar(
             algos,
             [
                 ("EvoCrypt", exec_upgrade, PALETTE["evocrypt"]),
                 ("Solidity", exec_contract, PALETTE["solidity"]),
-                ("Native algorithm", exec_native, PALETTE["native"]),
+                ("Precompile", exec_precompile, PALETTE["precompile"]),
             ],
-            ylabel="Execution latency (ms)",
+            ylabel="Invocation latency (ms)",
             stem="figure_execution_latency_comparison",
             log_y=True,
         )

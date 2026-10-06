@@ -42,7 +42,7 @@ terminology.md文档核心是统一英文与中文用词。
 | soft fork | 软分叉 | 区块链协议规则通过向后兼容约束实现的升级方式 |
 | on-chain governance | 链上治理 | 通过链上提案、投票或状态规则协调协议变更的治理机制 |
 | Native implementation | Native 实现 | 在客户端原生代码中实现的密码算法逻辑 |
-| Precompiled Contract | 预编译合约 | 客户端内置的 EVM 特殊地址 Native 计算接口 |
+| Precompiled Contract | 预编译合约 | 客户端内置的 EVM 特殊地址计算接口 |
 | Solidity contract implementation | Solidity 合约实现 | 完全由 Solidity/EVM 指令执行的算法实现 |
 | dynamic loading | 动态加载 | 程序运行期间加载外部构建的共享库、plugin 或 WASM module 并解析其导出符号或接口 |
 | shared library | 共享库 | 可在运行时被宿主程序加载的二进制产物，如 `.so` |
