@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2026.9.8)  7 OCT 2026 17:05
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2026.9.8)  7 OCT 2026 19:23
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -356,39 +356,40 @@ File: lstmisc.sty 2020/03/24 1.8d (Carsten Heinz)
 File: listings.cfg 2020/03/24 1.8d listings configuration
 ))
 Package: listings 2020/03/24 1.8d (Carsten Heinz)
+\c@assumption=\count325
  (/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2022-01-12 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count325
+\l__color_backend_stack_int=\count326
 \l__pdf_internal_box=\box105
 ) (./evocrypt.aux)
 \openout1 = `evocrypt.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 23.
-LaTeX Font Info:    ... okay on input line 23.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
  (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count326
+\scratchcounter=\count327
 \scratchdimen=\dimen197
 \scratchbox=\box106
-\nofMPsegments=\count327
-\nofMParguments=\count328
+\nofMPsegments=\count328
+\nofMParguments=\count329
 \everyMPshowfont=\toks32
-\MPscratchCnt=\count329
+\MPscratchCnt=\count330
 \MPscratchDim=\dimen198
-\MPnumerator=\count330
-\makeMPintoPDFobject=\count331
+\MPnumerator=\count331
+\makeMPintoPDFobject=\count332
 \everyMPtoPDFconversion=\toks33
 ) (/usr/share/texlive/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
@@ -396,16 +397,16 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
  (/usr/share/texlive/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 ))
-\c@lstlisting=\count332
-LaTeX Font Info:    Trying to load font information for U+msa on input line 37.
+\c@lstlisting=\count333
+LaTeX Font Info:    Trying to load font information for U+msa on input line 41.
  (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 37.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 41.
  (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-LaTeX Font Info:    Trying to load font information for U+rsfs on input line 37.
+LaTeX Font Info:    Trying to load font information for U+rsfs on input line 41.
  (/usr/share/texlive/texmf-dist/tex/latex/jknapltx/ursfs.fd
 File: ursfs.fd 1998/03/24 rsfs font definition file (jk)
 ) [1
@@ -419,7 +420,7 @@ pdfTeX warning: pdflatex (file ../image/overview.pdf): PDF inclusion: found PDF 
 <../image/overview.pdf, id=21, 614.295pt x 483.60674pt>
 File: ../image/overview.pdf Graphic file (type pdf)
 <use ../image/overview.pdf>
-Package pdftex.def Info: ../image/overview.pdf  used on input line 84.
+Package pdftex.def Info: ../image/overview.pdf  used on input line 88.
 (pdftex.def)             Requested size: 347.12354pt x 273.2752pt.
 [4] [5 <../image/overview.pdf>]
 
@@ -427,49 +428,48 @@ pdfTeX warning: pdflatex (file ../image/upgrade_protocol.pdf): PDF inclusion: fo
 <../image/upgrade_protocol.pdf, id=48, 754.01701pt x 289.08pt>
 File: ../image/upgrade_protocol.pdf Graphic file (type pdf)
 <use ../image/upgrade_protocol.pdf>
-Package pdftex.def Info: ../image/upgrade_protocol.pdf  used on input line 137.
+Package pdftex.def Info: ../image/upgrade_protocol.pdf  used on input line 141.
 (pdftex.def)             Requested size: 347.12354pt x 133.08427pt.
-[6] [7 <../image/upgrade_protocol.pdf>] [8] [9] [10] [11]
-LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 307.
+[6] [7 <../image/upgrade_protocol.pdf>]
+Underfull \vbox (badness 2922) has occurred while \output is active []
+
+ [8] [9] [10] [11] [12] [13] [14] [15]
+LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 462.
  (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
-)
-<../image/figure_upgrade_latency_comparison.pdf, id=93, 328.53806pt x 186.71097pt>
+) [16]
+<../image/figure_upgrade_latency_comparison.pdf, id=111, 328.53806pt x 186.71097pt>
 File: ../image/figure_upgrade_latency_comparison.pdf Graphic file (type pdf)
 <use ../image/figure_upgrade_latency_comparison.pdf>
-Package pdftex.def Info: ../image/figure_upgrade_latency_comparison.pdf  used on input line 317.
+Package pdftex.def Info: ../image/figure_upgrade_latency_comparison.pdf  used on input line 472.
 (pdftex.def)             Requested size: 166.61781pt x 94.6914pt.
-<../image/figure_upgrade_gas_comparison.pdf, id=94, 328.5349pt x 186.71097pt>
+<../image/figure_upgrade_gas_comparison.pdf, id=112, 328.5349pt x 186.71097pt>
 File: ../image/figure_upgrade_gas_comparison.pdf Graphic file (type pdf)
 <use ../image/figure_upgrade_gas_comparison.pdf>
-Package pdftex.def Info: ../image/figure_upgrade_gas_comparison.pdf  used on input line 321.
+Package pdftex.def Info: ../image/figure_upgrade_gas_comparison.pdf  used on input line 476.
 (pdftex.def)             Requested size: 166.61781pt x 94.6914pt.
- [12] [13 <../image/figure_upgrade_latency_comparison.pdf> <../image/figure_upgrade_gas_comparison.pdf>]
-<../image/consistence_scene.pdf, id=122, 2168.1pt x 1626.075pt>
+ [17 <../image/figure_upgrade_latency_comparison.pdf> <../image/figure_upgrade_gas_comparison.pdf>]
+<../image/consistence_scene.pdf, id=136, 2168.1pt x 1626.075pt>
 File: ../image/consistence_scene.pdf Graphic file (type pdf)
 <use ../image/consistence_scene.pdf>
-Package pdftex.def Info: ../image/consistence_scene.pdf  used on input line 335.
+Package pdftex.def Info: ../image/consistence_scene.pdf  used on input line 490.
 (pdftex.def)             Requested size: 347.12354pt x 260.32619pt.
 
-Overfull \hbox (9.37274pt too wide) in paragraph at lines 344--345
+Overfull \hbox (9.37274pt too wide) in paragraph at lines 499--500
 \T1/cmr/m/n/10 across the eval-u-ated al-go-rithms. EvoCrypt re-mained close to So-lid-ity on lightweight
  []
 
-[14 <../image/consistence_scene.pdf>]
-<../image/figure_execution_latency_comparison.pdf, id=128, 328.53806pt x 186.71097pt>
+<../image/figure_execution_latency_comparison.pdf, id=137, 328.53806pt x 186.71097pt>
 File: ../image/figure_execution_latency_comparison.pdf Graphic file (type pdf)
 <use ../image/figure_execution_latency_comparison.pdf>
-Package pdftex.def Info: ../image/figure_execution_latency_comparison.pdf  used on input line 350.
+Package pdftex.def Info: ../image/figure_execution_latency_comparison.pdf  used on input line 505.
 (pdftex.def)             Requested size: 166.61781pt x 94.6914pt.
-<../image/figure_execution_gas_comparison.pdf, id=129, 328.5349pt x 186.71097pt>
+<../image/figure_execution_gas_comparison.pdf, id=138, 328.5349pt x 186.71097pt>
 File: ../image/figure_execution_gas_comparison.pdf Graphic file (type pdf)
 <use ../image/figure_execution_gas_comparison.pdf>
-Package pdftex.def Info: ../image/figure_execution_gas_comparison.pdf  used on input line 354.
+Package pdftex.def Info: ../image/figure_execution_gas_comparison.pdf  used on input line 509.
 (pdftex.def)             Requested size: 166.61781pt x 94.6914pt.
- [15 <../image/figure_execution_latency_comparison.pdf> <../image/figure_execution_gas_comparison.pdf>] (./evocrypt.bbl
-Underfull \vbox (badness 2744) has occurred while \output is active []
-
- [16]
+[18] [19 <../image/consistence_scene.pdf> <../image/figure_execution_latency_comparison.pdf> <../image/figure_execution_gas_comparison.pdf>] [20] (./evocrypt.bbl
 Underfull \hbox (badness 3942) in paragraph at lines 13--17
 []\T1/cmr/m/n/9 Baresi, L., Ghezzi, C., Ma, X., Panz-ica La Manna, V.: Ef-fi-cient dy-
  []
@@ -495,84 +495,84 @@ Underfull \hbox (badness 10000) in paragraph at lines 36--38
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 56--59
+Underfull \hbox (badness 10000) in paragraph at lines 63--66
 []\T1/cmr/m/n/9 Input Out-put: Com-bi-na-tor makes easy work of hard forks.
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 56--59
+Underfull \hbox (badness 10000) in paragraph at lines 63--66
 \T1/cmr/m/n/9 https://iohk.io/en/blog/posts/2020/07/23/combinator-makes-easy-work-of-
  []
 
 
-Underfull \hbox (badness 5105) in paragraph at lines 61--65
+Underfull \hbox (badness 5105) in paragraph at lines 68--72
 []\T1/cmr/m/n/9 Kumar, G., Saha, R., Conti, M., Buchanan, W.J.: LEA-GAN: A de-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 61--65
+Underfull \hbox (badness 10000) in paragraph at lines 68--72
 \T1/cmr/m/n/9 cen-tral-ized version-control frame-work for up-grade-able smart con-tracts.
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 61--65
+Underfull \hbox (badness 10000) in paragraph at lines 68--72
 \T1/cmr/m/n/9 IEEE Trans-ac-tions on Ser-vices Com-put-ing \T1/cmr/bx/n/9 18\T1/cmr/m/n/9 (3), 1529--1542 (2025).
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 67--69
+Underfull \hbox (badness 10000) in paragraph at lines 74--76
 []\T1/cmr/m/n/9 Nakamoto, S.: Bit-coin: A peer-to-peer elec-tronic cash sys-tem.
  []
 
-
-Overfull \hbox (21.64075pt too wide) in paragraph at lines 83--86
+[21]
+Overfull \hbox (21.64075pt too wide) in paragraph at lines 90--93
 []\T1/cmr/m/n/9 Polkadot: Run-time up-grades. https://docs.polkadot.com/parachains/maintain/runtime-
  []
 
-[17]
-Underfull \hbox (badness 1014) in paragraph at lines 101--104
+
+Underfull \hbox (badness 1014) in paragraph at lines 114--117
 \T1/cmr/m/n/9 log-a-rithms on a quan-tum com-puter. SIAM Re-view \T1/cmr/bx/n/9 41\T1/cmr/m/n/9 (2), 303--332 (1999).
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 116--119
+Underfull \hbox (badness 10000) in paragraph at lines 129--132
 []\T1/cmr/m/n/9 World Wide Web Con-sor-tium: We-bAssem-bly Core Spec-i-fi-ca-tion.
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 116--119
+Underfull \hbox (badness 10000) in paragraph at lines 129--132
 \T1/cmr/m/n/9 https://www.w3.org/TR/wasm-core-2/, w3C Can-di-date Rec-om-men-da-tion
  []
 
 
-Underfull \hbox (badness 2080) in paragraph at lines 136--140
+Underfull \hbox (badness 2080) in paragraph at lines 149--153
 []\T1/cmr/m/n/9 Zou, W., Lo, D., Kochhar, P.S., Le, X.B.D., Xia, X., Feng, Y., Chen,
  []
 
 
-Underfull \hbox (badness 4254) in paragraph at lines 136--140
+Underfull \hbox (badness 4254) in paragraph at lines 149--153
 \T1/cmr/m/n/9 Z., Xu, B.: Smart con-tract de-vel-op-ment: Chal-lenges and op-por-tu-ni-ties.
  []
 
 
-Underfull \hbox (badness 6412) in paragraph at lines 136--140
+Underfull \hbox (badness 6412) in paragraph at lines 149--153
 \T1/cmr/m/n/9 IEEE Trans-ac-tions on Soft-ware En-gi-neer-ing \T1/cmr/bx/n/9 47\T1/cmr/m/n/9 (10), 2084--2106 (2021).
  []
 
-) [18] (./evocrypt.aux) ) 
+) [22] (./evocrypt.aux) ) 
 Here is how much of TeX's memory you used:
- 6252 strings out of 480171
- 92300 string characters out of 5894490
- 388060 words of memory out of 5000000
- 24104 multiletter control sequences out of 15000+600000
- 483917 words of font info for 66 fonts, out of 8000000 for 9000
+ 6300 strings out of 480171
+ 92938 string characters out of 5894490
+ 392403 words of memory out of 5000000
+ 24148 multiletter control sequences out of 15000+600000
+ 486194 words of font info for 72 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
- 55i,10n,62p,1782b,328s stack positions out of 5000i,500n,10000p,200000b,80000s
- </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0700.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1000.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecti1000.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1000.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1200.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0900.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx0900.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0900.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1000.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1440.600pk></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
-Output written on evocrypt.pdf (18 pages, 977157 bytes).
+ 55i,19n,62p,1782b,323s stack positions out of 5000i,500n,10000p,200000b,80000s
+ </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1000.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0700.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecti1000.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1000.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1200.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0900.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx0900.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0900.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1000.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1440.600pk></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb>
+Output written on evocrypt.pdf (22 pages, 1000287 bytes).
 PDF statistics:
- 631 PDF objects out of 1000 (max. 8388607)
- 171 compressed objects within 2 object streams
+ 666 PDF objects out of 1000 (max. 8388607)
+ 186 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
  36 words of extra memory for PDF output out of 10000 (max. 10000000)
 

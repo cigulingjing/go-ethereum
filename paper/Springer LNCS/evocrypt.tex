@@ -20,6 +20,10 @@
 \usepackage{algpseudocode}
 \usepackage{listings}
 
+% Security-model environment used in Section 4; llncs provides the remaining
+% theorem-like environments (theorem, lemma, definition, remark, proof).
+\spnewtheorem{assumption}{Assumption}{\bfseries}{\itshape}
+
 \begin{document}
 
 \title{EvoCrypt: An Upgradeable Cryptographic Coprocessor Framework for the Ethereum Virtual Machine}
@@ -118,11 +122,11 @@ Preparation is deliberately separated from the chain-level upgrade record. Node-
     \If{event fields disagree with $\mu'_{a,v}$}
         \State reject $(a,v)$
     \Else
-        \State decode $C_{a,v}$; set $h_{a,v}\gets\mathrm{Keccak256}(C_{a,v})$
+        \State decode $\widehat{C}$ from $\mu'_{a,v}$; reject $(a,v)$ unless $\mathrm{Keccak256}(\widehat{C})=h_{a,v}$\label{line:hash-check}
         \Repeat
-        \State compile and instantiate; validate the required module entry point
+        \State compile and instantiate $\widehat{C}$; validate the required module entry point
         \Until{preparation succeeds}
-        \State persist $h_{a,v}$ and $\mu_{a,v}$; mark $(a,v)$ prepared
+        \State persist $\widehat{C}$ under $h_{a,v}$ with $\mu_{a,v}$; mark $(a,v)$ prepared\label{line:mark-prepared}
     \EndIf
 \EndFor
 \end{algorithmic}
@@ -158,9 +162,7 @@ The $\arg\max$ is lexicographic on the pair $(H_{a,v},v)$: among versions whose 
 \subsection{Invocation Protocol}\label{sec3.3}
 A unified Management Contract entry point preserves a stable contract-facing invocation boundary. A caller serializes the algorithm name $a$ and its parameters into an encoded request $x$ and submits the request through the designated interface. Different algorithms can therefore be invoked without changing the destination address, while upgrade and invocation events remain associated with one on-chain management endpoint. The contract depends on the ABI descriptors of the selected version rather than on the module location, implementation language, or node-local loading state.
 
-Version resolution precedes execution. If the selected version is not yet prepared, the coprocessor prepares it rather than redirecting the request to an obsolete implementation.
-
-EVM-side Hooks determine whether a request enters the Cryptographic Coprocessor. Requests that do not target the designated invocation interface remain on the ordinary EVM execution path. For a routed request, the coprocessor parses $(a,x)$, resolves $v^{*}(a,b)$ by~\eqref{eq:version-select}, and prepares the selected version if necessary. The selected module receives the encoded parameters and returns an encoded result; the contract-facing call shape remains compatible when $\tau^{\mathrm{in}}_{a,v}$ and $\tau^{\mathrm{out}}_{a,v}$ are compatible.
+Version resolution precedes execution. If the selected version is not yet prepared, the coprocessor prepares it rather than redirecting the request to an obsolete implementation.EVM-side Hooks determine whether a request enters the Cryptographic Coprocessor. Requests that do not target the designated invocation interface remain on the ordinary EVM execution path. For a routed request, the coprocessor parses $(a,x)$, resolves $v^{*}(a,b)$ by~\eqref{eq:version-select}, and prepares the selected version if necessary. The selected module receives the encoded parameters and returns an encoded result; the contract-facing call shape remains compatible when $\tau^{\mathrm{in}}_{a,v}$ and $\tau^{\mathrm{out}}_{a,v}$ are compatible.
 
 Routing is followed by version resolution, optional preparation, deterministic charging, and module execution. Algorithm~\ref{alg:invocation-protocol} specifies this post-routing procedure and its protocol-error conditions.
 
@@ -184,16 +186,16 @@ where $|x|$ is the byte length of the call-stage inner input, $g^{(0)}_{a,v}$ is
 \If{the request is invalid}
     \State \textbf{return} ABI error
 \EndIf
-\State $v\gets v^{*}(a,b)$ by~\eqref{eq:version-select}
+\State $v\gets v^{*}(a,b)$ by~\eqref{eq:version-select}\label{line:resolve}
 \If{no applicable version exists}
-    \State \textbf{return} missing-version error
+    \State \textbf{return} missing-version error\label{line:missing}
 \EndIf
-\State ensure $(a,v)$ is prepared under the mandatory-preparation policy
+\State ensure $(a,v)$ is prepared under the mandatory-preparation policy\label{line:ensure}
 \State $G_{\mathrm{req}}\gets G(a,v,x)$ by~\eqref{eq:gas-price}
 \If{$g<G_{\mathrm{req}}$}
     \State \textbf{return} out-of-gas error
 \EndIf
-\State charge $G_{\mathrm{req}}$; $y\gets\mathrm{Execute}(a,v,x)$
+\State charge $G_{\mathrm{req}}$; $y\gets\mathrm{Execute}(a,v,x)$\label{line:execute}
 \State \textbf{return} $y$, or runtime error on failure
 \end{algorithmic}
 \end{algorithm}
@@ -204,73 +206,226 @@ With this fixed-plus-length form, every node that resolves the same $v^{*}(a,b)$
 
 \section{Security Analysis}\label{sec4}
 
-This chapter establishes the security boundaries of EvoCrypt under explicit trust assumptions. It explains how canonical metadata and deterministic version selection support upgrade and invocation consistency, and how the WASM runtime limits host-resource exposure while preserving online governance.
+This section formalizes the upgrade protocol and derives the invocation guarantees from it. Section~\ref{sec4.1} fixes the ledger and registry abstractions, the trusted assumptions, the adversary, and game-based definitions for the two failure modes an upgrade mechanism must exclude: honest nodes selecting different versions for the same height, and an honest node executing bytecode other than the admitted artifact. Section~\ref{sec4.2} shows that EvoCrypt excludes the first unconditionally relative to the ledger abstraction and the second by a tight reduction to the collision resistance of $\mathrm{Keccak256}$, and combines both into an upgrade-soundness theorem. Section~\ref{sec4.3} extends consistency to invocation outcomes, and Section~\ref{sec4.4} treats the residual risks the model leaves open and the governed recovery path that addresses them.
 
 \subsection{Security Model}\label{sec4.1}
-The security model considers a private blockchain maintained by multiple nodes that implement the EvoCrypt framework, including the Management Contract state and each node-local coprocessor. For an algorithm $a$ and version $v$, let $\mu_{a,v}$ denote the authoritative metadata record, let $C_{a,v}$ denote its encoded WASM bytecode, let $h_{a,v}$ denote the recorded module hash, let $H_{a,v}$ denote the Activation Block, and let $v^{*}(a,b)$ be the version selected at execution height $b$ according to~\eqref{eq:version-select}. Security claims concern honest nodes that execute the same canonical chain and therefore observe the same committed Management Contract state.
 
-Each admitted proposal is assumed to be registered in the canonical Management Contract state before its Activation Block. The record includes the algorithm metadata, bytecode reference, gas parameters, ABI descriptors, and Activation Block. Activation therefore selects a proposal already present in the committed history rather than registering or modifying one at the height at which it becomes active.
+\noindent\textbf{Notation and ledger.} $\kappa$ is the security parameter, $\mathsf{negl}(\kappa)$ a negligible function, and algorithms are probabilistic polynomial time (PPT) unless stated otherwise. $\mathcal{N}$ is the set of honest nodes, each running Algorithms~\ref{alg:upgrade-protocol} and~\ref{alg:invocation-protocol}. The symbols $\mu_{a,v}$, $C_{a,v}$, $h_{a,v}$ and $H_{a,v}$ are as in Definition~\ref{def:version-metadata}, and $u_{a,v}$ denotes the height of the Upgrade Block that admitted $\mu_{a,v}$. We abstract the blockchain as a transaction ledger: honest node $n$ holds a local view $\mathcal{L}_n$, a finite block sequence with prefix $\mathcal{L}_n[1..b]$ and height $|\mathcal{L}_n|$. Transaction order inside a block is part of the ledger, so an execution point is a height together with a position in the block; we write $b$ for both.
 
-Four conditions define the trusted base. The underlying consensus protocol provides a common canonical chain to honest nodes. The committee correctly authorizes upgrades and reviews both the algorithm implementation and its gas schedule before admitting metadata. $\mathrm{Keccak256}$ is collision resistant. Finally, the configured WASM Runtime and controlled host interface implement deterministic ABI handling, WASM execution, host-interface responses, and initial instance state while enforcing resource limits, import validation, and error semantics. The runtime does not expose uncontrolled external state or host capabilities that can affect execution.
+\begin{definition}[Registry state]
+\label{def:registry}
+The registry $\mathsf{Reg}(P)$ of a ledger prefix $P$ is the Management Contract storage obtained by executing $P$ from the genesis state; by EVM determinism it is a function of $P$. For a node $n$ and height $b$, let $\mathcal{V}^{n}_{a}(b)=\{v \mid \mu_{a,v}\in\mathsf{Reg}(\mathcal{L}_n[1..b])\}$ and let $v^{*}_{n}(a,b)$ be the value of~\eqref{eq:version-select} over $\mathcal{V}^{n}_{a}(b)$, with $v^{*}_{n}(a,b)=\bot$ when the feasible set is empty.
+\end{definition}
 
-The adversary may choose arbitrary contract inputs, observe upgrade events, exploit asynchronous node-local preparation, and submit malformed or resource-intensive upgrade candidates, but admission remains subject to committee review and node-side validation. The model excludes a compromised Geth binary, a broken consensus protocol, a captured committee, failure of the designated implementation review, and a cryptographic primitive whose mathematical assumption is false.
+\noindent\textbf{Trusted assumptions.} Assumptions~\ref{asm:ledger}--\ref{asm:cr} are used in Section~\ref{sec4.2}; Assumption~\ref{asm:runtime} only in Section~\ref{sec4.3}.
+
+\begin{assumption}[Canonical ledger]
+\label{asm:ledger}
+For all honest $n,n'\in\mathcal{N}$ and every $b\le\min(|\mathcal{L}_n|,|\mathcal{L}_{n'}|)$, $\mathcal{L}_n[1..b]=\mathcal{L}_{n'}[1..b]$.
+\end{assumption}
+
+This is the persistence property of a robust transaction ledger~\cite{garay2015backbone}, applied to the prefixes at which invocations are evaluated; blocks still subject to reorganization are re-executed by the ordinary EVM rules and lie outside the model.
+
+\begin{assumption}[Committee-gated admission]
+\label{asm:committee}
+The Management Contract admits $\mu_{a,v}$ only on a committee-authorized submission, and every admitted record is well formed: (i) $h_{a,v}=\mathrm{Keccak256}(C_{a,v})$; (ii) $u_{a,v}<H_{a,v}$, i.e., the record is committed strictly before its Activation Block; (iii) $(a,v)$ is unique, and an admitted record is never modified or removed; (iv) $C_{a,v}$ passes validation of the configured WASM Runtime. The committee is further trusted to review the implementation and its gas schedule before admission. Conditions (i)--(iii) can be enforced by the contract itself; listing them as assumptions keeps the analysis independent of the contract implementation.
+\end{assumption}
+
+\begin{assumption}[Collision resistance]
+\label{asm:cr}
+For every PPT algorithm $\mathcal{B}$,
+\begin{equation}
+\begin{split}
+\mathsf{Adv}^{\mathrm{cr}}_{\mathrm{Keccak256}}(\mathcal{B})
+=\Pr\bigl[&(C,C')\leftarrow\mathcal{B}(1^{\kappa}) :\\
+&C\neq C' \wedge \mathrm{Keccak256}(C)=\mathrm{Keccak256}(C')\bigr]
+\le\mathsf{negl}(\kappa).
+\end{split}
+\label{eq:cr-adv}
+\end{equation}
+\end{assumption}
+
+$\mathrm{Keccak256}$ is unkeyed, so~\eqref{eq:cr-adv} is read in the concrete sense of Rogaway~\cite{rogaway2006ignorance}: each reduction below exhibits an explicit collision finder $\mathcal{B}$ and bounds the protocol adversary's advantage by that of $\mathcal{B}$.
+
+\begin{assumption}[Deterministic runtime]
+\label{asm:runtime}
+The WASM Runtime exposes a validation predicate $\mathsf{Validate}(C)\in\{0,1\}$ and an execution function $\mathsf{Exec}(C,x)$ whose outputs, including error outcomes, depend only on $(C,x)$ and the fixed, allowlisted host interface. It enforces bounded linear memory, import validation and the configured resource limits, and exposes no host state or capability beyond that interface.
+\end{assumption}
+
+\noindent\textbf{Adversary.} The PPT adversary $\mathcal{A}$ may (a) submit arbitrary transactions, including invocation inputs and candidate upgrade proposals, the latter admitted only subject to Assumption~\ref{asm:committee}; (b) schedule the delivery of upgrade events, delay or interrupt node-local preparation, and crash and restart nodes so that preparation retries; and (c) tamper with the node-local artifact path, i.e., replace the byte sequence $\widehat{C}$ that a node obtains when it decodes, persists or reloads an artifact, modelling corrupted caches, persisted copies and untrusted retrieval channels. It cannot violate Assumptions~\ref{asm:ledger}--\ref{asm:cr}, forge committee authorization, or alter the client binary. The model thus excludes a compromised Geth binary, a broken consensus protocol, a captured committee, a failed implementation review, and a primitive whose underlying assumption is false.
+
+\noindent\textbf{Security definitions.} Each experiment below runs $\mathcal{A}$ against the honest nodes in this model and outputs $1$ when $\mathcal{A}$ causes the undesirable event; the advantage of $\mathcal{A}$ is the probability of output $1$ over all coins.
+
+\begin{definition}[Version divergence]
+\label{def:div}
+In $\mathsf{Exp}^{\mathrm{div}}_{\mathcal{A}}(\kappa)$, the adversary finally outputs a tuple $(a,b,n,n')$ with $n,n'\in\mathcal{N}$ and $b\le\min(|\mathcal{L}_n|,|\mathcal{L}_{n'}|)$. The experiment outputs $1$ iff $v^{*}_{n}(a,b)\neq v^{*}_{n'}(a,b)$, where $\bot$ differs from every version. $\mathsf{Adv}^{\mathrm{div}}_{\mathcal{A}}(\kappa)=\Pr[\mathsf{Exp}^{\mathrm{div}}_{\mathcal{A}}(\kappa)=1]$.
+\end{definition}
+
+\begin{definition}[Module substitution]
+\label{def:sub}
+$\mathsf{Exp}^{\mathrm{sub}}_{\mathcal{A}}(\kappa)$ outputs $1$ iff some honest node $n$ marks $(a,v)$ as prepared with, or executes for $(a,v)$, a byte sequence $\widehat{C}$ such that $\mu_{a,v}\in\mathsf{Reg}(\mathcal{L}_n)$ and $\widehat{C}\neq C_{a,v}$. $\mathsf{Adv}^{\mathrm{sub}}_{\mathcal{A}}(\kappa)=\Pr[\mathsf{Exp}^{\mathrm{sub}}_{\mathcal{A}}(\kappa)=1]$.
+\end{definition}
+
+\begin{definition}[Upgrade soundness]
+\label{def:sound}
+$\mathsf{Exp}^{\mathrm{bind}}_{\mathcal{A}}(\kappa)$ outputs $1$ iff some honest node executes an invocation of $a$ at height $b$ with a byte sequence $\widehat{C}\neq C_{a,v^{*}(a,b)}$, where $v^{*}(a,b)$ is evaluated on the canonical prefix of height $b$; executing any module when $v^{*}(a,b)=\bot$ also counts as output $1$. EvoCrypt is \emph{upgrade sound} if $\mathsf{Adv}^{\mathrm{bind}}_{\mathcal{A}}(\kappa)=\Pr[\mathsf{Exp}^{\mathrm{bind}}_{\mathcal{A}}(\kappa)=1]$ is negligible for every PPT $\mathcal{A}$.
+\end{definition}
+
+Definition~\ref{def:sound} is the target property: whatever $\mathcal{A}$ does to scheduling and node-local storage, every honest node that answers an invocation runs exactly the artifact the canonical chain designates for that height. Definitions~\ref{def:div} and~\ref{def:sub} isolate the two ways this can fail.
 
 \subsection{Upgrade Security}\label{sec4.2}
 
-\begin{lemma}[Module binding]
-Suppose an honest node prepares bytecode $\widehat{C}$ for version $(a,v)$ and accepts it only after checking $\mathrm{Keccak256}(\widehat{C})=h_{a,v}$. Under collision resistance, $\widehat{C}$ is computationally bound to the bytecode identified by the authoritative hash record. The hash check does not bind the ABI descriptors, gas parameters, or Activation Block: these fields are obtained from the authoritative Management Contract state and are interpreted by the version-selection rule.
+\begin{lemma}[Activation timeliness]
+\label{lem:timeliness}
+Under Assumption~\ref{asm:committee}, for every honest node $n$ and every $\mu_{a,v}\in\mathsf{Reg}(\mathcal{L}_n)$: (i) $v^{*}_{n}(a,b)\neq v$ for every $b<H_{a,v}$, and (ii) $v$ lies in the feasible set of~\eqref{eq:version-select} at every $b$ with $H_{a,v}\le b\le|\mathcal{L}_n|$.
 \end{lemma}
 
 \begin{proof}
-Hash recomputation over the recovered byte sequence is compared with $h_{a,v}$. If an adversary could cause two distinct byte sequences to pass this check for the same record, it would produce a collision in $\mathrm{Keccak256}$. Therefore, except with negligible probability under the collision-resistance assumption, the prepared bytecode is the bytecode named by the recorded hash. The remaining metadata fields are not inputs to this comparison; the canonical Management Contract state fixes them.\hfill$\square$
+(i) The feasible set contains only versions with $H_{a,v}\le b$. (ii) By Assumption~\ref{asm:committee}(ii), $u_{a,v}<H_{a,v}\le b$, so the admitting transaction lies in $\mathcal{L}_n[1..b]$, and by (iii) the record is never removed; hence $\mu_{a,v}\in\mathsf{Reg}(\mathcal{L}_n[1..b])$ and $H_{a,v}\le b$ places $v$ in the feasible set.\qed
 \end{proof}
 
+The lemma confines the preparation window of $(a,v)$ to heights $u_{a,v}<b<H_{a,v}$ and excludes retroactive activation: appending a block never changes the version designated for an already-executed height, which is why a node replaying history, such as the late-joining node in Section~\ref{sec5.3}, agrees with nodes that executed it live.
+
 \begin{theorem}[Activation consistency]
-For any two honest nodes with the same canonical chain and execution height $b$, the nodes select the same active version $v^{*}(a,b)$. For a revision registered before its Activation Block, a node that has completed preparation switches to the selected revision at and after that height, whereas a node whose preparation is incomplete continues attempting the update and does not select an obsolete version. Hence, node-local preparation time affects readiness but cannot change the canonical version selected for the same block.
+\label{thm:activation}
+Under Assumptions~\ref{asm:ledger} and~\ref{asm:committee}, every adversary $\mathcal{A}$, including a computationally unbounded one, has $\mathsf{Adv}^{\mathrm{div}}_{\mathcal{A}}(\kappa)=0$.
 \end{theorem}
 
 \begin{proof}
-The canonical chain determines the same Management Contract state, and therefore the same feasible set of records satisfying $H_{a,v}\leq b$. The lexicographic $\arg\max$ in~\eqref{eq:version-select} is deterministic, so both nodes select the same pair $(H_{a,v},v)$ and the same $v^{*}(a,b)$. The pre-activation registration assumption ensures that this record is already available in the committed history when the height-based rule selects it. Preparation affects whether a node is ready to execute the selected version, but it does not affect version selection. A node that is not ready continues its preparation procedure rather than using an obsolete implementation. Thus local preparation differences change readiness timing, not the version selected by the canonical rule.\hfill$\square$
+Fix any output $(a,b,n,n')$ of $\mathcal{A}$. By Assumption~\ref{asm:ledger}, $P=\mathcal{L}_n[1..b]=\mathcal{L}_{n'}[1..b]$, and by Definition~\ref{def:registry} $\mathsf{Reg}(P)$ is a function of $P$, so both nodes hold the same records and the same feasible set $\{(H_{a,v},v): H_{a,v}\le b\}$. By Assumption~\ref{asm:committee}(iii) its elements are pairwise distinct, so the lexicographic maximum in~\eqref{eq:version-select} is unique when the set is non-empty, and both nodes return $\bot$ when it is empty; hence $v^{*}_{n}(a,b)=v^{*}_{n'}(a,b)$. No adversarial capability enters this computation: scheduling, preparation timing, crashes and artifact tampering act on node-local state, whereas line~\ref{line:resolve} of Algorithm~\ref{alg:invocation-protocol} evaluates~\eqref{eq:version-select} on the registry before any node-local state is consulted. The experiment therefore never outputs $1$, whatever the running time of $\mathcal{A}$.\qed
 \end{proof}
+
+Theorem~\ref{thm:activation} is information-theoretic. The next theorem shows that binding the executed bytecode to the registry costs exactly one collision-resistance assumption.
+
+\begin{theorem}[Module binding]
+\label{thm:binding}
+Under Assumption~\ref{asm:committee}, for every PPT adversary $\mathcal{A}$ there exists a PPT algorithm $\mathcal{B}$, running in the time of $\mathcal{A}$ plus the cost of simulating the honest nodes, such that
+\begin{equation}
+\mathsf{Adv}^{\mathrm{sub}}_{\mathcal{A}}(\kappa)\le\mathsf{Adv}^{\mathrm{cr}}_{\mathrm{Keccak256}}(\mathcal{B}).
+\label{eq:binding-bound}
+\end{equation}
+In particular, $\mathsf{Adv}^{\mathrm{sub}}_{\mathcal{A}}(\kappa)$ is negligible under Assumption~\ref{asm:cr}.
+\end{theorem}
+
+\begin{proof}
+On input $1^{\kappa}$, $\mathcal{B}$ runs $\mathsf{Exp}^{\mathrm{sub}}_{\mathcal{A}}(\kappa)$ internally: it simulates the ledger and every honest node, executing Algorithms~\ref{alg:upgrade-protocol} and~\ref{alg:invocation-protocol} on their behalf, and answers the scheduling and artifact-tampering requests of $\mathcal{A}$ exactly as the real experiment would. The simulation is perfect because the model contains no secret state. Whenever a simulated honest node is about to mark $(a,v)$ prepared with $\widehat{C}$ (Algorithm~\ref{alg:upgrade-protocol}, line~\ref{line:mark-prepared}) or to execute $\widehat{C}$ for $(a,v)$ (Algorithm~\ref{alg:invocation-protocol}, line~\ref{line:execute}), $\mathcal{B}$ reads $C_{a,v}$ from the simulated registry; if $\widehat{C}\neq C_{a,v}$ it outputs $(\widehat{C},C_{a,v})$ and halts, and otherwise it eventually outputs $\bot$.
+
+Let $E$ be the event that $\mathsf{Exp}^{\mathrm{sub}}_{\mathcal{A}}(\kappa)$ outputs $1$; by perfect simulation, $\Pr[E]=\mathsf{Adv}^{\mathrm{sub}}_{\mathcal{A}}(\kappa)$ in the run of $\mathcal{B}$. On $E$, an honest node accepted $\widehat{C}$ for $(a,v)$, which happens only after verifying $\mathrm{Keccak256}(\widehat{C})=h_{a,v}$ against the canonical record (Algorithm~\ref{alg:upgrade-protocol}, line~\ref{line:hash-check}; the prepared set is keyed by $h_{a,v}$, so execution reloads the artifact under the same check). By Assumption~\ref{asm:committee}(i), $h_{a,v}=\mathrm{Keccak256}(C_{a,v})$, so $(\widehat{C},C_{a,v})$ is a collision and $\Pr[E]\le\mathsf{Adv}^{\mathrm{cr}}_{\mathrm{Keccak256}}(\mathcal{B})$, which is~\eqref{eq:binding-bound}. The reduction is tight: it loses no advantage and does not guess the target record.\qed
+\end{proof}
+
+The hash binds only the bytecode; ABI descriptors, gas parameters and Activation Block are read directly from the canonical registry, which Theorem~\ref{thm:activation} already fixes across honest nodes.
+
+\begin{theorem}[Upgrade soundness]
+\label{thm:soundness}
+Under Assumptions~\ref{asm:ledger}--\ref{asm:cr}, EvoCrypt is upgrade sound: for every PPT adversary $\mathcal{A}$ there exists a PPT $\mathcal{B}$ as in Theorem~\ref{thm:binding} such that
+\begin{equation}
+\mathsf{Adv}^{\mathrm{bind}}_{\mathcal{A}}(\kappa)\le\mathsf{Adv}^{\mathrm{cr}}_{\mathrm{Keccak256}}(\mathcal{B}).
+\label{eq:soundness-bound}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Let $W$ be the event that $\mathsf{Exp}^{\mathrm{bind}}_{\mathcal{A}}(\kappa)$ outputs $1$ at honest node $n$ for an invocation of $a$ at height $b$ executed with $\widehat{C}$; let $v=v^{*}(a,b)$ be the canonical selection, $v_n$ the version resolved by $n$ in line~\ref{line:resolve} of Algorithm~\ref{alg:invocation-protocol}, and $\hat v$ the version under which $\widehat{C}$ was prepared. Then $W\subseteq E_1\cup E_2\cup E_3$ with
+\begin{equation*}
+E_1 : v_n\neq v,\qquad
+E_2 : v_n=v \wedge \hat v\neq v_n,\qquad
+E_3 : \hat v=v_n=v \wedge \widehat{C}\neq C_{a,v},
+\end{equation*}
+since if none occurs then $\widehat{C}=C_{a,v^{*}(a,b)}$.
+$\Pr[E_1]=0$: node $n$ evaluates~\eqref{eq:version-select} on $\mathsf{Reg}(\mathcal{L}_n[1..b])$, which by Assumption~\ref{asm:ledger} is the canonical prefix, so the argument of Theorem~\ref{thm:activation} gives $v_n=v$; if $v=\bot$ the node returns a missing-version error (line~\ref{line:missing}) and executes nothing.
+$\Pr[E_2]=0$: line~\ref{line:ensure} admits execution only for the resolved pair $(a,v_n)$ and, under the mandatory-preparation policy, continues preparing $(a,v_n)$ rather than falling back to another prepared version, so the only artifact reaching line~\ref{line:execute} was prepared for $(a,v_n)$.
+$E_3$ is a module substitution for $(a,v)$ with $\mu_{a,v}\in\mathsf{Reg}(\mathcal{L}_n)$, the latter by Lemma~\ref{lem:timeliness}(ii) since $H_{a,v}\le b$; hence $\Pr[E_3]\le\mathsf{Adv}^{\mathrm{sub}}_{\mathcal{A}}(\kappa)\le\mathsf{Adv}^{\mathrm{cr}}_{\mathrm{Keccak256}}(\mathcal{B})$ by Theorem~\ref{thm:binding}. A union bound yields~\eqref{eq:soundness-bound}.\qed
+\end{proof}
+
+\begin{remark}[Safety versus liveness]
+\label{rem:liveness}
+Theorems~\ref{thm:activation}--\ref{thm:soundness} are safety statements: an honest node never selects or runs a version other than the canonical one. They do not assert that every node can answer at height $H_{a,v}$; a node still preparing, or in the retry loop of Algorithm~\ref{alg:upgrade-protocol}, defers rather than degrades. Under Assumption~\ref{asm:committee}(iv) and the deterministic validation of Assumption~\ref{asm:runtime}, an admitted artifact validates identically at every honest node, so preparation cannot succeed at one node and fail permanently at another; how quickly it completes is measured in Sections~\ref{sec5.2} and~\ref{sec5.3} rather than proven here.
+\end{remark}
 
 \subsection{Invocation Security}\label{sec4.3}
 
+Section~\ref{sec4.2} fixes \emph{which} artifact an honest node executes. This subsection shows that, once Assumption~\ref{asm:runtime} is added, agreement on the artifact lifts to agreement on the invocation outcome and on the resulting EVM state transition. Assumption~\ref{asm:runtime} is the only new ingredient; it is an engineering assumption on the configured WASM Runtime rather than a cryptographic one, and the statements below make its role explicit. An \emph{outcome} of Algorithm~\ref{alg:invocation-protocol} is the pair $(o,\gamma)$, where $o$ is either the ABI-encoded result $y$ or one of the protocol errors returned by the algorithm, and $\gamma$ is the gas charged, with $\gamma=0$ when the algorithm returns before line~\ref{line:execute}.
+
+\begin{definition}[Invocation divergence]
+\label{def:inv}
+In $\mathsf{Exp}^{\mathrm{inv}}_{\mathcal{A}}(\kappa)$, the adversary finally outputs $(d,g,b,n,n')$ with $n,n'\in\mathcal{N}$ and $b\le\min(|\mathcal{L}_n|,|\mathcal{L}_{n'}|)$, and both nodes run Algorithm~\ref{alg:invocation-protocol} on request $d$ with gas budget $g$ at height $b$. If either node has not produced an outcome, the experiment outputs $0$; otherwise it outputs $1$ iff $(o_n,\gamma_n)\neq(o_{n'},\gamma_{n'})$. $\mathsf{Adv}^{\mathrm{inv}}_{\mathcal{A}}(\kappa)=\Pr[\mathsf{Exp}^{\mathrm{inv}}_{\mathcal{A}}(\kappa)=1]$.
+\end{definition}
+
+Returning $0$ when a node has not answered keeps the definition a safety property, in line with Remark~\ref{rem:liveness}: a node still preparing at line~\ref{line:ensure} defers and is not counted as disagreeing.
+
+\begin{lemma}[Pre-execution agreement]
+\label{lem:preexec}
+Under Assumptions~\ref{asm:ledger} and~\ref{asm:committee}, two honest nodes running Algorithm~\ref{alg:invocation-protocol} on the same $(d,g,b)$ take the same branch at every line before line~\ref{line:execute}, resolve the same version $v=v^{*}(a,b)$, and compute the same $G_{\mathrm{req}}=G(a,v,x)$. In particular, if either node returns an ABI, missing-version or out-of-gas error, both return the same error with $\gamma=0$.
+\end{lemma}
+
+\begin{proof}
+$\mathrm{Parse}$ is a fixed function of $d$, so both nodes obtain the same $(a,x)$ or the same ABI error. Theorem~\ref{thm:activation} gives $v^{*}_{n}(a,b)=v^{*}_{n'}(a,b)$, so the missing-version test agrees. If a version is resolved, both nodes read $\mu_{a,v}$ from $\mathsf{Reg}(\mathcal{L}_n[1..b])=\mathsf{Reg}(\mathcal{L}_{n'}[1..b])$ (Assumption~\ref{asm:ledger} with Definition~\ref{def:registry}), hence the same $g^{(0)}_{a,v}$, $\lambda_{a,v}$, $\tau^{\mathrm{in}}_{a,v}$ and $\tau^{\mathrm{out}}_{a,v}$. Since $|x|$ is determined by $d$, \eqref{eq:gas-price} yields the same $G_{\mathrm{req}}$, and comparison with the common budget $g$ yields the same out-of-gas decision. None of these steps reads node-local state other than the prepared set, which only decides whether line~\ref{line:ensure} must prepare first, not which branch is taken.\qed
+\end{proof}
+
 \begin{theorem}[Invocation consistency]
-Consider two honest nodes processing the same invocation at block height $b$. If they have the same pre-state, request $(a,x)$, gas budget, canonical Management Contract state, prepared bytecode, ABI descriptors, host-interface responses, and initial module state, then they produce the same ABI result or protocol error and charge the same gas $G(a,v^{*}(a,b),x)$.
+\label{thm:invocation}
+Under Assumptions~\ref{asm:ledger}--\ref{asm:runtime}, for every PPT adversary $\mathcal{A}$ there exists a PPT $\mathcal{B}$ as in Theorem~\ref{thm:binding} such that
+\begin{equation}
+\mathsf{Adv}^{\mathrm{inv}}_{\mathcal{A}}(\kappa)\le\mathsf{Adv}^{\mathrm{cr}}_{\mathrm{Keccak256}}(\mathcal{B}).
+\label{eq:inv-bound}
+\end{equation}
+Moreover, whenever both nodes answer, they charge the same gas unconditionally: $\gamma_n=\gamma_{n'}=G(a,v^{*}(a,b),x)$ if line~\ref{line:execute} is reached and $\gamma_n=\gamma_{n'}=0$ otherwise.
 \end{theorem}
 
 \begin{proof}
-Activation consistency gives both nodes the same $v^{*}(a,b)$. Equal authoritative metadata then gives them the same ABI descriptors, gas parameters, and value of~\eqref{eq:gas-price}. Common ABI rules yield the same decoded input and encoded output shape.
-
-Given the same bytecode, deterministic WASM execution, deterministic host-interface responses, and identical initial instance state, the module execution is the same transition from the same module state and input. If execution succeeds, both nodes return the same result; if it violates the specified runtime or protocol conditions, both nodes return the same protocol error.\hfill$\square$
+Let $W$ be the event that $\mathsf{Exp}^{\mathrm{inv}}_{\mathcal{A}}(\kappa)$ outputs $1$, so both nodes answered and $(o_n,\gamma_n)\neq(o_{n'},\gamma_{n'})$. Let $v=v^{*}(a,b)$, and let $\widehat{C}_n,\widehat{C}_{n'}$ be the byte sequences the nodes execute at line~\ref{line:execute} when they reach it. Then $W\subseteq F_1\cup F_2\cup F_3$ with
+\begin{align*}
+F_1 &: \text{the nodes take different branches before line~\ref{line:execute}},\\
+F_2 &: \text{both reach line~\ref{line:execute} and } \widehat{C}_n\neq C_{a,v}\ \vee\ \widehat{C}_{n'}\neq C_{a,v},\\
+F_3 &: \widehat{C}_n=\widehat{C}_{n'}=C_{a,v}\ \wedge\ o_n\neq o_{n'},
+\end{align*}
+since if none occurs, both nodes either return the same pre-execution error with $\gamma=0$, or reach line~\ref{line:execute} with the same $G_{\mathrm{req}}$, execute the same bytecode and return the same $o$.
+$\Pr[F_1]=0$ by Lemma~\ref{lem:preexec}.
+$F_2$ states that some honest node executes an invocation of $a$ at height $b$ with bytecode other than $C_{a,v^{*}(a,b)}$, which is exactly the winning event of $\mathsf{Exp}^{\mathrm{bind}}_{\mathcal{A}}(\kappa)$; hence $\Pr[F_2]\le\mathsf{Adv}^{\mathrm{bind}}_{\mathcal{A}}(\kappa)\le\mathsf{Adv}^{\mathrm{cr}}_{\mathrm{Keccak256}}(\mathcal{B})$ by Theorem~\ref{thm:soundness}. The bound covers both nodes at once because $\mathsf{Exp}^{\mathrm{bind}}$ already quantifies over all honest nodes.
+$\Pr[F_3]=0$: on $F_3$ both nodes evaluate $\mathsf{Exec}(C_{a,v},x)$ on the same arguments, and by Assumption~\ref{asm:runtime} its output, including any runtime error, is a function of $(C_{a,v},x)$ and the fixed host interface; ABI encoding of that output under the common $\tau^{\mathrm{out}}_{a,v}$ is deterministic, so $o_n=o_{n'}$.
+A union bound gives~\eqref{eq:inv-bound}. The gas statement is Lemma~\ref{lem:preexec}: $\gamma$ equals $G_{\mathrm{req}}$ when line~\ref{line:execute} is reached and $0$ otherwise, and both quantities agree without any computational assumption.\qed
 \end{proof}
 
+The bound in~\eqref{eq:inv-bound} coincides with that of Theorem~\ref{thm:soundness}: adding Assumption~\ref{asm:runtime} introduces no further probabilistic loss, and the charged gas is agreed unconditionally. The latter is the formal counterpart of Definition~\ref{def:gas-schedule}: because $G$ depends only on registry fields and $|x|$, no node-local measurement enters the fee, and differences in CPU time or in the number of WASM instructions executed cannot make honest nodes charge differently.
+
 \begin{corollary}[State-transition consistency]
-Under the hypotheses of the invocation-consistency theorem, the two nodes apply the same EVM state transition for the invocation, including the same gas charge and success or failure outcome.
+\label{cor:state}
+Under the hypotheses of Theorem~\ref{thm:invocation}, two honest nodes applying the same invocation to the same EVM pre-state at height $b$ reach the same EVM post-state, except with probability at most $\mathsf{Adv}^{\mathrm{cr}}_{\mathrm{Keccak256}}(\mathcal{B})$.
 \end{corollary}
 
 \begin{proof}
-The invocation protocol resolves the version and gas requirement before executing the module. The theorem establishes equality of the selected version, decoded request, gas charge, module result or protocol error, and encoded return value. The EVM therefore receives the same execution outcome from the coprocessor while starting from the same pre-state. Deterministic EVM execution then yields the same post-state.\hfill$\square$
+The coprocessor returns to the EVM only the outcome $(o,\gamma)$ of Algorithm~\ref{alg:invocation-protocol}: the return data or revert reason, the success flag implied by $o$, and the gas to deduct. By Theorem~\ref{thm:invocation} these agree except on the stated event. The remainder of the transaction is ordinary EVM execution, a deterministic function of the pre-state, the transaction and the coprocessor outcome, so the post-states agree.\qed
 \end{proof}
 
 \begin{proposition}[Conditional execution isolation]
-Let $\mathcal{R}_{\mathrm{prot}}$ be the set of host resources outside the resources explicitly authorized for a call, including Geth process memory other than the designated input and output buffers, local files, network sockets, and mutable host state not exposed by the coprocessor interface. If the WASM Runtime enforces bounded linear memory and validates imports against an allowlist, and if each permitted host function exposes no capability to access $\mathcal{R}_{\mathrm{prot}}$, then an admitted module has no modeled execution path to read or modify $\mathcal{R}_{\mathrm{prot}}$.
+\label{prop:isolation}
+Let $\mathcal{I}$ be the allowlisted host interface of Assumption~\ref{asm:runtime}, and let $\mathcal{R}_{\mathrm{prot}}$ be the set of host resources outside those explicitly authorized for a call: Geth process memory other than the designated input and output buffers, local files, network sockets, and mutable host state not exposed through $\mathcal{I}$. If no function in $\mathcal{I}$ reads or writes $\mathcal{R}_{\mathrm{prot}}$, then under Assumption~\ref{asm:runtime} no admitted module has an execution path that reads or modifies $\mathcal{R}_{\mathrm{prot}}$.
 \end{proposition}
 
 \begin{proof}
-A module can affect its environment only through its own linear memory and the host functions made available to it. The memory boundary prevents direct pointer-based access to the Geth address space, while import validation removes undeclared host capabilities. By assumption, the remaining host functions do not provide indirect access to protected resources. The conclusion is therefore a conditional isolation claim about the runtime boundary. It does not imply that the approved algorithm is free of a cryptographic backdoor, that its mathematical security is established, or that resource exhaustion is impossible within the configured limits.
-\hfill$\square$
+A WASM module interacts with its environment only through its linear memory and its imports. Under Assumption~\ref{asm:runtime}, linear memory is bounded and disjoint from the Geth address space, so no load or store addresses $\mathcal{R}_{\mathrm{prot}}$ directly, and import validation rejects at preparation time any module whose imports are not contained in $\mathcal{I}$, so an admitted module can call only functions in $\mathcal{I}$. By hypothesis these functions neither read nor write $\mathcal{R}_{\mathrm{prot}}$. Every effect of the module on the host is therefore confined to its linear memory, the designated buffers and the effects of $\mathcal{I}$, none of which touches $\mathcal{R}_{\mathrm{prot}}$. The claim is conditional on the hypothesis about $\mathcal{I}$ and on the runtime enforcing Assumption~\ref{asm:runtime}; it does not imply that an admitted algorithm is free of a cryptographic backdoor, that its mathematical security is established, or that resource exhaustion within the configured limits is impossible.\qed
 \end{proof}
 
-\subsection{Governed Security Maintenance}\label{sec4.4}
+\subsection{Residual Risks and Governed Recovery}\label{sec4.4}
 
-EvoCrypt treats cryptographic evolution as a governed control action rather than an unconstrained runtime replacement. The upgrade protocol records the admitted algorithm version, WASM hash, ABI descriptors, gas parameters, and Activation Block in the Management Contract state. This on-chain control plane allows honest nodes to check the same governance decision before the corresponding version becomes callable.
+Two risks remain inside the model of Section~\ref{sec4.1} after Theorems~\ref{thm:activation}--\ref{thm:invocation}: an admitted implementation may later prove unsuitable or vulnerable, and an admitted gas schedule may underprice or overprice the resources a call consumes. Neither is excluded by the committee review of Assumption~\ref{asm:committee}, which is trusted but not infallible. EvoCrypt does not prevent such admissions; it guarantees that a governed correction, once admitted, takes effect at every honest node and renders the faulty version unreachable.
 
-This mechanism supports security maintenance in three ways. First, gas parameters can be revised through a new admitted version when an earlier schedule underprices resource consumption or overprices legitimate use. Second, an unsuitable, obsolete, or vulnerable implementation can be superseded by a later version whose bytecode is bound to a new hash and activated at a designated block height. Third, an algorithm can be deprecated by governance policy so that future invocations no longer route to the obsolete version after the replacement becomes active.
+\begin{corollary}[Governed supersession]
+\label{cor:supersession}
+Under Assumptions~\ref{asm:ledger} and~\ref{asm:committee}, let $\mu_{a,v}$ and $\mu_{a,v'}$ be admitted with $H_{a,v'}>H_{a,v}$. Then for every honest node $n$ and every height $H_{a,v'}\le b\le|\mathcal{L}_n|$, $v^{*}_{n}(a,b)\neq v$. If, moreover, no admitted version of $a$ other than $v'$ has an activation height in $[H_{a,v'},b]$, then $v^{*}_{n}(a,b)=v'$.
+\end{corollary}
 
-These properties do not prove that every admitted algorithm is cryptographically secure or economically well priced. They ensure that, once governance admits a correction, honest nodes have a deterministic and verifiable mechanism for applying it. The security boundary therefore depends on committee authorization, implementation review, and gas-schedule assessment, while EvoCrypt provides the protocol machinery that makes corrective actions consistent across participating nodes.
+\begin{proof}
+By Lemma~\ref{lem:timeliness}(ii), $v'$ is in the feasible set of~\eqref{eq:version-select} at $b$. Since $H_{a,v'}>H_{a,v}$, the pair $(H_{a,v'},v')$ is lexicographically larger than $(H_{a,v},v)$, so $v$ is not the maximum. Under the additional hypothesis, every feasible version other than $v'$ has activation height strictly below $H_{a,v'}$ and is dominated by $v'$, so $v'$ is the maximum. Theorem~\ref{thm:activation} makes the selection identical at all honest nodes.\qed
+\end{proof}
 
-Collectively, the results give EvoCrypt a bounded security argument. Authoritative on-chain metadata and Activation-Block selection prevent version divergence under a common chain view. Deterministic runtime conditions extend consistency from version selection to invocation outcomes and EVM state transitions. The WASM boundary provides conditional host-resource isolation, while the governed upgrade path supports algorithm replacement, gas-schedule revision, and deprecation of unsuitable algorithms without a client restart.
+Corollary~\ref{cor:supersession} covers the three corrective actions. \emph{Replacement} admits $\mu_{a,v'}$ with new bytecode; from $H_{a,v'}$ on, Theorem~\ref{thm:soundness} guarantees that every honest node runs $C_{a,v'}$ and never $C_{a,v}$. \emph{Repricing} admits $\mu_{a,v'}$ with revised $g^{(0)}_{a,v'},\lambda_{a,v'}$ and possibly unchanged bytecode, which Assumption~\ref{asm:committee}(iii) permits because uniqueness is over $(a,v)$ rather than over $h_{a,v}$; Lemma~\ref{lem:preexec} then charges the new fee unconditionally. \emph{Deprecation} admits a version whose module returns a protocol error on every input, so that by Theorem~\ref{thm:invocation} all invocations of $a$ fail deterministically after $H_{a,v'}$ without any contract redeployment. In each case, the correction becomes effective exactly $H_{a,v'}-u_{a,v'}$ blocks after admission, and a node is ready at that height whenever its preparation completes within this window (Remark~\ref{rem:liveness}); Section~\ref{sec5.2} measures the preparation time that this window must cover.
+
+\begin{remark}[Resource exposure under mispricing]
+A gas schedule that undercharges does not by itself grant unbounded host resources. By Assumption~\ref{asm:runtime}, every invocation runs under the configured memory and execution limits regardless of the fee charged, and a block of gas limit $g_{\max}$ admits at most $\lfloor g_{\max}/\min_{a,v} g^{(0)}_{a,v}\rfloor$ coprocessor calls, so the host work per block is bounded by a constant that depends only on the configured limits and the registered schedules. Underpricing therefore lowers the economic cost of approaching this bound but does not remove it, and the bound itself is restored by repricing through Corollary~\ref{cor:supersession}. Calibrating $g^{(0)}_{a,v}$ and $\lambda_{a,v}$ against measured cost is outside the present model (Section~\ref{sec6}).
+\end{remark}
+
+None of these statements asserts that an admitted algorithm is cryptographically sound or economically well priced; those judgements remain with the committee. What the protocol guarantees is that the committee's corrections are applied consistently: version divergence is excluded unconditionally (Theorem~\ref{thm:activation}), the executed artifact is bound to the admitted record by a tight reduction to collision resistance (Theorems~\ref{thm:binding} and~\ref{thm:soundness}), and under the deterministic-runtime assumption the same bound extends to invocation outcomes and state transitions (Theorem~\ref{thm:invocation}, Corollary~\ref{cor:state}).
 
 \section{Evaluation}\label{sec5}
 
