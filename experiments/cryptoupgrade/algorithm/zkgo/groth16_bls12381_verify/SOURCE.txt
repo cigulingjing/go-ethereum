@@ -3,5 +3,5 @@ curve=bls12-381
 extracted_from=gnark backend groth16/bls12-381 verify reference
 pairing=e(Ar,Bs)*e(Krs,-delta)*e(L_pub,-gamma)*e(alpha,-beta)=1
 blst=v0.3.16
-flags=-O3 -std=gnu11 -D__BLST_NO_ASM__ -D__BLST_NO_CPUID__ -fno-builtin
+flags=-O3 -std=gnu11 -D__BLST_NO_ASM__ -D__BLST_NO_CPUID__
 command=experiments/cryptoupgrade/algorithm/zkgo/build.sh

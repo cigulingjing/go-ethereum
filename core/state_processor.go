@@ -254,7 +254,21 @@ func ApplyTransactionWithEVM(msg *Message, gp *GasPool, statedb *state.StateDB, 
 	if statedb.Database().Type().Is(state.TypeUBT) {
 		statedb.AccessEvents().Merge(evm.AccessEvents)
 	}
-	return MakeReceipt(evm, result, statedb, blockNumber, blockHash, blockTime, tx, gp.CumulativeUsed(), root), bal, nil
+	receipt = MakeReceipt(evm, result, statedb, blockNumber, blockHash, blockTime, tx, gp.CumulativeUsed(), root)
+	if stagelog.Enabled() {
+		fields := stagelog.Fields{
+			"txHash":        tx.Hash().Hex(),
+			"blockNumber":   blockNumber.Uint64(),
+			"gasUsed":       receipt.GasUsed,
+			"receiptStatus": receipt.Status,
+			"phase":         "transaction_execution",
+		}
+		if blockHash != (common.Hash{}) {
+			fields["blockHash"] = blockHash.Hex()
+		}
+		stagelog.Record(nil, "transaction_executed", fields)
+	}
+	return receipt, bal, nil
 }
 
 // MakeReceipt generates the receipt object for a transaction given its execution result.

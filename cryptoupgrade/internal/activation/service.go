@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -79,6 +80,9 @@ func (s *Service) ActivateVersion(ctx context.Context, name string, info model.A
 	}
 	if current, ok := s.repository.PreparedVersion(name, info.Version); ok && current == info {
 		return nil
+	}
+	if err := waitForExperimentPreparation(ctx, info.Version); err != nil {
+		return err
 	}
 	activationStart := time.Now()
 	var loadedAt time.Time
@@ -166,6 +170,45 @@ func (s *Service) ActivateVersion(ctx context.Context, name string, info model.A
 	loadedAt = time.Now()
 	recordTrace(ctx, "activation_completed", time.Since(activationStart), nil)
 	return nil
+}
+
+// waitForExperimentPreparation 只在显式设置实验环境变量时生效。
+// 屏障位于事件监听 goroutine 内，不持有 repository 或区块执行锁，且由外部文件释放，避免把测试注入变成节点级死锁。
+func waitForExperimentPreparation(ctx context.Context, version uint64) error {
+	if strings.TrimSpace(os.Getenv("GETH_CRYPTOUPGRADE_PREPARE_VERSION")) != strconv.FormatUint(version, 10) {
+		return nil
+	}
+	if raw := strings.TrimSpace(os.Getenv("GETH_CRYPTOUPGRADE_PREPARE_DELAY_MS")); raw != "" {
+		milliseconds, err := strconv.ParseInt(raw, 10, 64)
+		if err != nil || milliseconds < 0 {
+			return fmt.Errorf("invalid GETH_CRYPTOUPGRADE_PREPARE_DELAY_MS %q", raw)
+		}
+		timer := time.NewTimer(time.Duration(milliseconds) * time.Millisecond)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return ctx.Err()
+		case <-timer.C:
+		}
+	}
+	barrier := strings.TrimSpace(os.Getenv("GETH_CRYPTOUPGRADE_PREPARE_BARRIER"))
+	if barrier == "" {
+		return nil
+	}
+	for {
+		if _, err := os.Stat(barrier); err == nil {
+			return nil
+		} else if !os.IsNotExist(err) {
+			return fmt.Errorf("stat preparation barrier %s: %w", barrier, err)
+		}
+		timer := time.NewTimer(50 * time.Millisecond)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return ctx.Err()
+		case <-timer.C:
+		}
+	}
 }
 
 func recordTrace(ctx context.Context, stage string, duration time.Duration, mutate func(*activationtrace.Event)) {

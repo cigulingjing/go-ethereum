@@ -1,15 +1,17 @@
 # Fdb version 3
-["bibtex evocrypt"] 1791282722 "evocrypt.aux" "evocrypt.bbl" "evocrypt" 1791282722
+["bibtex evocrypt"] 1791363382 "evocrypt.aux" "evocrypt.bbl" "evocrypt" 1791363919
   "./splncs04.bst" 1791165633 32146 aadf770ded437d161532035219ea6f45 ""
-  "evocrypt.aux" 1791282722 6205 1fae7067a915bf7b0162651aaebf47cc "pdflatex"
+  "evocrypt.aux" 1791363919 6395 5641468bee4e29814a2496b075c581cb "pdflatex"
   "sn-bibliography.bib" 1791179456 11095 549966df5940333ed5178f9348410b48 ""
   (generated)
   "evocrypt.bbl"
   "evocrypt.blg"
-["pdflatex"] 1791282722 "/home/liuqi/project/go-ethereum/paper/Springer LNCS/evocrypt.tex" "evocrypt.pdf" "evocrypt" 1791282722
-  "../image/figure_execution_gas_comparison.pdf" 1791282639 12867 60d6896b623e73c8eab78d96b2e02807 ""
-  "../image/figure_execution_latency_comparison.pdf" 1791282246 13443 05af531c62094da09b4464d8cd1db1c1 ""
-  "../image/figure_upgrade_latency_comparison.pdf" 1791268756 13361 54dea1e8de0533e8be2acf5263f32fcc ""
+["pdflatex"] 1791363918 "/home/liuqi/project/go-ethereum/paper/Springer LNCS/evocrypt.tex" "evocrypt.pdf" "evocrypt" 1791363919
+  "../image/consistence_scene.pdf" 1791363848 549821 e4c3a7f5e0318445edc7cd3a8579ce4b ""
+  "../image/figure_execution_gas_comparison.pdf" 1791361638 13076 9e317afd9079857d4aeea6705275aa4e ""
+  "../image/figure_execution_latency_comparison.pdf" 1791361638 13379 212e5c3570a46493d20c0df441c09f24 ""
+  "../image/figure_upgrade_gas_comparison.pdf" 1791361636 12907 fdb496e3f95fe43544f80542b69cb90c ""
+  "../image/figure_upgrade_latency_comparison.pdf" 1791361637 13476 52dde6b880f02a9020dd31d99e906e29 ""
   "../image/overview.pdf" 1791275058 40805 6f1b872430f505ccc45b4f408f64c692 ""
   "../image/upgrade_protocol.pdf" 1791039474 88903 cf7fdbfc99d958db3a4bfdf0ecc3afec ""
   "/etc/texmf/web2c/texmf.cnf" 1788833863 475 c0e671620eb5563b2130f56340a5fde8 ""
@@ -20,11 +22,10 @@
   "/home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0700.600pk" 1791166050 16976 3d0e5d39e85523de95876bbb3b1d5fa2 ""
   "/home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0900.600pk" 1791166053 21332 0a9747901c8cbf81ba67ee93f457d51d ""
   "/home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1000.600pk" 1791166053 23784 9f86055596670c420ad60458fefaf233 ""
-  "/home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecti0900.600pk" 1791166052 28796 61423e975b495d4a3fd36458b1aa815a ""
   "/home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecti1000.600pk" 1791166051 31872 49d81d00b8f55fe737b54906de31f89d ""
   "/home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1000.600pk" 1791166051 20008 e7584a348b0df0dcd379c0437f736b6f ""
   "/home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0900.600pk" 1791166052 10448 d7ee52f4ad3edb7618c4ce5991473a75 ""
-  "/home/liuqi/project/go-ethereum/paper/Springer LNCS/evocrypt.tex" 1791282721 42726 02ae57866decf8651e53be142c2ba031 ""
+  "/home/liuqi/project/go-ethereum/paper/Springer LNCS/evocrypt.tex" 1791363918 45164 1ad679b64a0840d8c8b75007ecaf5932 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ecbx0900.tfm" 1136768653 3584 1a7de6c99457381c64abc1a7c545505f ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ecbx1000.tfm" 1136768653 3584 2d666ecf6d466d8b007246bc2f94d9da ""
@@ -36,7 +37,6 @@
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ecrm1000.tfm" 1136768653 3584 adb004a0c8e7c46ee66cad73671f37b4 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ecrm1200.tfm" 1136768653 3584 f80ddd985bd00e29e9a6047ebd9d4781 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ecrm1440.tfm" 1136768653 3584 3169d30142b88a27d4ab0e3468e963a2 ""
-  "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ecti0900.tfm" 1136768653 3072 a603fa6d934ebc72197ed1c389943d86 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ecti1000.tfm" 1136768653 3072 3bce340d4c075dffe6d4ec732b4c32fe ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ectt1000.tfm" 1136768653 1536 06717a2b50de47d4087ac0e6cd759455 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/tcrm0900.tfm" 1136768653 1536 c4f439db76ef96a9c53bc437f35ffe20 ""
@@ -118,9 +118,9 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1644012257 39432 7155514e09a3d69036fac785183a21c2 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1788836046 162697 abe8cb8185b872872e2e2175e4017796 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1788836056 1435921 e70001cb3fa7a0b86838e9bce3fa148b ""
-  "evocrypt.aux" 1791282722 6205 1fae7067a915bf7b0162651aaebf47cc "pdflatex"
-  "evocrypt.bbl" 1791282722 6574 b6c8085e803d1d381efb94f3877104ab "bibtex evocrypt"
-  "evocrypt.tex" 1791282721 42726 02ae57866decf8651e53be142c2ba031 ""
+  "evocrypt.aux" 1791363919 6395 5641468bee4e29814a2496b075c581cb "pdflatex"
+  "evocrypt.bbl" 1791363382 6574 b6c8085e803d1d381efb94f3877104ab "bibtex evocrypt"
+  "evocrypt.tex" 1791363918 45164 1ad679b64a0840d8c8b75007ecaf5932 ""
   "llncs.cls" 1791165633 43700 b7e0672dc4948203aa653b7bf7d0ad04 ""
   (generated)
   "DescriptionTexts.txt"

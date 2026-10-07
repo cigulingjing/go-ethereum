@@ -2,6 +2,7 @@ package network
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -37,6 +38,14 @@ func writeComposeService(b *strings.Builder, cfg *Config, node NodeConfig) {
 	b.WriteString("    environment:\n")
 	b.WriteString("      GETH_CRYPTOUPGRADE_PLUGIN_DIR: /plugin\n")
 	b.WriteString("      CRYPTOUPGRADE_MODULE: /go-ethereum\n")
+	keys := make([]string, 0, len(node.Environment))
+	for key := range node.Environment {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		b.WriteString(fmt.Sprintf("      %s: %q\n", key, node.Environment[key]))
+	}
 	b.WriteString("    volumes:\n")
 	b.WriteString(fmt.Sprintf("      - ./%s/datadir:/data\n", node.ID))
 	b.WriteString(fmt.Sprintf("      - ./%s/plugin:/plugin\n", node.ID))

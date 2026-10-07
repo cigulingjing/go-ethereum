@@ -2,6 +2,7 @@ package cryptoupgrade
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"os"
@@ -167,6 +168,9 @@ func callUpgradeAlgoWithInfoContext(ctx context.Context, funcName string, wasmPa
 		defer func() {
 			end := time.Now()
 			fields := stagelog.Fields{"durationNs": end.Sub(start).Nanoseconds(), "success": runErr == nil}
+			if len(ret) > 0 {
+				fields["output"] = "0x" + hex.EncodeToString(ret)
+			}
 			if runErr != nil {
 				fields["error"] = runErr.Error()
 			}

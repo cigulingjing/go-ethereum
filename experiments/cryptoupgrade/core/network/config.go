@@ -91,25 +91,26 @@ type AccountConfig struct {
 
 // NodeConfig 定义单个 geth 节点的网络地址、目录和角色。
 type NodeConfig struct {
-	ID            string   `yaml:"id"`
-	Name          string   `yaml:"name"`
-	Role          string   `yaml:"role"`
-	Host          string   `yaml:"host"`
-	AdvertiseHost string   `yaml:"advertiseHost"`
-	P2PPort       int      `yaml:"p2pPort"`
-	P2PHostPort   int      `yaml:"p2pHostPort"`
-	HTTPPort      int      `yaml:"httpPort"`
-	HTTPHostPort  int      `yaml:"httpHostPort"`
-	RPCURL        string   `yaml:"rpcURL"`
-	Datadir       string   `yaml:"datadir"`
-	PluginDir     string   `yaml:"pluginDir"`
-	NodeKey       string   `yaml:"nodeKey"`
-	Account       string   `yaml:"account"`
-	Keystore      string   `yaml:"keystore"`
-	Password      string   `yaml:"password"`
-	HTTPAPIs      []string `yaml:"httpApis"`
-	ExtraArgs     []string `yaml:"extraArgs"`
-	PrivateKey    string   `yaml:"privateKey,omitempty"`
+	ID            string            `yaml:"id"`
+	Name          string            `yaml:"name"`
+	Role          string            `yaml:"role"`
+	Host          string            `yaml:"host"`
+	AdvertiseHost string            `yaml:"advertiseHost"`
+	P2PPort       int               `yaml:"p2pPort"`
+	P2PHostPort   int               `yaml:"p2pHostPort"`
+	HTTPPort      int               `yaml:"httpPort"`
+	HTTPHostPort  int               `yaml:"httpHostPort"`
+	RPCURL        string            `yaml:"rpcURL"`
+	Datadir       string            `yaml:"datadir"`
+	PluginDir     string            `yaml:"pluginDir"`
+	NodeKey       string            `yaml:"nodeKey"`
+	Account       string            `yaml:"account"`
+	Keystore      string            `yaml:"keystore"`
+	Password      string            `yaml:"password"`
+	HTTPAPIs      []string          `yaml:"httpApis"`
+	ExtraArgs     []string          `yaml:"extraArgs"`
+	Environment   map[string]string `yaml:"environment,omitempty"`
+	PrivateKey    string            `yaml:"privateKey,omitempty"`
 	generatedKey  string
 }
 

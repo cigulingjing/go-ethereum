@@ -227,3 +227,7 @@ IMAGE=cryptoupgrade-geth:lab \
 ```
 
 未安装 Docker 时脚本会跳过检查并正常退出。
+
+### 20 节点升级激活一致性实验
+
+该实验只验证一次 `UpgradeConsistencyProbe` 的 v1→v2 版本选择和状态一致性，不测吞吐量/RPC 性能。详见 `experiments/cryptoupgrade/scripts/upgradeconsistency/README.md`。

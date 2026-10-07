@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -235,13 +236,23 @@ func startScriptContent(cfg *Config, node NodeConfig, geth, genesisPath, datadir
 	nodeKeyPath := filepath.Join(nodeRoot, "nodekey")
 	passwordPath := filepath.Join(nodeRoot, "password.txt")
 	args := append([]string{geth}, GethArgs(cfg, node, datadir, pluginDir, nodeKeyPath, passwordPath)...)
+	environment := ""
+	keys := make([]string, 0, len(node.Environment))
+	for key := range node.Environment {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		environment += fmt.Sprintf("export %s=%q\\n", key, node.Environment[key])
+	}
 	return fmt.Sprintf(`#!/bin/sh
 set -eu
 export GETH_CRYPTOUPGRADE_PLUGIN_DIR=%q
 export CRYPTOUPGRADE_MODULE="${CRYPTOUPGRADE_MODULE:-$(pwd)}"
+%s
 %q init --datadir %q %q >/dev/null
 exec %s
-`, pluginDir, geth, datadir, genesisPath, shellJoin(args))
+`, pluginDir, environment, geth, datadir, genesisPath, shellJoin(args))
 }
 
 func copyOptionalFile(src, dst string, perm os.FileMode) error {

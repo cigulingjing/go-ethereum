@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2026.9.8)  6 OCT 2026 18:32
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2026.9.8)  7 OCT 2026 17:05
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -410,10 +410,13 @@ LaTeX Font Info:    Trying to load font information for U+rsfs on input line 37.
 File: ursfs.fd 1998/03/24 rsfs font definition file (jk)
 ) [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] [3]
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2]
+Underfull \vbox (badness 5105) has occurred while \output is active []
+
+ [3]
 
 pdfTeX warning: pdflatex (file ../image/overview.pdf): PDF inclusion: found PDF version <1.7>, but at most version <1.5> allowed
-<../image/overview.pdf, id=22, 614.295pt x 483.60674pt>
+<../image/overview.pdf, id=21, 614.295pt x 483.60674pt>
 File: ../image/overview.pdf Graphic file (type pdf)
 <use ../image/overview.pdf>
 Package pdftex.def Info: ../image/overview.pdf  used on input line 84.
@@ -421,62 +424,52 @@ Package pdftex.def Info: ../image/overview.pdf  used on input line 84.
 [4] [5 <../image/overview.pdf>]
 
 pdfTeX warning: pdflatex (file ../image/upgrade_protocol.pdf): PDF inclusion: found PDF version <1.7>, but at most version <1.5> allowed
-<../image/upgrade_protocol.pdf, id=49, 754.01701pt x 289.08pt>
+<../image/upgrade_protocol.pdf, id=48, 754.01701pt x 289.08pt>
 File: ../image/upgrade_protocol.pdf Graphic file (type pdf)
 <use ../image/upgrade_protocol.pdf>
 Package pdftex.def Info: ../image/upgrade_protocol.pdf  used on input line 137.
 (pdftex.def)             Requested size: 347.12354pt x 133.08427pt.
-
-Underfull \hbox (badness 1005) in paragraph at lines 138--138
-[]\T1/cmr/bx/n/9 Fig.2. \T1/cmr/m/n/9 Node-local prepa-ra-tion and de-ter-min-is-tic network-wide ac-ti-va-tion of an
- []
-
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [6 <../image/upgrade_protocol.pdf>] [7] [8] [9] [10] [11]
-LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 281.
+[6] [7 <../image/upgrade_protocol.pdf>] [8] [9] [10] [11]
+LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 307.
  (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 )
-<../image/figure_upgrade_latency_comparison.pdf, id=94, 328.43578pt x 186.71097pt>
+<../image/figure_upgrade_latency_comparison.pdf, id=93, 328.53806pt x 186.71097pt>
 File: ../image/figure_upgrade_latency_comparison.pdf Graphic file (type pdf)
 <use ../image/figure_upgrade_latency_comparison.pdf>
-Package pdftex.def Info: ../image/figure_upgrade_latency_comparison.pdf  used on input line 315.
-(pdftex.def)             Requested size: 319.35301pt x 181.5624pt.
- [12]
-Underfull \vbox (badness 10000) has occurred while \output is active []
+Package pdftex.def Info: ../image/figure_upgrade_latency_comparison.pdf  used on input line 317.
+(pdftex.def)             Requested size: 166.61781pt x 94.6914pt.
+<../image/figure_upgrade_gas_comparison.pdf, id=94, 328.5349pt x 186.71097pt>
+File: ../image/figure_upgrade_gas_comparison.pdf Graphic file (type pdf)
+<use ../image/figure_upgrade_gas_comparison.pdf>
+Package pdftex.def Info: ../image/figure_upgrade_gas_comparison.pdf  used on input line 321.
+(pdftex.def)             Requested size: 166.61781pt x 94.6914pt.
+ [12] [13 <../image/figure_upgrade_latency_comparison.pdf> <../image/figure_upgrade_gas_comparison.pdf>]
+<../image/consistence_scene.pdf, id=122, 2168.1pt x 1626.075pt>
+File: ../image/consistence_scene.pdf Graphic file (type pdf)
+<use ../image/consistence_scene.pdf>
+Package pdftex.def Info: ../image/consistence_scene.pdf  used on input line 335.
+(pdftex.def)             Requested size: 347.12354pt x 260.32619pt.
 
- [13 <../image/figure_upgrade_latency_comparison.pdf>]
-<../image/figure_execution_latency_comparison.pdf, id=113, 328.63715pt x 186.71097pt>
+Overfull \hbox (9.37274pt too wide) in paragraph at lines 344--345
+\T1/cmr/m/n/10 across the eval-u-ated al-go-rithms. EvoCrypt re-mained close to So-lid-ity on lightweight
+ []
+
+[14 <../image/consistence_scene.pdf>]
+<../image/figure_execution_latency_comparison.pdf, id=128, 328.53806pt x 186.71097pt>
 File: ../image/figure_execution_latency_comparison.pdf Graphic file (type pdf)
 <use ../image/figure_execution_latency_comparison.pdf>
-Package pdftex.def Info: ../image/figure_execution_latency_comparison.pdf  used on input line 330.
-(pdftex.def)             Requested size: 319.35301pt x 181.43988pt.
-
-Overfull \hbox (5.15521pt too wide) in paragraph at lines 335--336
-[]\T1/cmr/m/n/10 Estimated gas was com-pared be-tween the Pre-com-piled Con-tract and EvoCrypt
- []
-
-
-Overfull \hbox (8.56738pt too wide) in paragraph at lines 335--336
-\T1/cmr/m/n/10 paths. Schnor-rVer-ify il-lus-trates the mea-sured dif-fer-ence: the es-ti-mate was 2,301,691
- []
-
-
-Overfull \hbox (14.59369pt too wide) in paragraph at lines 335--336
-\T1/cmr/m/n/10 gas for the Pre-com-piled Con-tract path and 229,437 gas for EvoCrypt. For lightweight
- []
-
-<../image/figure_execution_gas_comparison.pdf, id=114, 328.5349pt x 186.71097pt>
+Package pdftex.def Info: ../image/figure_execution_latency_comparison.pdf  used on input line 350.
+(pdftex.def)             Requested size: 166.61781pt x 94.6914pt.
+<../image/figure_execution_gas_comparison.pdf, id=129, 328.5349pt x 186.71097pt>
 File: ../image/figure_execution_gas_comparison.pdf Graphic file (type pdf)
 <use ../image/figure_execution_gas_comparison.pdf>
-Package pdftex.def Info: ../image/figure_execution_gas_comparison.pdf  used on input line 339.
-(pdftex.def)             Requested size: 319.35301pt x 181.49402pt.
-[14 <../image/figure_execution_latency_comparison.pdf>]
-Underfull \vbox (badness 2205) has occurred while \output is active []
+Package pdftex.def Info: ../image/figure_execution_gas_comparison.pdf  used on input line 354.
+(pdftex.def)             Requested size: 166.61781pt x 94.6914pt.
+ [15 <../image/figure_execution_latency_comparison.pdf> <../image/figure_execution_gas_comparison.pdf>] (./evocrypt.bbl
+Underfull \vbox (badness 2744) has occurred while \output is active []
 
- [15 <../image/figure_execution_gas_comparison.pdf>] (./evocrypt.bbl
+ [16]
 Underfull \hbox (badness 3942) in paragraph at lines 13--17
 []\T1/cmr/m/n/9 Baresi, L., Ghezzi, C., Ma, X., Panz-ica La Manna, V.: Ef-fi-cient dy-
  []
@@ -501,7 +494,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 36--38
 []\T1/cmr/m/n/9 Ethereum.org: Ethereum vir-tual ma-chine (EVM).
  []
 
-[16]
+
 Underfull \hbox (badness 10000) in paragraph at lines 56--59
 []\T1/cmr/m/n/9 Input Out-put: Com-bi-na-tor makes easy work of hard forks.
  []
@@ -536,7 +529,7 @@ Overfull \hbox (21.64075pt too wide) in paragraph at lines 83--86
 []\T1/cmr/m/n/9 Polkadot: Run-time up-grades. https://docs.polkadot.com/parachains/maintain/runtime-
  []
 
-
+[17]
 Underfull \hbox (badness 1014) in paragraph at lines 101--104
 \T1/cmr/m/n/9 log-a-rithms on a quan-tum com-puter. SIAM Re-view \T1/cmr/bx/n/9 41\T1/cmr/m/n/9 (2), 303--332 (1999).
  []
@@ -551,7 +544,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 116--119
 \T1/cmr/m/n/9 https://www.w3.org/TR/wasm-core-2/, w3C Can-di-date Rec-om-men-da-tion
  []
 
-[17]
+
 Underfull \hbox (badness 2080) in paragraph at lines 136--140
 []\T1/cmr/m/n/9 Zou, W., Lo, D., Kochhar, P.S., Le, X.B.D., Xia, X., Feng, Y., Chen,
  []
@@ -568,18 +561,18 @@ Underfull \hbox (badness 6412) in paragraph at lines 136--140
 
 ) [18] (./evocrypt.aux) ) 
 Here is how much of TeX's memory you used:
- 6239 strings out of 480171
- 91707 string characters out of 5894490
- 389049 words of memory out of 5000000
- 24092 multiletter control sequences out of 15000+600000
- 484603 words of font info for 67 fonts, out of 8000000 for 9000
+ 6252 strings out of 480171
+ 92300 string characters out of 5894490
+ 388060 words of memory out of 5000000
+ 24104 multiletter control sequences out of 15000+600000
+ 483917 words of font info for 66 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
- 55i,10n,62p,1959b,326s stack positions out of 5000i,500n,10000p,200000b,80000s
- </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0700.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1000.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecti1000.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1000.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1200.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0900.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecti0900.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx0900.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0900.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1000.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1440.600pk></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
-Output written on evocrypt.pdf (18 pages, 422269 bytes).
+ 55i,10n,62p,1782b,328s stack positions out of 5000i,500n,10000p,200000b,80000s
+ </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0700.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1000.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecti1000.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1000.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1200.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0900.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx0900.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0900.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1000.600pk> </home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1440.600pk></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
+Output written on evocrypt.pdf (18 pages, 977157 bytes).
 PDF statistics:
- 649 PDF objects out of 1000 (max. 8388607)
- 168 compressed objects within 2 object streams
+ 631 PDF objects out of 1000 (max. 8388607)
+ 171 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
- 26 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 36 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -1,12 +1,14 @@
 \relax 
 \citation{nakamoto2008bitcoin,zou2021smartContracts,woodEthereumYellowPaper,ethereumEVM}
 \citation{shor1999,grover1996,nistPqcProject}
+\citation{woodEthereumYellowPaper,ethereumEVM,evmCodesPrecompiled}
 \@writefile{toc}{\contentsline {title}{EvoCrypt: An Upgradeable Cryptographic Coprocessor Framework for the Ethereum Virtual Machine}{1}{}\protected@file@percent }
 \@writefile{toc}{\authcount {4}}
 \@writefile{toc}{\contentsline {author}{Qi Liu \and Qianhong Wu \and Bo Qin\and Hongzi He }{1}{}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{}\protected@file@percent }
 \newlabel{sec1}{{1}{1}}
-\citation{woodEthereumYellowPaper,ethereumEVM,evmCodesPrecompiled}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{2}{}\protected@file@percent }
+\newlabel{sec2}{{2}{2}}
 \citation{cardanoHardForkCombinator,cardanoEvolution,ciampi2020updatable}
 \citation{zindros2021softPower}
 \citation{wang2023phoenix,polkadotRuntimeUpgrades}
@@ -15,10 +17,8 @@
 \citation{evmCodesPrecompiled,eip196,eip197}
 \citation{zhang2018kylinx,pina2019mvedsua,huang2021pylive,ajmani2006modular,baresi2017versionConsistency}
 \citation{webassemblyCoreSpec,polkadotRuntimeUpgrades}
-\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{3}{}\protected@file@percent }
-\newlabel{sec2}{{2}{3}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}EvoCrypt Design}{3}{}\protected@file@percent }
-\newlabel{sec3}{{3}{3}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}EvoCrypt Design}{4}{}\protected@file@percent }
+\newlabel{sec3}{{3}{4}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.1}System Model}{4}{}\protected@file@percent }
 \newlabel{sec3.1}{{3.1}{4}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Upgrade Protocol}{4}{}\protected@file@percent }
@@ -29,48 +29,51 @@
 \newlabel{fig:overview}{{1}{5}}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces \textbf  {Activation-Block-based WASM upgrade protocol.}}}{6}{}\protected@file@percent }
 \newlabel{alg:upgrade-protocol}{{1}{6}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Node-local preparation and deterministic network-wide activation of an EvoCrypt upgrade.}}{6}{}\protected@file@percent }
-\newlabel{fig:upgrade-protocol}{{2}{6}}
-\newlabel{def:active-version}{{2}{7}}
-\newlabel{eq:version-select}{{2}{7}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Invocation Protocol}{7}{}\protected@file@percent }
-\newlabel{sec3.3}{{3.3}{7}}
+\newlabel{def:active-version}{{2}{6}}
+\newlabel{eq:version-select}{{2}{6}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Invocation Protocol}{6}{}\protected@file@percent }
+\newlabel{sec3.3}{{3.3}{6}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Node-local preparation and deterministic activation of an EvoCrypt upgrade.}}{7}{}\protected@file@percent }
+\newlabel{fig:upgrade-protocol}{{2}{7}}
 \newlabel{def:gas-schedule}{{3}{7}}
 \newlabel{eq:gas-price}{{3}{7}}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces \textbf  {Contract-to-coprocessor invocation protocol.}}}{8}{}\protected@file@percent }
 \newlabel{alg:invocation-protocol}{{2}{8}}
 \@writefile{toc}{\contentsline {section}{\numberline {4}Security Analysis}{8}{}\protected@file@percent }
 \newlabel{sec4}{{4}{8}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Security Model and Assumptions}{8}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Security Model}{8}{}\protected@file@percent }
 \newlabel{sec4.1}{{4.1}{8}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Upgrade Security and Core Properties}{9}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Upgrade Security}{9}{}\protected@file@percent }
 \newlabel{sec4.2}{{4.2}{9}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Invocation Security}{10}{}\protected@file@percent }
 \newlabel{sec4.3}{{4.3}{10}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Online Governance and Security Boundaries}{11}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Governed Security Maintenance}{11}{}\protected@file@percent }
 \newlabel{sec4.4}{{4.4}{11}}
-\@writefile{toc}{\contentsline {paragraph}{Upgrade agility.}{11}{}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Evaluation}{11}{}\protected@file@percent }
-\newlabel{sec5}{{5}{11}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Evaluation}{12}{}\protected@file@percent }
+\newlabel{sec5}{{5}{12}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Implementation}{12}{}\protected@file@percent }
 \newlabel{sec5.1}{{5.1}{12}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Upgrade Efficiency}{12}{}\protected@file@percent }
 \newlabel{sec5.2}{{5.2}{12}}
 \@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Source and compiled artifact sizes of the evaluated algorithms.}}{13}{}\protected@file@percent }
 \newlabel{tab:eval-algorithms}{{1}{13}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Mean upgrade latency (ms) across the evaluated algorithms.}}{13}{}\protected@file@percent }
-\newlabel{fig:upgrade-latency}{{3}{13}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Execution Efficiency}{14}{}\protected@file@percent }
-\newlabel{sec5.3}{{5.3}{14}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Mean invocation latency (ms) for EvoCrypt, Solidity, and Precompiled Contract implementations.}}{14}{}\protected@file@percent }
-\newlabel{fig:execution-latency}{{4}{14}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Estimated gas for EvoCrypt and Precompiled Contract invocations.}}{15}{}\protected@file@percent }
-\newlabel{fig:execution-gas}{{5}{15}}
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Invocation latency and uploaded WASM size for computationally intensive cryptographic algorithms.}}{15}{}\protected@file@percent }
-\newlabel{tab:complex-algorithms}{{2}{15}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Upgrade efficiency comparison. Left: mean setup latency; right: estimated gas for EvoCrypt upgrades and Solidity contract deployment.}}{13}{}\protected@file@percent }
+\newlabel{fig:upgrade-efficiency}{{3}{13}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Upgrade Consistency}{13}{}\protected@file@percent }
+\newlabel{sec5.3}{{5.3}{13}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Consistency of activation-block-based upgrade handling across nodes, including late-joining synchronization, preparation, and ready events.}}{14}{}\protected@file@percent }
+\newlabel{fig:consistency-scene}{{4}{14}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Execution Efficiency}{14}{}\protected@file@percent }
+\newlabel{sec5.4}{{5.4}{14}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Execution efficiency comparison. Left: mean algorithm execution time; right: estimated gas for EvoCrypt and Solidity invocations.}}{15}{}\protected@file@percent }
+\newlabel{fig:execution-efficiency}{{5}{15}}
 \bibstyle{splncs04}
 \bibdata{sn-bibliography}
 \bibcite{ajmani2006modular}{1}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Algorithm execution time and uploaded WASM size for computationally intensive cryptographic algorithms.}}{16}{}\protected@file@percent }
+\newlabel{tab:complex-algorithms}{{2}{16}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{16}{}\protected@file@percent }
+\newlabel{sec6}{{6}{16}}
 \bibcite{baresi2017versionConsistency}{2}
 \bibcite{eip197}{3}
 \bibcite{cardanoEvolution}{4}
@@ -78,8 +81,6 @@
 \bibcite{ethereumEVM}{6}
 \bibcite{evmCodesPrecompiled}{7}
 \bibcite{grover1996}{8}
-\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{16}{}\protected@file@percent }
-\newlabel{sec6}{{6}{16}}
 \bibcite{huang2021pylive}{9}
 \bibcite{cardanoHardForkCombinator}{10}
 \bibcite{kumar2025leagan}{11}

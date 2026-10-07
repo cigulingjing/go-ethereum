@@ -99,14 +99,14 @@ def load_execution_latency() -> tuple[list[str], list[float], list[float], list[
 
 def load_execution_gas() -> tuple[list[str], list[float], list[float]]:
     rows = read_sheet_rows("执行消耗gas")[1:]
-    algos, upgrade, precompile = [], [], []
+    algos, upgrade, contract = [], [], []
     for row in rows:
         if len(row) < 3:
             continue
         algos.append(str(row[0]).strip())
         upgrade.append(parse_number(row[1]))
-        precompile.append(parse_number(row[2]))
-    return algos, upgrade, precompile
+        contract.append(parse_number(row[2]))
+    return algos, upgrade, contract
 
 
 def load_upgrade_latency() -> tuple[list[str], list[float], list[float]]:
@@ -135,6 +135,28 @@ def load_upgrade_gas() -> tuple[list[str], list[float], list[float]]:
 
 def display_labels(algos: list[str]) -> list[str]:
     return [ALGO_DISPLAY.get(a, a) for a in algos]
+
+
+def format_axis_value(value: float) -> str:
+    if value >= 1e6:
+        return f"{value / 1e6:g}M"
+    if value >= 1e3:
+        return f"{value / 1e3:g}k"
+    return f"{value:g}"
+
+
+def configure_y_axis(ax: plt.Axes, log_y: bool) -> None:
+    # 缩排后的双图面板需要更明确的 Y 轴提示；刻度密度依据 Excel 数据范围自动确定。
+    if log_y:
+        ax.yaxis.set_major_locator(mpl.ticker.LogLocator(base=10, subs=(1.0, 2.0, 5.0), numticks=12))
+        ax.yaxis.set_major_formatter(mpl.ticker.FuncFormatter(lambda value, _: format_axis_value(value)))
+        ax.yaxis.set_minor_locator(mpl.ticker.LogLocator(base=10, subs=np.arange(1.0, 10.0) * 0.1, numticks=24))
+        ax.yaxis.set_minor_formatter(mpl.ticker.NullFormatter())
+        ax.grid(axis="y", which="major", color="#E2E2E2", linewidth=0.6, zorder=0)
+        ax.grid(axis="y", which="minor", color="#F0F0F0", linewidth=0.35, zorder=0)
+    else:
+        ax.yaxis.set_major_locator(mpl.ticker.MaxNLocator(nbins=7))
+        ax.grid(axis="y", color="#E6E6E6", linewidth=0.6, zorder=0)
 
 
 def grouped_bar(
@@ -191,11 +213,7 @@ def grouped_bar(
             ax.set_ylim(*y_limits)
         # 对数轴使用纯文本刻度标签：mathtext 上下标会以约 0.7 倍字号渲染，
         # 跌破 5 pt 字号下限；数据均为正，无需非正数保护。
-        ax.yaxis.set_major_formatter(
-            mpl.ticker.FuncFormatter(lambda v, _: f"{v / 1e6:g}M" if v >= 1e6 else f"{v / 1e3:g}k")
-        )
-        ax.yaxis.set_minor_formatter(mpl.ticker.NullFormatter())
-    ax.grid(axis="y", color="#E6E6E6", linewidth=0.6, zorder=0)
+    configure_y_axis(ax, log_y)
     ax.legend(loc="upper left", bbox_to_anchor=(0, 1.02), ncol=n_series, handlelength=1.2)
 
     fig.tight_layout()
@@ -272,14 +290,14 @@ def main() -> None:
             log_y=False,
         )
 
-    # Chart 3: execution gas after upgrade — EvoCrypt vs Precompile
+    # Chart 3: execution gas after upgrade — EvoCrypt vs Solidity
     if only in (None, "execution-gas"):
         algos, exec_upgrade_gas, exec_contract_gas = load_execution_gas()
         grouped_bar(
             algos,
             [
                 ("EvoCrypt", exec_upgrade_gas, PALETTE["evocrypt"]),
-                ("Precompile", exec_contract_gas, PALETTE["precompile"]),
+                ("Solidity", exec_contract_gas, PALETTE["solidity"]),
             ],
             ylabel="Estimated gas",
             stem="figure_execution_gas_comparison",

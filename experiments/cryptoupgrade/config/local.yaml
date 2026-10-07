@@ -5,10 +5,39 @@ local:
   httpPortBase: 8761
   signerAccount: signer
   extraArgs: [--cache, "128"]
-  # 那些节点需要暴露到宿主机网络中
+  # 一致性实验需要从宿主机读取全部节点的本地执行结果；默认关闭的延迟开关只匹配 v2。
   expose:
-    - node: node1
-      httpHostPort: 8761
+    - {node: node1, httpHostPort: 8761}
+    - {node: node2, httpHostPort: 8762}
+    - {node: node3, httpHostPort: 8763}
+    - {node: node4, httpHostPort: 8764}
+    - {node: node5, httpHostPort: 8765}
+    - {node: node6, httpHostPort: 8766}
+    - {node: node7, httpHostPort: 8767}
+    - {node: node8, httpHostPort: 8768}
+    - {node: node9, httpHostPort: 8769}
+    - {node: node10, httpHostPort: 8770}
+    - {node: node11, httpHostPort: 8771}
+    - {node: node12, httpHostPort: 8772}
+    - {node: node13, httpHostPort: 8773}
+    - {node: node14, httpHostPort: 8774}
+    - {node: node15, httpHostPort: 8775}
+    - {node: node16, httpHostPort: 8776}
+    - {node: node17, httpHostPort: 8777}
+    - {node: node18, httpHostPort: 8778}
+    - {node: node19, httpHostPort: 8779}
+    - {node: node20, httpHostPort: 8780}
+  nodeEnvironment:
+    node11: {GETH_CRYPTOUPGRADE_PREPARE_VERSION: "2", GETH_CRYPTOUPGRADE_PREPARE_DELAY_MS: "1000"}
+    node12: {GETH_CRYPTOUPGRADE_PREPARE_VERSION: "2", GETH_CRYPTOUPGRADE_PREPARE_DELAY_MS: "1500"}
+    node13: {GETH_CRYPTOUPGRADE_PREPARE_VERSION: "2", GETH_CRYPTOUPGRADE_PREPARE_DELAY_MS: "2000"}
+    node14: {GETH_CRYPTOUPGRADE_PREPARE_VERSION: "2", GETH_CRYPTOUPGRADE_PREPARE_DELAY_MS: "2500"}
+    node15: {GETH_CRYPTOUPGRADE_PREPARE_VERSION: "2", GETH_CRYPTOUPGRADE_PREPARE_DELAY_MS: "3000"}
+    node16: {GETH_CRYPTOUPGRADE_PREPARE_VERSION: "2", GETH_CRYPTOUPGRADE_PREPARE_DELAY_MS: "3500"}
+    node17: {GETH_CRYPTOUPGRADE_PREPARE_VERSION: "2", GETH_CRYPTOUPGRADE_PREPARE_DELAY_MS: "4000"}
+    node18: {GETH_CRYPTOUPGRADE_PREPARE_VERSION: "2", GETH_CRYPTOUPGRADE_PREPARE_DELAY_MS: "4500"}
+    node19: {GETH_CRYPTOUPGRADE_PREPARE_VERSION: "2", GETH_CRYPTOUPGRADE_PREPARE_DELAY_MS: "5000"}
+    node20: {GETH_CRYPTOUPGRADE_PREPARE_VERSION: "2", GETH_CRYPTOUPGRADE_PREPARE_BARRIER: "/plugin/release-v2"}
 network:
   name: cryptoupgrade-local
   chainId: 11223344
@@ -17,7 +46,7 @@ network:
   peerTopology: full
 consensus:
   type: clique
-  period: 0
+  period: 5
   epoch: 30000
 docker:
   image: cryptoupgrade-geth:lab

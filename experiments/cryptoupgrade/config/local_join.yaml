@@ -1,0 +1,52 @@
+local:
+  nodeCount: 20
+  outputDir: ../output/network/local-join
+  httpPortBase: 8761
+  signerAccount: signer
+  extraArgs: [--cache, "128"]
+  expose:
+    - {node: node1, httpHostPort: 8761}
+    - {node: node2, httpHostPort: 8762}
+    - {node: node3, httpHostPort: 8763}
+    - {node: node4, httpHostPort: 8764}
+    - {node: node5, httpHostPort: 8765}
+    - {node: node6, httpHostPort: 8766}
+    - {node: node7, httpHostPort: 8767}
+    - {node: node8, httpHostPort: 8768}
+    - {node: node9, httpHostPort: 8769}
+    - {node: node10, httpHostPort: 8770}
+    - {node: node11, httpHostPort: 8771}
+    - {node: node12, httpHostPort: 8772}
+    - {node: node13, httpHostPort: 8773}
+    - {node: node14, httpHostPort: 8774}
+    - {node: node15, httpHostPort: 8775}
+    - {node: node16, httpHostPort: 8776}
+    - {node: node17, httpHostPort: 8777}
+    - {node: node18, httpHostPort: 8778}
+    - {node: node19, httpHostPort: 8779}
+    - {node: node20, httpHostPort: 8780}
+network:
+  name: cryptoupgrade-local-join
+  chainId: 11223344
+  networkId: 11223344
+  gasLimit: 30000000
+  peerTopology: full
+consensus:
+  type: clique
+  period: 5
+  epoch: 30000
+docker:
+  image: cryptoupgrade-geth:lab
+  networkName: cryptoupgrade-local-join
+  cpus: "0.50"
+  memory: 768m
+cryptoupgrade:
+  enabled: true
+  smokeTest: false
+  addSource: ../algorithm/go/wasm/add.wasm
+accounts:
+  signer:
+    address: 0xF5F871aA6Bd253914705898c66251f994aa426FA
+    privateKey: ./signer.key
+    password: "123456"
+    balance: "30000000000000000000000"

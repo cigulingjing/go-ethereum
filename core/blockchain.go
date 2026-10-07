@@ -2255,6 +2255,13 @@ func (bc *BlockChain) ProcessBlock(ctx context.Context, parentRoot common.Hash, 
 		return nil, err
 	}
 	vtime := time.Since(vstart)
+	if stagelog.Enabled() && len(block.Transactions()) > 0 {
+		stagelog.RecordAt(nil, "local_state_root_computed", time.Now(), stagelog.Fields{
+			"blockNumber": block.NumberU64(),
+			"blockHash":   block.Hash().Hex(),
+			"stateRoot":   statedb.IntermediateRoot(bc.chainConfig.IsEIP158(block.Number())).Hex(),
+		})
+	}
 
 	// If witnesses was generated and stateless self-validation requested, do
 	// that now. Self validation should *never* run in production, it's more of

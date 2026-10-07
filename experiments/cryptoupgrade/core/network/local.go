@@ -11,12 +11,13 @@ import (
 
 // LocalConfig 用共享模板描述单机网络，避免手写重复的节点列表。
 type LocalConfig struct {
-	NodeCount     int               `yaml:"nodeCount"`
-	OutputDir     string            `yaml:"outputDir"`
-	HTTPPortBase  int               `yaml:"httpPortBase"`
-	Expose        []HostExposeEntry `yaml:"expose,omitempty"`
-	SignerAccount string            `yaml:"signerAccount"`
-	ExtraArgs     []string          `yaml:"extraArgs,omitempty"`
+	NodeCount       int                          `yaml:"nodeCount"`
+	OutputDir       string                       `yaml:"outputDir"`
+	HTTPPortBase    int                          `yaml:"httpPortBase"`
+	Expose          []HostExposeEntry            `yaml:"expose,omitempty"`
+	SignerAccount   string                       `yaml:"signerAccount"`
+	ExtraArgs       []string                     `yaml:"extraArgs,omitempty"`
+	NodeEnvironment map[string]map[string]string `yaml:"nodeEnvironment,omitempty"`
 }
 
 func (cfg *Config) expandLocal() error {
@@ -62,7 +63,8 @@ func (cfg *Config) expandLocal() error {
 		scalar.Mod(scalar, n).Add(scalar, big.NewInt(1))
 		node := NodeConfig{ID: id, Role: "observer", Datadir: filepath.Join(root, "datadir"),
 			PluginDir: filepath.Join(root, "plugin"), NodeKey: filepath.Join(root, "nodekey"),
-			ExtraArgs: append([]string(nil), local.ExtraArgs...), generatedKey: fmt.Sprintf("%064x", scalar)}
+			ExtraArgs: append([]string(nil), local.ExtraArgs...), Environment: copyEnvironment(local.NodeEnvironment[id]),
+			generatedKey: fmt.Sprintf("%064x", scalar)}
 		if i == 1 {
 			node.Role = "signer"
 			node.Account = local.SignerAccount
@@ -70,4 +72,15 @@ func (cfg *Config) expandLocal() error {
 		cfg.Nodes = append(cfg.Nodes, node)
 	}
 	return nil
+}
+
+func copyEnvironment(values map[string]string) map[string]string {
+	if len(values) == 0 {
+		return nil
+	}
+	cloned := make(map[string]string, len(values))
+	for key, value := range values {
+		cloned[key] = value
+	}
+	return cloned
 }

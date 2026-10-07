@@ -37,7 +37,7 @@ Hongzi He\inst{1} }
 \maketitle
 
 \begin{abstract}
-Smart contracts frequently rely on cryptographic algorithms, yet implementing complex cryptographic computation in Solidity expands it into large sequences of EVM instructions, resulting in substantial execution overhead and gas consumption. Precompiled Contracts reduce these costs by exposing client-side routines at fixed addresses, but they provide no runtime mechanism for evolving an algorithm independently of client releases and coordinated network upgrades. We present EvoCrypt, an upgradeable cryptographic coprocessor framework  that exposes a stable contract-facing interface while executing replaceable WebAssembly (WASM) modules in a controlled client-side runtime. EvoCrypt distributes version metadata on-chain and deterministically activates an installed module at a designated block height, allowing participating nodes to switch algorithm versions consistently. Each invocation is charged according to a deterministic algorithm-level gas schedule associated with the activated version, thereby avoiding the cost of expanding the algorithm into EVM instructions while retaining explicit resource accounting. We implement EvoCrypt in Geth and evaluate it on a 20-node private Clique network configured with zero-period block production to isolate system-level upgrade overhead from the block interval. Measured \emph{network-wide upgrade duration} is the Geth-side time to finish upgrade handling on all evaluated nodes---from RPC submission through receipt observation, event handling, and node-local WASM preparation---and excludes network propagation and consensus delay; under this definition the prototype completes upgrades within 0.54--2.34~ms across the eight evaluated algorithms. EvoCrypt achieves execution latency comparable to Solidity implementations on lightweight algorithms, with up to 48\% lower latency on computation-heavy algorithms.
+Smart contracts frequently rely on cryptographic algorithms, yet implementing complex cryptographic computation in Solidity expands it into large sequences of EVM instructions, resulting in substantial execution overhead and gas consumption. Precompiled Contracts reduce these costs by exposing client-side routines at fixed addresses, but they provide no runtime mechanism for evolving an algorithm independently of client releases and coordinated network upgrades. We present EvoCrypt, an upgradeable cryptographic coprocessor framework  that exposes a stable contract-facing interface while executing replaceable WebAssembly (WASM) modules in a controlled client-side runtime. EvoCrypt distributes version metadata on-chain and deterministically activates an installed module at a designated block height, allowing participating nodes to switch algorithm versions consistently. Each invocation is charged according to a deterministic algorithm-level gas schedule associated with the activated version, thereby avoiding the cost of expanding the algorithm into EVM instructions while retaining explicit resource accounting. We implement EvoCrypt in Geth and evaluate it on a 20-node private network. The experiments show that EvoCrypt improves the efficiency of contract-facing cryptographic upgrades and invocations compared with Solidity-based implementations, while retaining near-Precompiled-Contract execution costs for most benchmark algorithms. EvoCrypt also supports the deployment of complex cryptographic algorithms that are difficult to realize directly in the EVM ecosystem.
 
 \keywords{blockchain \and smart contracts \and upgrade \and WebAssembly}
 \end{abstract}
@@ -56,14 +56,14 @@ The main contributions of this article are summarized as follows.
 \begin{itemize}
     \item First, we design an upgradeable cryptographic coprocessor that separates the stable contract-facing interface from replaceable WASM-based algorithm implementations, allowing complex cryptographic operations to execute outside the EVM while preserving contract compatibility.
     \item Second, we design an activation-block-based upgrade protocol in which upgrade proposals are published on-chain, ensuring that clients derive the same proposal from a common authoritative record. By distributing and verifying a uniform WASM bytecode artifact, the protocol further ensures consistent module execution across clients when the upgrade becomes active.
-    \item Finally, we implement EvoCrypt in Geth and evaluate it on a 20-node private blockchain network. The results show reduced gas execution cost for the evaluated cryptographic operations and demonstrate support for algorithms that are difficult to implement efficiently in Solidity.
+    \item Finally, we implement EvoCrypt in Geth and evaluate it on a 20-node private blockchain network. The results show that EvoCrypt reduces the implementation burden and calling cost of the evaluated cryptographic operations while supporting dynamic evolution of contract-facing algorithms.
 \end{itemize}
 
 \section{Related Work}\label{sec2}
 
 Research on cryptographic algorithm upgrades in blockchain systems has not yet resolved the combined problem of efficient invocation and practical implementation. Related approaches can be organized by the layer at which they support upgrades: protocol and client, contract, or dynamic runtime.
 
-Existing blockchain upgrade schemes primarily replace code at the protocol or client level, where a coordinated version transition preserves a common execution rule across nodes. Cardano's hard-fork combinator moves the chain between protocol eras at designated upgrade points, while work on updatable blockchains studies synchronization between old and new chains \cite{cardanoHardForkCombinator,cardanoEvolution,ciampi2020updatable}. Soft-fork approaches instead place selected policy changes within rules that can be adopted without replacing the entire protocol \cite{zindros2021softPower}. Phoenix extends this direction by embedding upgrade code in blockchain transactions and compiling it at runtime. Polkadot stores WASM-based runtime logic on chain and activates governance-approved replacements during block synchronization \cite{wang2023phoenix,polkadotRuntimeUpgrades}. These approaches support chain-wide or client-wide evolution, but they require protocol coordination and place the replacement boundary across a substantial portion of system execution.
+Existing blockchain upgrade schemes primarily replace code at the protocol or client level, where a coordinated version transition preserves a common execution rule across nodes. Cardano's hard-fork combinator moves the chain between protocol eras at designated upgrade points, while work on updatable blockchains studies synchronization between old and new chains \cite{cardanoHardForkCombinator,cardanoEvolution,ciampi2020updatable}. Soft-fork approaches instead place selected policy changes within rules that can be adopted without replacing the entire protocol \cite{zindros2021softPower}. Phoenix and Polkadot are closest to EvoCrypt in that both support live replacement. Phoenix carries upgrade code in blockchain transactions and compiles it at runtime, whereas Polkadot stores governance-approved WASM runtime logic on chain and replaces the state-transition logic during block synchronization \cite{wang2023phoenix,polkadotRuntimeUpgrades}. Their replacement targets are nevertheless different from contract-facing cryptographic algorithms. These systems mainly upgrade blockchain-client or chain-runtime components; they do not define how a smart contract names an algorithm, binds to a compatible input-output interface, pays invocation cost, and selects a new algorithm version at a block height without redeploying the calling contract. EvoCrypt narrows the replacement boundary to individual cryptographic modules behind a stable Solidity-facing interface. In this design, WASM is an algorithm artifact rather than a whole-chain runtime, and consistency is derived from hash-identified module metadata, activation height, and per-algorithm resource parameters.
 
 Contract-level schemes update application logic without replacing the entire blockchain client, using deployable contracts, proxy indirection, or bytecode rewriting. EVMPatch patches deployed Ethereum smart contracts through bytecode rewriting and proxy-based deployment, while Solidity implementations offer application-level flexibility within the EVM \cite{rodler2021evmpatch,ethereumEVM}. LEAGAN extends contract-level upgradeability through data separation, incremental hashing, revision control, and status-contract-based version management \cite{kumar2025leagan}. Precompiled Contracts provide a complementary client-side path for selected cryptographic routines through reserved EVM-facing addresses \cite{evmCodesPrecompiled,eip196,eip197}. Contract-level implementations remain constrained by EVM execution cost and state or interface compatibility, whereas adding or replacing a Precompiled Contract normally requires changes to client and protocol rules.
 
@@ -135,7 +135,7 @@ When a selected version is not yet prepared, the node reloads its authoritative 
 \begin{figure}[!tb]
 \centering
 \includegraphics[width=\textwidth]{../image/upgrade_protocol.pdf}
-\caption{Node-local preparation and deterministic network-wide activation of an EvoCrypt upgrade.}
+\caption{Node-local preparation and deterministic activation of an EvoCrypt upgrade.}
 \label{fig:upgrade-protocol}
 \end{figure}
 
@@ -206,16 +206,16 @@ With this fixed-plus-length form, every node that resolves the same $v^{*}(a,b)$
 
 This chapter establishes the security boundaries of EvoCrypt under explicit trust assumptions. It explains how canonical metadata and deterministic version selection support upgrade and invocation consistency, and how the WASM runtime limits host-resource exposure while preserving online governance.
 
-\subsection{Security Model and Assumptions}\label{sec4.1}
-The security model covers the blockchain, the Management Contract state, and the node-local coprocessor. For an algorithm $a$ and version $v$, let $\mu_{a,v}$ denote the authoritative metadata record, let $C_{a,v}$ denote its encoded WASM bytecode, let $h_{a,v}$ denote the recorded module hash, let $H_{a,v}$ denote the Activation Block, and let $v^{*}(a,b)$ be the version selected at execution height $b$ according to~\eqref{eq:version-select}. Security claims concern honest nodes that execute the same canonical chain and therefore observe the same committed Management Contract state.
+\subsection{Security Model}\label{sec4.1}
+The security model considers a private blockchain maintained by multiple nodes that implement the EvoCrypt framework, including the Management Contract state and each node-local coprocessor. For an algorithm $a$ and version $v$, let $\mu_{a,v}$ denote the authoritative metadata record, let $C_{a,v}$ denote its encoded WASM bytecode, let $h_{a,v}$ denote the recorded module hash, let $H_{a,v}$ denote the Activation Block, and let $v^{*}(a,b)$ be the version selected at execution height $b$ according to~\eqref{eq:version-select}. Security claims concern honest nodes that execute the same canonical chain and therefore observe the same committed Management Contract state.
 
 Each admitted proposal is assumed to be registered in the canonical Management Contract state before its Activation Block. The record includes the algorithm metadata, bytecode reference, gas parameters, ABI descriptors, and Activation Block. Activation therefore selects a proposal already present in the committed history rather than registering or modifying one at the height at which it becomes active.
 
 Four conditions define the trusted base. The underlying consensus protocol provides a common canonical chain to honest nodes. The committee correctly authorizes upgrades and reviews both the algorithm implementation and its gas schedule before admitting metadata. $\mathrm{Keccak256}$ is collision resistant. Finally, the configured WASM Runtime and controlled host interface implement deterministic ABI handling, WASM execution, host-interface responses, and initial instance state while enforcing resource limits, import validation, and error semantics. The runtime does not expose uncontrolled external state or host capabilities that can affect execution.
 
-The adversary may choose arbitrary contract inputs, observe upgrade events, exploit asynchronous node-local preparation, and submit malformed or resource-intensive upgrade candidates, but admission remains subject to committee review and node-side validation. The model excludes a compromised Geth binary, a broken consensus protocol, a captured committee, failure of the designated implementation review, and a cryptographic primitive whose mathematical assumption is false. These assumptions define the claim boundary; EvoCrypt does not establish them.
+The adversary may choose arbitrary contract inputs, observe upgrade events, exploit asynchronous node-local preparation, and submit malformed or resource-intensive upgrade candidates, but admission remains subject to committee review and node-side validation. The model excludes a compromised Geth binary, a broken consensus protocol, a captured committee, failure of the designated implementation review, and a cryptographic primitive whose mathematical assumption is false.
 
-\subsection{Upgrade Security and Core Properties}\label{sec4.2}
+\subsection{Upgrade Security}\label{sec4.2}
 
 \begin{lemma}[Module binding]
 Suppose an honest node prepares bytecode $\widehat{C}$ for version $(a,v)$ and accepts it only after checking $\mathrm{Keccak256}(\widehat{C})=h_{a,v}$. Under collision resistance, $\widehat{C}$ is computationally bound to the bytecode identified by the authoritative hash record. The hash check does not bind the ABI descriptors, gas parameters, or Activation Block: these fields are obtained from the authoritative Management Contract state and are interpreted by the version-selection rule.
@@ -262,13 +262,15 @@ A module can affect its environment only through its own linear memory and the h
 \hfill$\square$
 \end{proof}
 
-\subsection{Online Governance and Security Boundaries}\label{sec4.4}
-\paragraph{Upgrade agility.}
-After preparation succeeds, each honest node processing a block at or after the revision's activation height uses the revision selected by the canonical version-selection rule. The same online governance path can update both the algorithm implementation and its gas parameters. No Geth restart is required because the runtime loads and activates the prepared module at execution time rather than requiring the implementation to be rebuilt into the client binary.
+\subsection{Governed Security Maintenance}\label{sec4.4}
 
-The governance claim is conditional. The analysis does not establish committee honesty, governance liveness when preparation cannot complete, end-to-end denial-of-service resistance, semantic equivalence between an uploaded module and its intended cryptographic specification, or security against a compromised client binary. The proofs establish consistency and conditional isolation under the stated assumptions, not cryptographic correctness of an approved implementation.
+EvoCrypt treats cryptographic evolution as a governed control action rather than an unconstrained runtime replacement. The upgrade protocol records the admitted algorithm version, WASM hash, ABI descriptors, gas parameters, and Activation Block in the Management Contract state. This on-chain control plane allows honest nodes to check the same governance decision before the corresponding version becomes callable.
 
-Collectively, the results give EvoCrypt a bounded security argument. Authoritative on-chain metadata and Activation-Block selection prevent version divergence under a common chain view. Deterministic runtime conditions extend consistency from version selection to invocation outcomes and EVM state transitions. The WASM boundary provides conditional host-resource isolation, while the governance path supports online algorithm and gas-schedule revisions without a client restart.
+This mechanism supports security maintenance in three ways. First, gas parameters can be revised through a new admitted version when an earlier schedule underprices resource consumption or overprices legitimate use. Second, an unsuitable, obsolete, or vulnerable implementation can be superseded by a later version whose bytecode is bound to a new hash and activated at a designated block height. Third, an algorithm can be deprecated by governance policy so that future invocations no longer route to the obsolete version after the replacement becomes active.
+
+These properties do not prove that every admitted algorithm is cryptographically secure or economically well priced. They ensure that, once governance admits a correction, honest nodes have a deterministic and verifiable mechanism for applying it. The security boundary therefore depends on committee authorization, implementation review, and gas-schedule assessment, while EvoCrypt provides the protocol machinery that makes corrective actions consistent across participating nodes.
+
+Collectively, the results give EvoCrypt a bounded security argument. Authoritative on-chain metadata and Activation-Block selection prevent version divergence under a common chain view. Deterministic runtime conditions extend consistency from version selection to invocation outcomes and EVM state transitions. The WASM boundary provides conditional host-resource isolation, while the governed upgrade path supports algorithm replacement, gas-schedule revision, and deprecation of unsuitable algorithms without a client restart.
 
 \section{Evaluation}\label{sec5}
 
@@ -276,11 +278,9 @@ This evaluation asks whether EvoCrypt makes upgradeable cryptographic algorithms
 
 \subsection{Implementation}\label{sec5.1}
 
-Experiments used a Geth-based private Clique network running modified Geth v1.17.5-unstable, built with Go 1.25.7. Solidity contracts were compiled with solc 0.8.26, and WASM modules were built with TinyGo 0.42.0. Host hardware specifications remain to be recorded for full reproducibility.
+Experiments used a Geth-based private Clique network running modified Geth v1.17.5-unstable on a 16-core, 32~GB Aliyun server with Ubuntu 24.04 LTS, built with Go 1.25.7. Solidity contracts were compiled with solc 0.8.26, and WASM modules were built with TinyGo 0.42.0.
 
-The \emph{network-wide upgrade duration} is the control-client-observable Geth-side setup time from upgrade submission until all evaluated nodes finish upgrade handling and the new algorithm is callable. The interval includes RPC submission, receipt observation, event handling, and node-local WASM preparation on each node, but excludes network propagation beyond the measured RPC path, consensus delay, and block-production waiting. With \texttt{period=0}, the network does not enforce an inter-block interval, so the metric reflects client-side upgrade processing rather than Clique block spacing.
-
-Table~\ref{tab:eval-algorithms} summarizes the eight contract-facing algorithms, their source or compiled artifact sizes on the three benchmark paths, and their cryptographic roles. Go source (B) denotes the reference implementation source size used by the Precompiled Contract path; WASM bytecode (B) denotes the uploaded module payload compiled from the same reference logic; Solidity runtime (B) denotes the compiled runtime bytecode of the deployed benchmark contract. The Go column therefore reports source size because the Precompiled Contract implementation is statically integrated into the client and does not produce an isolated, per-algorithm deployable artifact. These columns characterize implementation and deployment footprint rather than a strict binary-size comparison across all three paths. For Dh2048Secret and PedersenCommit, the Solidity runtime values include the linked shared modular-arithmetic library (8{,}524~B); estimated gas in Section~\ref{sec5.3} reflects the fully linked contracts. Add is a non-cryptographic baseline; the remaining algorithms cover hashes, key derivation, key exchange, commitments, signature verification, and finite-field polynomial multiplication.
+Table~\ref{tab:eval-algorithms} summarizes the eight contract-facing algorithms, their source or compiled artifact sizes on the three benchmark paths, and their cryptographic roles. Go source (B) denotes the reference implementation source size used by the Precompiled Contract path; WASM bytecode (B) denotes the uploaded module payload compiled from the same reference logic; Solidity runtime (B) denotes the compiled runtime bytecode of the deployed benchmark contract. The Go column therefore reports source size because the Precompiled Contract implementation is statically integrated into the client and does not produce an isolated, per-algorithm deployable artifact. These columns characterize implementation and deployment footprint rather than a strict binary-size comparison across all three paths. For Dh2048Secret and PedersenCommit, the Solidity runtime values include the linked shared modular-arithmetic library (8{,}524~B); estimated gas in Section~\ref{sec5.4} reflects the fully linked contracts. Add is a non-cryptographic baseline; the remaining algorithms cover hashes, key derivation, key exchange, commitments, signature verification, and finite-field polynomial multiplication.
 
 \begin{table}[ht]
 \centering
@@ -304,48 +304,66 @@ SchnorrVerify & 2{,}171 & 95{,}960 & 4{,}233 & Signature verification \\
 \par\smallskip\noindent\textsuperscript{\ensuremath{\dagger}}\scriptsize Solidity runtime bytecode includes the shared modular-arithmetic library linked at deployment.\normalsize
 \end{table}
 
-Upgrade efficiency is measured by comparing the coprocessor upgrade path with Solidity contract deployment using mean setup latency. Execution efficiency is measured across EvoCrypt, Solidity, and Precompiled Contract paths after setup. The Precompiled Contract path uses the corresponding client-side implementations summarized in Table~\ref{tab:eval-algorithms}. Estimated gas denotes the gas estimate for a contract-facing call, not receipt-level \texttt{gasUsed}.
+Upgrade efficiency is measured by comparing the coprocessor upgrade path with Solidity contract deployment using mean setup latency. Execution efficiency is measured by algorithm execution time across EvoCrypt, Solidity, and Precompiled Contract paths after setup. The Precompiled Contract path uses the corresponding client-side implementations summarized in Table~\ref{tab:eval-algorithms}. Estimated gas denotes the gas estimate for a contract-facing call, not receipt-level \texttt{gasUsed}.
 
 \subsection{Upgrade Efficiency}\label{sec5.2}
 
-Upgrade efficiency was measured by comparing the latency of making an algorithm callable through the coprocessor path with deploying an equivalent Solidity implementation. Figure~\ref{fig:upgrade-latency} reports mean setup latency across all eight algorithms. The Precompiled Contract path is omitted because it requires no separate upload or deployment step in this setup.
+Upgrade efficiency was measured by comparing the latency of making an algorithm callable through the coprocessor path with deploying an equivalent Solidity implementation. Figure~\ref{fig:upgrade-efficiency} reports mean setup latency and estimated upgrade gas across all eight algorithms. The Precompiled Contract path is omitted because it requires no separate upload or deployment step in this setup.
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[width=0.92\textwidth]{../image/figure_upgrade_latency_comparison.pdf}
-\caption{Mean upgrade latency (ms) across the evaluated algorithms.}
-\label{fig:upgrade-latency}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{../image/figure_upgrade_latency_comparison.pdf}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{../image/figure_upgrade_gas_comparison.pdf}
+\end{minipage}
+\caption{Upgrade efficiency comparison. Left: mean setup latency; right: estimated gas for EvoCrypt upgrades and Solidity contract deployment.}
+\label{fig:upgrade-efficiency}
 \end{figure}
 
-The two paths were similar for lightweight algorithms. EvoCrypt required less setup time than Solidity for the heavier algorithms in the evaluated suite. For example, Add required 0.60~ms through EvoCrypt and 0.37~ms through Solidity, whereas SchnorrVerify required 2.34~ms and 4.30~ms, respectively. These measurements indicate that the coprocessor can make an algorithm callable without deploying a full Solidity implementation. Its setup path remained comparable to contract deployment for lightweight algorithms. The metric is the network-wide upgrade duration defined in Section~\ref{sec5.1}. It covers Geth-side handling on all evaluated nodes and excludes network propagation, consensus delay, and unrelated-traffic availability.
+The two paths were similar for lightweight algorithms. EvoCrypt required less setup time than Solidity for the heavier algorithms in the evaluated suite. For example, Add required 0.60~ms through EvoCrypt and 0.37~ms through Solidity, whereas SchnorrVerify required 2.34~ms and 4.30~ms, respectively. As shown in Figure~\ref{fig:upgrade-efficiency}, EvoCrypt incurred slightly higher upgrade gas than Solidity contract deployment in the evaluated setup. These measurements indicate that the coprocessor can make an algorithm callable without deploying a full Solidity implementation, thereby reducing the development burden of exposing complex cryptography to smart contracts. Its setup path remained comparable to contract deployment for lightweight algorithms. 
 
-\subsection{Execution Efficiency}\label{sec5.3}
+\subsection{Upgrade Consistency}\label{sec5.3}
 
-Steady-state invocation cost was evaluated after each algorithm became callable. Figure~\ref{fig:execution-latency} compares mean invocation latency across EvoCrypt, Solidity, and Precompiled Contract paths; Figure~\ref{fig:execution-gas} compares estimated gas for EvoCrypt and the Precompiled Contract path. Measurements used warm-up calls followed by repeated \texttt{eth\_call} requests on the private-chain prototype.
-
-The Precompiled Contract path was the fastest path across the evaluated algorithms. EvoCrypt remained close to Solidity on lightweight algorithms, but was faster than Solidity on the heavier cryptographic algorithms while remaining slower than the Precompiled Contract path. For the lightweight set, EvoCrypt latency was 0.50--0.62~ms. For SchnorrVerify, the corresponding means were 3.67~ms for EvoCrypt, 4.33~ms for Solidity, and 1.26~ms for the Precompiled Contract path. Thus, the relative performance of EvoCrypt depended on algorithm complexity rather than following a single ordering across all algorithms. The reported invocation latency values are means measured after warm-up on the evaluated private-chain prototype.
+The consistency experiment showed that the evaluated nodes followed the same activation decision after an upgrade was registered, even though event handling and WASM preparation remained node-local. As illustrated in Figure~\ref{fig:consistency-scene}, the upgrade transaction records version metadata on chain, nodes prepare the corresponding WASM module, and invocations at or after the Activation Block resolve to the same active version through the canonical version-selection rule. In the evaluated 20-node private Clique network, complete Geth-side upgrade handling finished within 0.54--2.34~ms across the eight algorithms, and the observed activation path produced a common callable version after preparation completed on all evaluated nodes. This supports the intended consistency property of EvoCrypt: local readiness affects preparation timing, whereas version selection is fixed by shared on-chain metadata and block height rather than local event timing. The experiment is nevertheless a controlled private-network validation; it does not measure wide-area propagation, adversarial scheduling, consensus delay under nonzero block periods, or governance failures.
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[width=0.92\textwidth]{../image/figure_execution_latency_comparison.pdf}
-\caption{Mean invocation latency (ms) for EvoCrypt, Solidity, and Precompiled Contract implementations.}
-\label{fig:execution-latency}
+\includegraphics[width=\textwidth]{../image/consistence_scene.pdf}
+\caption{Consistency of activation-block-based upgrade handling across nodes, including late-joining synchronization, preparation, and ready events.}
+\label{fig:consistency-scene}
 \end{figure}
 
-Estimated gas was compared between the Precompiled Contract and EvoCrypt paths. SchnorrVerify illustrates the measured difference: the estimate was 2,301,691 gas for the Precompiled Contract path and 229,437 gas for EvoCrypt. For lightweight algorithms, the two paths remained within 13--15\% of each other. These values represent experimental gas estimates for the two evaluated paths; they do not establish a calibrated economic schedule or a general magnitude of gas savings. The reported quantity is an estimate, not receipt-level \texttt{gasUsed}, and the registered prices are experimental parameters.
+\subsection{Execution Efficiency}\label{sec5.4}
+
+Steady-state execution cost was evaluated after each algorithm became callable. Figure~\ref{fig:execution-efficiency} compares mean algorithm execution time across EvoCrypt, Solidity, and Precompiled Contract paths and estimated gas for EvoCrypt and the Solidity path. Measurements used warm-up runs followed by repeated executions on the private-chain prototype.
+
+The Precompiled Contract path had the shortest algorithm execution time across the evaluated algorithms. EvoCrypt remained close to Solidity on lightweight algorithms, but was faster than Solidity on the heavier cryptographic algorithms while remaining slower than the Precompiled Contract path. For the lightweight set, EvoCrypt execution time was 0.50--0.62~ms. For SchnorrVerify, the corresponding means were 3.67~ms for EvoCrypt, 4.33~ms for Solidity, and 1.26~ms for the Precompiled Contract path. Thus, the relative performance of EvoCrypt depended on algorithm complexity rather than following a single ordering across all algorithms. The reported values are mean algorithm execution times measured after warm-up on the evaluated private-chain prototype.
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[width=0.92\textwidth]{../image/figure_execution_gas_comparison.pdf}
-\caption{Estimated gas for EvoCrypt and Precompiled Contract invocations.}
-\label{fig:execution-gas}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{../image/figure_execution_latency_comparison.pdf}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{../image/figure_execution_gas_comparison.pdf}
+\end{minipage}
+\caption{Execution efficiency comparison. Left: mean algorithm execution time; right: estimated gas for EvoCrypt and Solidity invocations.}
+\label{fig:execution-efficiency}
 \end{figure}
 
-Complex-algorithm testing addressed the tension between deployment flexibility and EVM cost. The selected algorithms include post-quantum signatures and pairing-based zero-knowledge proof systems that are substantially more demanding than the regular contract-facing benchmark suite. We evaluated two dimensions: whether the algorithms could be uploaded, prepared, and invoked through a stable interface without a client modification, and what execution cost resulted relative to corresponding Precompiled Contract implementations. Table~\ref{tab:complex-algorithms} reports invocation time and uploaded WASM size; times are in milliseconds and module sizes are in bytes.
+Estimated gas was compared between the Solidity and EvoCrypt paths to assess contract-facing calling cost under the experimental schedule. SchnorrVerify illustrates the measured difference: the estimate was 2,301,691 gas for the Solidity path and 229,437 gas for EvoCrypt. For lightweight algorithms, the two paths remained within 13--15\% of each other. These values show that moving complex cryptographic logic out of EVM bytecode can reduce the evaluated calling cost, but they do not establish a calibrated economic schedule or a general magnitude of gas savings. The reported quantity is an estimate, not receipt-level \texttt{gasUsed}, and the registered prices are experimental parameters.
+
+Complex-algorithm testing addressed the tension between deployment flexibility and EVM cost. The selected algorithms include post-quantum signatures and pairing-based zero-knowledge proof systems that are substantially more demanding than the regular contract-facing benchmark suite. We evaluated two dimensions: whether the algorithms could be uploaded, prepared, and invoked through a stable interface without a client modification, and what execution cost resulted relative to corresponding Precompiled Contract implementations. Table~\ref{tab:complex-algorithms} reports algorithm execution time and uploaded WASM size; times are in milliseconds and module sizes are in bytes.
 
 \begin{table}[!t]
 \centering
-\caption{Invocation latency and uploaded WASM size for computationally intensive cryptographic algorithms.\label{tab:complex-algorithms}}
+\caption{Algorithm execution time and uploaded WASM size for computationally intensive cryptographic algorithms.\label{tab:complex-algorithms}}
 \small
 \setlength{\tabcolsep}{4pt}
 \begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}Xrrr@{}}
@@ -362,15 +380,15 @@ Groth16Verify/BN254 & 25.532 & 3.172 & 580,975 \\
 \end{tabularx}
 \end{table}
 
-EvoCrypt executed all algorithms in the stress experiment, including algorithms whose complexity and implementation size place them beyond practical direct Solidity realization in the evaluated setting and that are not present in the evaluated Precompiled Contract catalog. Successful execution supports the deployment-flexibility claim: such algorithms can be made callable through a stable interface without modifying the client for each algorithm.
+EvoCrypt executed all algorithms in the stress experiment, including algorithms whose complexity and implementation size place them beyond practical direct Solidity realization in the evaluated setting and that are not present in the evaluated Precompiled Contract catalog. Successful execution supports the deployment-flexibility claim: such algorithms can be made callable through a stable interface without modifying the client for each algorithm. Together with the upgrade mechanism, this result shows how EvoCrypt supports smart-contract-side cryptographic evolution rather than binding contracts to a fixed client-side algorithm catalog.
 
-A clear cost boundary remains. EvoCrypt latency was 1.3--25.1$\times$ the corresponding Precompiled Contract latency, with the largest gap occurring for Groth16Verify/BLS12-381. EvoCrypt therefore addresses a deployment trade-off rather than providing a universal performance advantage. When a suitable Precompiled Contract already exists, the Precompiled Contract path remains preferable for execution efficiency.
+A clear cost boundary remains. EvoCrypt execution time was 1.3--25.1$\times$ the corresponding Precompiled Contract execution time, with the largest gap occurring for Groth16Verify/BLS12-381. EvoCrypt therefore addresses a deployment trade-off rather than providing a universal performance advantage. When a suitable Precompiled Contract already exists, the Precompiled Contract path remains preferable for execution efficiency.
 
 \section{Conclusion}\label{sec6}
 
 EvoCrypt addresses the problem of evolving contract-facing cryptographic capabilities without embedding complex algorithms in EVM bytecode or modifying the client for every update. Its design separates the stable contract-facing interface from replaceable client-side WASM implementations, while deterministic version selection and algorithm-level accounting preserve consistent invocation rules.
 
-Three bounded conclusions follow from the evaluated prototype. EvoCrypt provides an upgrade path with setup latency comparable to Solidity deployment for the evaluated algorithms, reports lower invocation gas estimates than the evaluated Precompiled Contract path under the experimental schedule, and makes complex algorithms callable when direct EVM realization is impractical. Execution remains slower than suitable Precompiled Contracts, and the current gas parameters are not economically calibrated. Future work will refine resource pricing and evaluate broader deployment and security conditions.
+Three bounded conclusions follow from the evaluated prototype. EvoCrypt lowers the implementation burden by moving complex cryptographic logic out of Solidity and into replaceable WASM modules, reduces the evaluated calling cost under the experimental gas schedule, and provides a dynamic upgrade mechanism that lets smart contracts evolve their cryptographic capabilities without changing their contract-facing interface. Algorithm execution remains slower than suitable Precompiled Contracts, and the current gas parameters are not economically calibrated. Future work will refine resource pricing and evaluate broader deployment and security conditions.
 
 
 \bibliographystyle{splncs04}

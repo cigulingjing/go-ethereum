@@ -14,4 +14,6 @@ tests/testdata
 .git
 cryptoupgrade/results
 experiments/cryptoupgrade/results
+# Rendered experiment nodes are runtime state and may be root-owned by Docker.
+experiments/cryptoupgrade/output
 paper

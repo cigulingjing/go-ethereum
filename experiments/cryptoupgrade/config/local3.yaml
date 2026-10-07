@@ -1,0 +1,35 @@
+local:
+  nodeCount: 3
+  outputDir: ../output/network/local3
+  httpPortBase: 8761
+  signerAccount: signer
+  extraArgs: [--cache, "128"]
+  expose:
+    - {node: node1, httpHostPort: 8761}
+    - {node: node2, httpHostPort: 8762}
+    - {node: node3, httpHostPort: 8763}
+network:
+  name: cryptoupgrade-local3
+  chainId: 11223344
+  networkId: 11223344
+  gasLimit: 30000000
+  peerTopology: full
+consensus:
+  type: clique
+  period: 2
+  epoch: 30000
+docker:
+  image: cryptoupgrade-geth:lab
+  networkName: cryptoupgrade-local3
+  cpus: "0.50"
+  memory: 768m
+cryptoupgrade:
+  enabled: true
+  smokeTest: false
+  addSource: ../algorithm/go/wasm/add.wasm
+accounts:
+  signer:
+    address: 0xF5F871aA6Bd253914705898c66251f994aa426FA
+    privateKey: ./signer.key
+    password: "123456"
+    balance: "30000000000000000000000"
