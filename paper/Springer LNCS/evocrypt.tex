@@ -490,7 +490,7 @@ Aigis-Sig2Verify & 1.299 & 1.030 & 72,213 \\
 Dilithium3Verify & 1.589 & 1.100 & 26,679 \\
 ML-DSA-65Verify & 1.565 & 1.052 & 70,422 \\
 SLH-DSA-SHAKE-192fVerify & 19.458 & 6.241 & 19,339 \\
-Groth16Verify/BLS12-381 & 156.138 & 6.227 & 139,279 \\
+Groth16Verify/BLS12-381 & 56.138 & 6.227 & 139,279 \\
 Groth16Verify/BN254 & 25.532 & 3.172 & 580,975 \\
 \bottomrule
 \end{tabularx}
@@ -498,7 +498,7 @@ Groth16Verify/BN254 & 25.532 & 3.172 & 580,975 \\
 
 EvoCrypt executed all algorithms in the stress experiment, including algorithms whose complexity and implementation size place them beyond practical direct Solidity realization in the evaluated setting and that are not present in the evaluated Precompiled Contract catalog. Successful execution supports the deployment-flexibility claim: such algorithms can be made callable through a stable interface without modifying the client for each algorithm. Together with the upgrade mechanism, this result shows how EvoCrypt supports smart-contract-side cryptographic evolution rather than binding contracts to a fixed client-side algorithm catalog.
 
-A clear cost boundary remains. EvoCrypt execution time was 1.3--25.1$\times$ the corresponding Precompiled Contract execution time, with the largest gap occurring for Groth16Verify/BLS12-381. EvoCrypt therefore addresses a deployment trade-off rather than providing a universal performance advantage. When a suitable Precompiled Contract already exists, the Precompiled Contract path remains preferable for execution efficiency.
+A clear cost boundary remains. EvoCrypt execution time was 1.3--9.0$\times$ the corresponding Precompiled Contract execution time, with the largest gap occurring for Groth16Verify/BLS12-381. EvoCrypt therefore addresses a deployment trade-off rather than providing a universal performance advantage. When a suitable Precompiled Contract already exists, the Precompiled Contract path remains preferable for execution efficiency.
 
 \section{Conclusion}\label{sec6}
 

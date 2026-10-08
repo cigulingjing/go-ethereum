@@ -5,15 +5,14 @@
 
 \bibitem{ajmani2006modular}
 Ajmani, S., Liskov, B., Shrira, L.: Modular software upgrades for distributed
-  systems. In: Thomas, D. (ed.) ECOOP 2006 -- Object-Oriented Programming.
-  Lecture Notes in Computer Science, vol.~4067, pp. 452--476. Springer, Berlin,
-  Heidelberg (2006). \doi{10.1007/11785477_26}
+  systems. In: Thomas, D. (ed.) 2006 European Conference on Object-Oriented
+  Programming. Lecture Notes in Computer Science, vol.~4067, pp. 452--476.
+  Springer, Berlin, Heidelberg (2006)
 
 \bibitem{baresi2017versionConsistency}
 Baresi, L., Ghezzi, C., Ma, X., Panzica La~Manna, V.: Efficient dynamic updates
   of distributed components through version consistency. IEEE Transactions on
-  Software Engineering  \textbf{43}(4),  340--358 (2017).
-  \doi{10.1109/TSE.2016.2592915}
+  Software Engineering  \textbf{43}(4),  340--358 (2017)
 
 \bibitem{eip197}
 Buterin, V., Reitwiessner, C.: {EIP-197}: Precompiled contracts for optimal ate
@@ -28,9 +27,9 @@ Buterin, V., Reitwiessner, C.: {EIP-197}: Precompiled contracts for optimal ate
 
 \bibitem{ciampi2020updatable}
 Ciampi, M., Karayannidis, N., Kiayias, A., Zindros, D.: Updatable blockchains.
-  In: Chen, L., Li, N., Liang, K., Schneider, S.A. (eds.) Computer Security --
-  ESORICS 2020. Lecture Notes in Computer Science, vol. 12309, pp. 590--609.
-  Springer, Cham (2020). \doi{10.1007/978-3-030-59013-0_29}
+  In: Chen, L., Li, N., Liang, K., Schneider, S.A. (eds.) 2020 European
+  Symposium on Research in Computer Security. Lecture Notes in Computer
+  Science, vol. 12309, pp. 590--609. Springer, Cham (2020)
 
 \bibitem{ethereumEVM}
 {Ethereum.org}: Ethereum virtual machine ({EVM}).
@@ -42,22 +41,21 @@ Ciampi, M., Karayannidis, N., Kiayias, A., Zindros, D.: Updatable blockchains.
 
 \bibitem{garay2015backbone}
 Garay, J.A., Kiayias, A., Leonardos, N.: The bitcoin backbone protocol:
-  Analysis and applications. In: Oswald, E., Fischlin, M. (eds.) Advances in
-  Cryptology -- EUROCRYPT 2015, Part II. Lecture Notes in Computer Science,
-  vol.~9057, pp. 281--310. Springer, Berlin, Heidelberg (2015).
-  \doi{10.1007/978-3-662-46803-6_10}
+  Analysis and applications. In: Oswald, E., Fischlin, M. (eds.) 2015 Annual
+  International Conference on the Theory and Applications of Cryptographic
+  Techniques, Part II. Lecture Notes in Computer Science, vol.~9057, pp.
+  281--310. Springer, Berlin, Heidelberg (2015)
 
 \bibitem{grover1996}
 Grover, L.K.: A fast quantum mechanical algorithm for database search. In:
-  Proceedings of the Twenty-Eighth Annual ACM Symposium on Theory of Computing.
-  pp. 212--219. Association for Computing Machinery, New York, NY, USA (1996).
-  \doi{10.1145/237814.237866}
+  Proceedings of the 28th Annual ACM Symposium on Theory of Computing. pp.
+  212--219. Association for Computing Machinery, New York, NY, USA (1996)
 
 \bibitem{huang2021pylive}
 Huang, H., Xiang, C., Zhong, L., Zhou, Y.: {PYLIVE}: On-the-fly code change for
-  python-based online services. In: 2021 USENIX Annual Technical Conference
-  (USENIX ATC 21). pp. 349--363. USENIX Association, Berkeley, CA, USA (2021),
-  \url{https://www.usenix.org/conference/atc21/presentation/huang}
+  python-based online services. In: Proceedings of the 2021 USENIX Annual
+  Technical Conference. pp. 349--363. USENIX Association, Berkeley, CA, USA
+  (2021)
 
 \bibitem{cardanoHardForkCombinator}
 {Input Output}: Combinator makes easy work of hard forks.
@@ -67,8 +65,7 @@ Huang, H., Xiang, C., Zhong, L., Zhou, Y.: {PYLIVE}: On-the-fly code change for
 \bibitem{kumar2025leagan}
 Kumar, G., Saha, R., Conti, M., Buchanan, W.J.: {LEAGAN}: A decentralized
   version-control framework for upgradeable smart contracts. IEEE Transactions
-  on Services Computing  \textbf{18}(3),  1529--1542 (2025).
-  \doi{10.1109/TSC.2025.3562323}
+  on Services Computing  \textbf{18}(3),  1529--1542 (2025)
 
 \bibitem{nakamoto2008bitcoin}
 Nakamoto, S.: Bitcoin: A peer-to-peer electronic cash system.
@@ -82,9 +79,9 @@ Nakamoto, S.: Bitcoin: A peer-to-peer electronic cash system.
 \bibitem{pina2019mvedsua}
 Pina, L., Andronidis, A., Hicks, M., Cadar, C.: {MVEDSUA}: Higher availability
   dynamic software updates via multi-version execution. In: Proceedings of the
-  Twenty-Fourth International Conference on Architectural Support for
-  Programming Languages and Operating Systems. pp. 573--585. Association for
-  Computing Machinery, New York, NY, USA (2019). \doi{10.1145/3293882.3330551}
+  24th International Conference on Architectural Support for Programming
+  Languages and Operating Systems. pp. 573--585. Association for Computing
+  Machinery, New York, NY, USA (2019)
 
 \bibitem{polkadotRuntimeUpgrades}
 {Polkadot}: Runtime upgrades.
@@ -99,26 +96,25 @@ Reitwiessner, C.: {EIP-196}: Precompiled contracts for addition and scalar
 
 \bibitem{rodler2021evmpatch}
 Rodler, M., Li, W., Karame, G.O., Davi, L.: {EVMPatch}: Timely and automated
-  patching of ethereum smart contracts. In: 30th USENIX Security Symposium
-  (USENIX Security 21). pp. 1289--1306. USENIX Association, Berkeley, CA, USA
-  (2021),
-  \url{https://www.usenix.org/conference/usenixsecurity21/presentation/rodler}
+  patching of ethereum smart contracts. In: Proceedings of the 30th USENIX
+  Security Symposium. pp. 1289--1306. USENIX Association, Berkeley, CA, USA
+  (2021)
 
 \bibitem{rogaway2006ignorance}
 Rogaway, P.: Formalizing human ignorance: Collision-resistant hashing without
-  the keys. In: Nguyen, P.Q. (ed.) Progress in Cryptology -- VIETCRYPT 2006.
-  Lecture Notes in Computer Science, vol.~4341, pp. 211--228. Springer, Berlin,
-  Heidelberg (2006). \doi{10.1007/11958239_14}
+  the keys. In: Nguyen, P.Q. (ed.) 2006 International Conference on Cryptology
+  in Vietnam. Lecture Notes in Computer Science, vol.~4341, pp. 211--228.
+  Springer, Berlin, Heidelberg (2006)
 
 \bibitem{shor1999}
 Shor, P.W.: Polynomial-time algorithms for prime factorization and discrete
   logarithms on a quantum computer. SIAM Review  \textbf{41}(2),  303--332
-  (1999). \doi{10.1137/S0036144598347011}
+  (1999)
 
 \bibitem{wang2023phoenix}
 Wang, C., Li, P., Fan, X., Tang, Z., Zeng, Y., Sakurai, K.: Phoenix: A live
   upgradable blockchain client. IEEE Transactions on Sustainable Computing
-  \textbf{8}(4),  703--714 (2023). \doi{10.1109/TSUSC.2023.3282586}
+  \textbf{8}(4),  703--714 (2023)
 
 \bibitem{woodEthereumYellowPaper}
 Wood, G.: Ethereum: A secure decentralised generalised transaction ledger.
@@ -133,22 +129,21 @@ Wood, G.: Ethereum: A secure decentralised generalised transaction ledger.
 \bibitem{zhang2018kylinx}
 Zhang, Y., Crowcroft, J., Li, D., Zhang, C., Li, H., Wang, Y., Yu, K., Xiong,
   Y., Chen, G.: {KylinX}: A dynamic library operating system for simplified and
-  efficient cloud virtualization. In: 2018 USENIX Annual Technical Conference
-  (USENIX ATC 18). pp. 173--186. USENIX Association, Berkeley, CA, USA (2018),
-  \url{https://www.usenix.org/conference/atc18/presentation/zhang-yiming}
+  efficient cloud virtualization. In: Proceedings of the 2018 USENIX Annual
+  Technical Conference. pp. 173--186. USENIX Association, Berkeley, CA, USA
+  (2018)
 
 \bibitem{zindros2021softPower}
 Zindros, D.: Soft power: Upgrading chain macroeconomic policy through soft
   forks. In: Bernhard, M., Bracciali, A., Gudgeon, L., Haines, T.,
-  Klages-Mundt, A., Matsuo, S., Perez, D., Sala, M., Werner, S. (eds.)
-  Financial Cryptography and Data Security. FC 2021 International Workshops.
-  Lecture Notes in Computer Science, vol. 12676, pp. 467--481. Springer,
-  Berlin, Heidelberg (2021). \doi{10.1007/978-3-662-63958-0_36}
+  Klages-Mundt, A., Matsuo, S., Perez, D., Sala, M., Werner, S. (eds.) 2021
+  Financial Cryptography and Data Security International Workshops. Lecture
+  Notes in Computer Science, vol. 12676, pp. 467--481. Springer, Berlin,
+  Heidelberg (2021)
 
 \bibitem{zou2021smartContracts}
 Zou, W., Lo, D., Kochhar, P.S., Le, X.B.D., Xia, X., Feng, Y., Chen, Z., Xu,
   B.: Smart contract development: Challenges and opportunities. IEEE
-  Transactions on Software Engineering  \textbf{47}(10),  2084--2106 (2021).
-  \doi{10.1109/TSE.2019.2942301}
+  Transactions on Software Engineering  \textbf{47}(10),  2084--2106 (2021)
 
 \end{thebibliography}
