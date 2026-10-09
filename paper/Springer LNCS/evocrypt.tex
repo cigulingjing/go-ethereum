@@ -29,14 +29,17 @@
 \title{EvoCrypt: An Upgradeable Cryptographic Coprocessor Framework for the Ethereum Virtual Machine}
 \titlerunning{EvoCrypt: An Upgradeable Cryptographic Coprocessor Framework}
 
-\author{Qi Liu\inst{1} \and
-Qianhong Wu\inst{1} \and
-Bo Qin\inst{2}\and
-Hongzi He\inst{1} }
-\authorrunning{Q. Liu et al.}
+\author{Anonymous Authors}
+% \author{Qi Liu\inst{1} \and
+% Qianhong Wu\inst{1} \and
+% Bo Qin\inst{2}\and
+% Hongzi He\inst{1} }
+% \authorrunning{Q. Liu et al.}
 
-\institute{School of Cyber Science and Technology, Beihang University, Beijing 100191, China
-\and School of Information, Renmin University of China, Beijing 100872, China}
+
+\institute{}
+% \institute{School of Cyber Science and Technology, Beihang University, Beijing 100191, China
+% \and School of Information, Renmin University of China, Beijing 100872, China}
 
 \maketitle
 
@@ -507,7 +510,8 @@ EvoCrypt addresses the problem of evolving contract-facing cryptographic capabil
 Three bounded conclusions follow from the evaluated prototype. EvoCrypt lowers the implementation burden by moving complex cryptographic logic out of Solidity and into replaceable WASM modules, reduces the evaluated calling cost under the experimental gas schedule, and provides a dynamic upgrade mechanism that lets smart contracts evolve their cryptographic capabilities without changing their contract-facing interface. Algorithm execution remains slower than suitable Precompiled Contracts, and the current gas parameters are not economically calibrated. Future work will refine resource pricing and evaluate broader deployment and security conditions.
 
 
-\bibliographystyle{splncs04}
+% 参考文件取消排序
+\bibliographystyle{splncs04-unsrt}
 \bibliography{sn-bibliography}
 
 \end{document}

@@ -1,46 +1,46 @@
 This is BibTeX, Version 0.99d (TeX Live 2022/dev/Debian)
 Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: evocrypt.aux
-The style file: splncs04.bst
+The style file: splncs04-unsrt.bst
 Database file #1: sn-bibliography.bib
 You've used 26 entries,
             2850 wiz_defined-function locations,
-            767 strings with 10280 characters,
-and the built_in function-call counts, 14918 in all, are:
-= -- 1218
-> -- 453
+            767 strings with 10286 characters,
+and the built_in function-call counts, 12346 in all, are:
+= -- 950
+> -- 289
 < -- 25
-+ -- 183
-- -- 155
-* -- 905
-:= -- 1828
++ -- 112
+- -- 86
+* -- 689
+:= -- 1309
 add.period$ -- 46
 call.type$ -- 26
-change.case$ -- 178
+change.case$ -- 57
 chr.to.int$ -- 0
 cite$ -- 26
-duplicate$ -- 1318
-empty$ -- 1390
-format.name$ -- 170
-if$ -- 3307
+duplicate$ -- 1266
+empty$ -- 1312
+format.name$ -- 101
+if$ -- 2892
 int.to.chr$ -- 0
 int.to.str$ -- 26
 missing$ -- 281
 newline$ -- 84
-num.names$ -- 62
-pop$ -- 569
+num.names$ -- 36
+pop$ -- 521
 preamble$ -- 1
-purify$ -- 121
+purify$ -- 0
 quote$ -- 0
-skip$ -- 390
+skip$ -- 317
 stack$ -- 0
-substring$ -- 826
+substring$ -- 694
 swap$ -- 775
 text.length$ -- 25
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 104
+type$ -- 0
 warning$ -- 0
-while$ -- 123
+while$ -- 97
 width$ -- 28
 write$ -- 275

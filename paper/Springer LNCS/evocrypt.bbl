@@ -3,22 +3,47 @@
 \providecommand{\urlprefix}{URL }
 \providecommand{\doi}[1]{https://doi.org/#1}
 
-\bibitem{ajmani2006modular}
-Ajmani, S., Liskov, B., Shrira, L.: Modular software upgrades for distributed
-  systems. In: Thomas, D. (ed.) 2006 European Conference on Object-Oriented
-  Programming. Lecture Notes in Computer Science, vol.~4067, pp. 452--476.
-  Springer, Berlin, Heidelberg (2006)
+\bibitem{nakamoto2008bitcoin}
+Nakamoto, S.: Bitcoin: A peer-to-peer electronic cash system.
+  \url{https://bitcoin.org/bitcoin.pdf} (2008), accessed 21 August 2026
 
-\bibitem{baresi2017versionConsistency}
-Baresi, L., Ghezzi, C., Ma, X., Panzica La~Manna, V.: Efficient dynamic updates
-  of distributed components through version consistency. IEEE Transactions on
-  Software Engineering  \textbf{43}(4),  340--358 (2017)
+\bibitem{zou2021smartContracts}
+Zou, W., Lo, D., Kochhar, P.S., Le, X.B.D., Xia, X., Feng, Y., Chen, Z., Xu,
+  B.: Smart contract development: Challenges and opportunities. IEEE
+  Transactions on Software Engineering  \textbf{47}(10),  2084--2106 (2021)
 
-\bibitem{eip197}
-Buterin, V., Reitwiessner, C.: {EIP-197}: Precompiled contracts for optimal ate
-  pairing check on the elliptic curve alt\_bn128. Ethereum Improvement
-  Proposals, no. 197. \url{https://eips.ethereum.org/EIPS/eip-197} (2017),
-  final. Accessed 21 August 2026
+\bibitem{woodEthereumYellowPaper}
+Wood, G.: Ethereum: A secure decentralised generalised transaction ledger.
+  \url{https://ethereum.github.io/yellowpaper/paper.pdf} (2014), ethereum
+  Yellow Paper. Accessed 21 August 2026
+
+\bibitem{ethereumEVM}
+{Ethereum.org}: Ethereum virtual machine ({EVM}).
+  \url{https://ethereum.org/developers/docs/evm/}, accessed 21 August 2026
+
+\bibitem{shor1999}
+Shor, P.W.: Polynomial-time algorithms for prime factorization and discrete
+  logarithms on a quantum computer. SIAM Review  \textbf{41}(2),  303--332
+  (1999)
+
+\bibitem{grover1996}
+Grover, L.K.: A fast quantum mechanical algorithm for database search. In:
+  Proceedings of the 28th Annual ACM Symposium on Theory of Computing. pp.
+  212--219. Association for Computing Machinery, New York, NY, USA (1996)
+
+\bibitem{nistPqcProject}
+{National Institute of Standards and Technology}: Post-quantum cryptography.
+  \url{https://csrc.nist.gov/projects/post-quantum-cryptography} (2026),
+  updated 5 August 2026. Accessed 21 August 2026
+
+\bibitem{evmCodesPrecompiled}
+{EVM Codes}: Precompiled contracts. \url{https://www.evm.codes/precompiled},
+  accessed 21 August 2026
+
+\bibitem{cardanoHardForkCombinator}
+{Input Output}: Combinator makes easy work of hard forks.
+  \url{https://iohk.io/en/blog/posts/2020/07/23/combinator-makes-easy-work-of-hard-forks/}
+  (2020), accessed 15 September 2026
 
 \bibitem{cardanoEvolution}
 {Cardano Foundation}: About hard forks.
@@ -31,108 +56,6 @@ Ciampi, M., Karayannidis, N., Kiayias, A., Zindros, D.: Updatable blockchains.
   Symposium on Research in Computer Security. Lecture Notes in Computer
   Science, vol. 12309, pp. 590--609. Springer, Cham (2020)
 
-\bibitem{ethereumEVM}
-{Ethereum.org}: Ethereum virtual machine ({EVM}).
-  \url{https://ethereum.org/developers/docs/evm/}, accessed 21 August 2026
-
-\bibitem{evmCodesPrecompiled}
-{EVM Codes}: Precompiled contracts. \url{https://www.evm.codes/precompiled},
-  accessed 21 August 2026
-
-\bibitem{garay2015backbone}
-Garay, J.A., Kiayias, A., Leonardos, N.: The bitcoin backbone protocol:
-  Analysis and applications. In: Oswald, E., Fischlin, M. (eds.) 2015 Annual
-  International Conference on the Theory and Applications of Cryptographic
-  Techniques, Part II. Lecture Notes in Computer Science, vol.~9057, pp.
-  281--310. Springer, Berlin, Heidelberg (2015)
-
-\bibitem{grover1996}
-Grover, L.K.: A fast quantum mechanical algorithm for database search. In:
-  Proceedings of the 28th Annual ACM Symposium on Theory of Computing. pp.
-  212--219. Association for Computing Machinery, New York, NY, USA (1996)
-
-\bibitem{huang2021pylive}
-Huang, H., Xiang, C., Zhong, L., Zhou, Y.: {PYLIVE}: On-the-fly code change for
-  python-based online services. In: Proceedings of the 2021 USENIX Annual
-  Technical Conference. pp. 349--363. USENIX Association, Berkeley, CA, USA
-  (2021)
-
-\bibitem{cardanoHardForkCombinator}
-{Input Output}: Combinator makes easy work of hard forks.
-  \url{https://iohk.io/en/blog/posts/2020/07/23/combinator-makes-easy-work-of-hard-forks/}
-  (2020), accessed 15 September 2026
-
-\bibitem{kumar2025leagan}
-Kumar, G., Saha, R., Conti, M., Buchanan, W.J.: {LEAGAN}: A decentralized
-  version-control framework for upgradeable smart contracts. IEEE Transactions
-  on Services Computing  \textbf{18}(3),  1529--1542 (2025)
-
-\bibitem{nakamoto2008bitcoin}
-Nakamoto, S.: Bitcoin: A peer-to-peer electronic cash system.
-  \url{https://bitcoin.org/bitcoin.pdf} (2008), accessed 21 August 2026
-
-\bibitem{nistPqcProject}
-{National Institute of Standards and Technology}: Post-quantum cryptography.
-  \url{https://csrc.nist.gov/projects/post-quantum-cryptography} (2026),
-  updated 5 August 2026. Accessed 21 August 2026
-
-\bibitem{pina2019mvedsua}
-Pina, L., Andronidis, A., Hicks, M., Cadar, C.: {MVEDSUA}: Higher availability
-  dynamic software updates via multi-version execution. In: Proceedings of the
-  24th International Conference on Architectural Support for Programming
-  Languages and Operating Systems. pp. 573--585. Association for Computing
-  Machinery, New York, NY, USA (2019)
-
-\bibitem{polkadotRuntimeUpgrades}
-{Polkadot}: Runtime upgrades.
-  \url{https://docs.polkadot.com/parachains/maintain/runtime-upgrades/},
-  accessed 15 September 2026
-
-\bibitem{eip196}
-Reitwiessner, C.: {EIP-196}: Precompiled contracts for addition and scalar
-  multiplication on the elliptic curve alt\_bn128. Ethereum Improvement
-  Proposals, no. 196. \url{https://eips.ethereum.org/EIPS/eip-196} (2017),
-  final. Accessed 21 August 2026
-
-\bibitem{rodler2021evmpatch}
-Rodler, M., Li, W., Karame, G.O., Davi, L.: {EVMPatch}: Timely and automated
-  patching of ethereum smart contracts. In: Proceedings of the 30th USENIX
-  Security Symposium. pp. 1289--1306. USENIX Association, Berkeley, CA, USA
-  (2021)
-
-\bibitem{rogaway2006ignorance}
-Rogaway, P.: Formalizing human ignorance: Collision-resistant hashing without
-  the keys. In: Nguyen, P.Q. (ed.) 2006 International Conference on Cryptology
-  in Vietnam. Lecture Notes in Computer Science, vol.~4341, pp. 211--228.
-  Springer, Berlin, Heidelberg (2006)
-
-\bibitem{shor1999}
-Shor, P.W.: Polynomial-time algorithms for prime factorization and discrete
-  logarithms on a quantum computer. SIAM Review  \textbf{41}(2),  303--332
-  (1999)
-
-\bibitem{wang2023phoenix}
-Wang, C., Li, P., Fan, X., Tang, Z., Zeng, Y., Sakurai, K.: Phoenix: A live
-  upgradable blockchain client. IEEE Transactions on Sustainable Computing
-  \textbf{8}(4),  703--714 (2023)
-
-\bibitem{woodEthereumYellowPaper}
-Wood, G.: Ethereum: A secure decentralised generalised transaction ledger.
-  \url{https://ethereum.github.io/yellowpaper/paper.pdf} (2014), ethereum
-  Yellow Paper. Accessed 21 August 2026
-
-\bibitem{webassemblyCoreSpec}
-{World Wide Web Consortium}: {WebAssembly Core Specification}.
-  \url{https://www.w3.org/TR/wasm-core-2/}, w3C Candidate Recommendation Draft.
-  Accessed 3 September 2026
-
-\bibitem{zhang2018kylinx}
-Zhang, Y., Crowcroft, J., Li, D., Zhang, C., Li, H., Wang, Y., Yu, K., Xiong,
-  Y., Chen, G.: {KylinX}: A dynamic library operating system for simplified and
-  efficient cloud virtualization. In: Proceedings of the 2018 USENIX Annual
-  Technical Conference. pp. 173--186. USENIX Association, Berkeley, CA, USA
-  (2018)
-
 \bibitem{zindros2021softPower}
 Zindros, D.: Soft power: Upgrading chain macroeconomic policy through soft
   forks. In: Bernhard, M., Bracciali, A., Gudgeon, L., Haines, T.,
@@ -141,9 +64,86 @@ Zindros, D.: Soft power: Upgrading chain macroeconomic policy through soft
   Notes in Computer Science, vol. 12676, pp. 467--481. Springer, Berlin,
   Heidelberg (2021)
 
-\bibitem{zou2021smartContracts}
-Zou, W., Lo, D., Kochhar, P.S., Le, X.B.D., Xia, X., Feng, Y., Chen, Z., Xu,
-  B.: Smart contract development: Challenges and opportunities. IEEE
-  Transactions on Software Engineering  \textbf{47}(10),  2084--2106 (2021)
+\bibitem{wang2023phoenix}
+Wang, C., Li, P., Fan, X., Tang, Z., Zeng, Y., Sakurai, K.: Phoenix: A live
+  upgradable blockchain client. IEEE Transactions on Sustainable Computing
+  \textbf{8}(4),  703--714 (2023)
+
+\bibitem{polkadotRuntimeUpgrades}
+{Polkadot}: Runtime upgrades.
+  \url{https://docs.polkadot.com/parachains/maintain/runtime-upgrades/},
+  accessed 15 September 2026
+
+\bibitem{rodler2021evmpatch}
+Rodler, M., Li, W., Karame, G.O., Davi, L.: {EVMPatch}: Timely and automated
+  patching of ethereum smart contracts. In: Proceedings of the 30th USENIX
+  Security Symposium. pp. 1289--1306. USENIX Association, Berkeley, CA, USA
+  (2021)
+
+\bibitem{kumar2025leagan}
+Kumar, G., Saha, R., Conti, M., Buchanan, W.J.: {LEAGAN}: A decentralized
+  version-control framework for upgradeable smart contracts. IEEE Transactions
+  on Services Computing  \textbf{18}(3),  1529--1542 (2025)
+
+\bibitem{eip196}
+Reitwiessner, C.: {EIP-196}: Precompiled contracts for addition and scalar
+  multiplication on the elliptic curve alt\_bn128. Ethereum Improvement
+  Proposals, no. 196. \url{https://eips.ethereum.org/EIPS/eip-196} (2017),
+  final. Accessed 21 August 2026
+
+\bibitem{eip197}
+Buterin, V., Reitwiessner, C.: {EIP-197}: Precompiled contracts for optimal ate
+  pairing check on the elliptic curve alt\_bn128. Ethereum Improvement
+  Proposals, no. 197. \url{https://eips.ethereum.org/EIPS/eip-197} (2017),
+  final. Accessed 21 August 2026
+
+\bibitem{zhang2018kylinx}
+Zhang, Y., Crowcroft, J., Li, D., Zhang, C., Li, H., Wang, Y., Yu, K., Xiong,
+  Y., Chen, G.: {KylinX}: A dynamic library operating system for simplified and
+  efficient cloud virtualization. In: Proceedings of the 2018 USENIX Annual
+  Technical Conference. pp. 173--186. USENIX Association, Berkeley, CA, USA
+  (2018)
+
+\bibitem{pina2019mvedsua}
+Pina, L., Andronidis, A., Hicks, M., Cadar, C.: {MVEDSUA}: Higher availability
+  dynamic software updates via multi-version execution. In: Proceedings of the
+  24th International Conference on Architectural Support for Programming
+  Languages and Operating Systems. pp. 573--585. Association for Computing
+  Machinery, New York, NY, USA (2019)
+
+\bibitem{huang2021pylive}
+Huang, H., Xiang, C., Zhong, L., Zhou, Y.: {PYLIVE}: On-the-fly code change for
+  python-based online services. In: Proceedings of the 2021 USENIX Annual
+  Technical Conference. pp. 349--363. USENIX Association, Berkeley, CA, USA
+  (2021)
+
+\bibitem{ajmani2006modular}
+Ajmani, S., Liskov, B., Shrira, L.: Modular software upgrades for distributed
+  systems. In: Thomas, D. (ed.) 2006 European Conference on Object-Oriented
+  Programming. Lecture Notes in Computer Science, vol.~4067, pp. 452--476.
+  Springer, Berlin, Heidelberg (2006)
+
+\bibitem{baresi2017versionConsistency}
+Baresi, L., Ghezzi, C., Ma, X., Panzica La~Manna, V.: Efficient dynamic updates
+  of distributed components through version consistency. IEEE Transactions on
+  Software Engineering  \textbf{43}(4),  340--358 (2017)
+
+\bibitem{webassemblyCoreSpec}
+{World Wide Web Consortium}: {WebAssembly Core Specification}.
+  \url{https://www.w3.org/TR/wasm-core-2/}, w3C Candidate Recommendation Draft.
+  Accessed 3 September 2026
+
+\bibitem{garay2015backbone}
+Garay, J.A., Kiayias, A., Leonardos, N.: The bitcoin backbone protocol:
+  Analysis and applications. In: Oswald, E., Fischlin, M. (eds.) 2015 Annual
+  International Conference on the Theory and Applications of Cryptographic
+  Techniques, Part II. Lecture Notes in Computer Science, vol.~9057, pp.
+  281--310. Springer, Berlin, Heidelberg (2015)
+
+\bibitem{rogaway2006ignorance}
+Rogaway, P.: Formalizing human ignorance: Collision-resistant hashing without
+  the keys. In: Nguyen, P.Q. (ed.) 2006 International Conference on Cryptology
+  in Vietnam. Lecture Notes in Computer Science, vol.~4341, pp. 211--228.
+  Springer, Berlin, Heidelberg (2006)
 
 \end{thebibliography}
