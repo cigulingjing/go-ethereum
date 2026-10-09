@@ -495,8 +495,8 @@ INPUT evocrypt.bbl
 INPUT ./evocrypt.bbl
 INPUT evocrypt.bbl
 INPUT evocrypt.aux
-INPUT /home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0700.600pk
 INPUT /home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1000.600pk
+INPUT /home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm0700.600pk
 INPUT /home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecti1000.600pk
 INPUT /home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1000.600pk
 INPUT /home/liuqi/.texlive2021/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1200.600pk
