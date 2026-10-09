@@ -42,7 +42,11 @@ def apply_style() -> None:
             "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans", "sans-serif"],
             "svg.fonttype": "none",
             "pdf.fonttype": 42,
-            "font.size": 7,
+            "font.size": 12,
+            "axes.labelsize": 12,
+            "xtick.labelsize": 11,
+            "ytick.labelsize": 11,
+            "legend.fontsize": 10,
             "axes.spines.right": False,
             "axes.spines.top": False,
             "axes.linewidth": 0.8,
@@ -172,8 +176,8 @@ def grouped_bar(
     width = 0.78 / n_series
     x = np.arange(n)
 
-    fig_w = max(3.4, 0.42 * n + 1.2)
-    fig, ax = plt.subplots(figsize=(fig_w, 2.6))
+    fig_w = max(3.8, 0.46 * n + 1.35)
+    fig, ax = plt.subplots(figsize=(fig_w, 2.9))
 
     # 对数轴上从 0 起画的 bar 会生成延伸到天外的矩形路径（log(0) 无定义），
     # 其白色描边在 PDF 几何中穿过坐标轴下方的刻度标签。改为从轴下限起画，
@@ -203,7 +207,7 @@ def grouped_bar(
         )
 
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, rotation=35, ha="right", rotation_mode="anchor")
+    ax.set_xticklabels(labels, rotation=38, ha="right", rotation_mode="anchor")
     # 分类轴不需要刻度线；保留刻度线会穿过旋转后标签的包围盒。
     ax.tick_params(axis="x", which="both", length=0)
     ax.set_ylabel(ylabel)
@@ -214,7 +218,7 @@ def grouped_bar(
         # 对数轴使用纯文本刻度标签：mathtext 上下标会以约 0.7 倍字号渲染，
         # 跌破 5 pt 字号下限；数据均为正，无需非正数保护。
     configure_y_axis(ax, log_y)
-    ax.legend(loc="upper left", bbox_to_anchor=(0, 1.02), ncol=n_series, handlelength=1.2)
+    ax.legend(loc="upper left", bbox_to_anchor=(0, 1.04), ncol=n_series, handlelength=1.1, columnspacing=0.9)
 
     fig.tight_layout()
     save_figure(fig, stem)
