@@ -213,7 +213,7 @@ This section formalizes the upgrade protocol and derives the invocation guarante
 The registry $\mathsf{Reg}(P)$ of a ledger prefix $P$ is the Management Contract storage obtained by executing $P$ from the genesis state; by EVM determinism it is a function of $P$. For a node $n$ and height $b$, let $\mathcal{V}^{n}_{a}(b)=\{v \mid \mu_{a,v}\in\mathsf{Reg}(\mathcal{L}_n[1..b])\}$ and let $v^{*}_{n}(a,b)$ be the value of~\eqref{eq:version-select} over $\mathcal{V}^{n}_{a}(b)$, with $v^{*}_{n}(a,b)=\bot$ when the feasible set is empty.
 \end{definition}
 
-\noindent\textbf{Trusted assumptions.} Assumptions~\ref{asm:ledger}--\ref{asm:cr} are used in Section~\ref{sec4.2}; Assumption~\ref{asm:runtime} only in Section~\ref{sec4.3}.
+Definition~\ref{def:registry} fixes the version each honest node selects from its ledger prefix. Agreement on that version, and execution of the admitted artifact, both depend on assumptions that we now make explicit. Assumptions~\ref{asm:ledger}--\ref{asm:cr} are used for upgrade soundness in Section~\ref{sec4.2}, and Assumption~\ref{asm:runtime} only when Section~\ref{sec4.3} extends consistency to invocation outcomes.
 
 \begin{assumption}[Canonical ledger]
 \label{asm:ledger}
