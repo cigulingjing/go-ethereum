@@ -1,0 +1,163 @@
+{
+  "experiment": "tx-gas-comparison",
+  "referenceInputs": true,
+  "timestamp": "2026-10-22T13:29:17.630201177Z",
+  "rpc": "http://127.0.0.1:8545",
+  "chainId": 11223344,
+  "sender": "0xF5F871aA6Bd253914705898c66251f994aa426FA",
+  "command": [
+    "/home/liuqi/.cache/go-build/a6/a6df782ddbda0668629cd7c814f31e89552736a29b2433844bba13708149a7eb-d/benchtxgas",
+    "-rpc",
+    "http://127.0.0.1:8545",
+    "-reference-inputs",
+    "-algorithms",
+    "SchnorrVerify,PolynomialMul",
+    "-solc",
+    "/home/liuqi/project/.tools/solc/solc-0.8.26",
+    "-output-json",
+    "/tmp/cryptogas-reference-chain-20261022/solidity-baseline-tail.json"
+  ],
+  "solc": "/home/liuqi/project/.tools/solc/solc-0.8.26",
+  "evmVersion": "paris",
+  "requestedAlgorithms": [
+    "SchnorrVerify",
+    "PolynomialMul"
+  ],
+  "results": [
+    {
+      "algorithm": "SchnorrVerify",
+      "upgradeName": "SchnorrVerify",
+      "legacyAlgorithmGas": 200000,
+      "input": {
+        "messageHex": "0x73737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373",
+        "proofByteLength": "768",
+        "proofHex": "0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f93eeaef1e88fac69ff1f6f1e9dd3a20e272934001c1096d4ed8df8d57f5ffa",
+        "proofSha256": "0xdbca247002d0f9009dc9ceb85f9165d6fc9d10757fabee4bcb3daaa552234b08"
+      },
+      "abiInputTypes": [
+        "bytes",
+        "bytes"
+      ],
+      "abiOutputTypes": [
+        "bool"
+      ],
+      "wasmUpgrade": {
+        "txHash": "0x926748c7af38dab3b5d918cb716d6dd42ab2503101de612653f48595bb309684",
+        "blockNumber": 29,
+        "status": 1,
+        "gasUsed": 531184,
+        "effectiveGasPrice": "26186929",
+        "calldataBytes": 32164,
+        "function": "SchnorrVerify",
+        "sourcePath": "/home/liuqi/project/go-ethereum/experiments/cryptoupgrade/algorithm/go/wasm/schnorr_proof.wasm",
+        "wasmHash": "0x32af3e4e1b6c30fb19ede0ee5a9372a7fe34ea5b9e5da7ec6beb32d97d76faef",
+        "sourceBytes": 48630,
+        "compressedBase64Bytes": 31748
+      },
+      "contractUpgrade": {
+        "txHash": "0xb3641e1927b16a53a1e2a17d62ac4c8ca4d5af273eddc801c35e4eb3978f9696",
+        "blockNumber": 30,
+        "status": 1,
+        "gasUsed": 967127,
+        "effectiveGasPrice": "23146943",
+        "calldataBytes": 4259,
+        "function": "SchnorrVerify",
+        "sourcePath": "/home/liuqi/project/go-ethereum/experiments/cryptoupgrade/algorithm/contracts/src/SchnorrProof.sol",
+        "contract": "SchnorrProof",
+        "contractAddress": "0x2961F83D9943eA1a3497B0a29ceB38469BdB2075",
+        "contractBinBytes": 4259
+      },
+      "wasmExecution": {
+        "txHash": "0xc72c3cbec68c01eed906826516e9c0b65064106680b24c883955f007f98c7cfd",
+        "blockNumber": 31,
+        "status": 1,
+        "gasUsed": 230056,
+        "effectiveGasPrice": "20551916",
+        "calldataBytes": 1316
+      },
+      "contractExecution": {
+        "txHash": "0x510c8beecb0ab773bcb4a99c8e07b68c675dd7f886bf4fc050ac0a3d43b2d54d",
+        "blockNumber": 32,
+        "status": 1,
+        "gasUsed": 2056684,
+        "effectiveGasPrice": "18144293",
+        "calldataBytes": 1156
+      },
+      "outputMatched": true,
+      "outputValue": "true"
+    },
+    {
+      "algorithm": "PolynomialMul",
+      "upgradeName": "PolynomialMul",
+      "legacyAlgorithmGas": 8200,
+      "input": {
+        "coefMax": "0",
+        "expectedPrefix": "[1,4,10]",
+        "leftLen": "4",
+        "modulus": "12289",
+        "mulIterations": "16",
+        "profile": "P1",
+        "rightLen": "4"
+      },
+      "abiInputTypes": [
+        "uint256[]",
+        "uint256[]",
+        "uint256"
+      ],
+      "abiOutputTypes": [
+        "uint256[]"
+      ],
+      "wasmUpgrade": {
+        "txHash": "0x7acac06d4632bd380281594add2820b553a6563b7784c114ad0b7f03442e0a9f",
+        "blockNumber": 33,
+        "status": 1,
+        "gasUsed": 118240,
+        "effectiveGasPrice": "16286058",
+        "calldataBytes": 6340,
+        "function": "PolynomialMul",
+        "sourcePath": "/home/liuqi/project/go-ethereum/experiments/cryptoupgrade/algorithm/go/wasm/polynomial_mul.wasm",
+        "wasmHash": "0x5eb54e09ea5611d4c8730561cc7d4ce43d449a2643d5d91de17a62e1056a302b",
+        "sourceBytes": 7987,
+        "compressedBase64Bytes": 5924
+      },
+      "contractUpgrade": {
+        "txHash": "0x71b239f776bad5434bcbbee50a46af5e1dc77837a0f143742e0f38ce572281cb",
+        "blockNumber": 34,
+        "status": 1,
+        "gasUsed": 270187,
+        "effectiveGasPrice": "14389886",
+        "calldataBytes": 1031,
+        "function": "PolynomialMul",
+        "sourcePath": "/home/liuqi/project/go-ethereum/experiments/cryptoupgrade/algorithm/contracts/src/PolynomialMul.sol",
+        "contract": "PolynomialMulContract",
+        "contractAddress": "0x37017443d600a8E02269a8584508d497BE53a567",
+        "contractBinBytes": 1031
+      },
+      "wasmExecution": {
+        "txHash": "0x2e1216964432dc61895ce316c9cd963024a573ff6657a8f9460500d1dadc7f58",
+        "blockNumber": 35,
+        "status": 1,
+        "gasUsed": 31952,
+        "effectiveGasPrice": "12745315",
+        "calldataBytes": 580
+      },
+      "contractExecution": {
+        "txHash": "0x8d50efafe205d1ec88fa5d4d37eaf2549edbf1bb026d5e2bf14154a91b5203c2",
+        "blockNumber": 36,
+        "status": 1,
+        "gasUsed": 33745,
+        "effectiveGasPrice": "11280173",
+        "calldataBytes": 420
+      },
+      "outputMatched": true,
+      "outputValue": "[1,4,10, ...(7)]"
+    }
+  ],
+  "outputJson": "/tmp/cryptogas-reference-chain-20261022/solidity-baseline-tail.json",
+  "notes": [
+    "all gas values are receipt gasUsed of real transactions on a single-node Clique chain, not eth_estimateGas",
+    "wasmUpgrade = CodeStorage.uploadCode transaction; contractUpgrade = Solidity deployment transaction",
+    "wasmExecution = CodeStorage.callFunc transaction; contractExecution = Solidity contract call transaction",
+    "execution outputs are validated identical via eth_call before sending execution transactions"
+  ]
+}

@@ -41,24 +41,25 @@ const (
 )
 
 type config struct {
-	rpc          string
-	algorithms   string
-	from         string
-	a            string
-	b            string
-	algoGas      uint64
-	uploadGas    uint64
-	callGas      uint64
-	deployGas    uint64
-	solcPath     string
-	evmVersion   string
-	outputDir    string
-	outputJSON   string
-	polyLeftLen  int
-	polyRightLen int
-	polyProfile  string
-	polyModulus  string
-	polyCoefMax  int
+	rpc             string
+	algorithms      string
+	from            string
+	a               string
+	b               string
+	algoGas         uint64
+	uploadGas       uint64
+	callGas         uint64
+	deployGas       uint64
+	solcPath        string
+	evmVersion      string
+	outputDir       string
+	outputJSON      string
+	polyLeftLen     int
+	polyRightLen    int
+	polyProfile     string
+	polyModulus     string
+	polyCoefMax     int
+	referenceInputs bool
 }
 
 type txArgs struct {
@@ -113,21 +114,23 @@ type upgradeMeasurement struct {
 }
 
 type algorithmResult struct {
-	Algorithm         string             `json:"algorithm"`
-	UpgradeName       string             `json:"upgradeName"`
-	Input             map[string]string  `json:"input"`
-	ABIInputTypes     []string           `json:"abiInputTypes"`
-	ABIOutputTypes    []string           `json:"abiOutputTypes"`
-	WasmUpgrade       upgradeMeasurement `json:"wasmUpgrade"`
-	ContractUpgrade   upgradeMeasurement `json:"contractUpgrade"`
-	WasmExecution     txMeasurement      `json:"wasmExecution"`
-	ContractExecution txMeasurement      `json:"contractExecution"`
-	OutputMatched     bool               `json:"outputMatched"`
-	OutputValue       string             `json:"outputValue"`
+	Algorithm          string             `json:"algorithm"`
+	UpgradeName        string             `json:"upgradeName"`
+	LegacyAlgorithmGas uint64             `json:"legacyAlgorithmGas,omitempty"`
+	Input              map[string]string  `json:"input"`
+	ABIInputTypes      []string           `json:"abiInputTypes"`
+	ABIOutputTypes     []string           `json:"abiOutputTypes"`
+	WasmUpgrade        upgradeMeasurement `json:"wasmUpgrade"`
+	ContractUpgrade    upgradeMeasurement `json:"contractUpgrade"`
+	WasmExecution      txMeasurement      `json:"wasmExecution"`
+	ContractExecution  txMeasurement      `json:"contractExecution"`
+	OutputMatched      bool               `json:"outputMatched"`
+	OutputValue        string             `json:"outputValue"`
 }
 
 type suiteResult struct {
 	Experiment          string            `json:"experiment"`
+	ReferenceInputs     bool              `json:"referenceInputs,omitempty"`
 	Timestamp           string            `json:"timestamp"`
 	RPC                 string            `json:"rpc"`
 	ChainID             uint64            `json:"chainId"`
@@ -198,6 +201,7 @@ func run() error {
 
 	suite := suiteResult{
 		Experiment:          experimentName,
+		ReferenceInputs:     cfg.referenceInputs,
 		Timestamp:           now.Format(time.RFC3339Nano),
 		RPC:                 cfg.rpc,
 		ChainID:             chainID,
@@ -222,6 +226,9 @@ func run() error {
 			return fmt.Errorf("%s: %w", fx.Algorithm, err)
 		}
 		suite.Results = append(suite.Results, result)
+		if err := writeJSONResult(outputJSON, suite); err != nil {
+			return err
+		}
 	}
 
 	if err := writeJSONResult(outputJSON, suite); err != nil {
@@ -251,6 +258,7 @@ func parseFlags() config {
 	flag.StringVar(&cfg.polyProfile, "poly-profile", "", "PolynomialMul profile preset (P1..P6); overrides -poly-left-len/-poly-right-len")
 	flag.StringVar(&cfg.polyModulus, "poly-modulus", "12289", "PolynomialMul modulus")
 	flag.IntVar(&cfg.polyCoefMax, "poly-coef-max", 0, "PolynomialMul coefficient upper bound; when >0 use values in [1,max] cyclically")
+	flag.BoolVar(&cfg.referenceInputs, "reference-inputs", false, "use calibrated reference levels, with Solidity-compatible Blake2b/DH inputs (overrides -a/-b)")
 	flag.Parse()
 	return cfg
 }
@@ -301,6 +309,20 @@ func buildFixtures(cfg config) ([]fixture, error) {
 	pedersenBlinding := []byte{0x0b}
 	schnorrMessage := []byte("cryptoupgrade schnorr benchmark")
 	schnorrProof := deterministicSchnorrProof(schnorrMessage)
+	blakeData := sampleData
+	if cfg.referenceInputs {
+		a = new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 63), big.NewInt(1))
+		b = new(big.Int).Set(a)
+		expectedAdd = new(big.Int).Add(a, b)
+		sampleData = bytes.Repeat([]byte{0x73}, 256)
+		blakeData = bytes.Repeat([]byte{0x73}, 32)
+		pbkdf2Iterations = big.NewInt(500)
+		dhPrivate = new(big.Int).Add(new(big.Int).Lsh(big.NewInt(1), 127), big.NewInt(1)).Bytes()
+		dhPeerPublic = fixedBytes(big.NewInt(4), rfc3526FieldBytes())
+		pedersenMessage = []byte{0x80, 0x01}
+		schnorrMessage = bytes.Repeat([]byte{0x73}, 256)
+		schnorrProof = referenceSchnorrProof(schnorrMessage)
+	}
 
 	polyModulus, err := parsePositiveBigInt("poly-modulus", cfg.polyModulus)
 	if err != nil {
@@ -355,9 +377,9 @@ func buildFixtures(cfg config) ([]fixture, error) {
 			ContractFunction: "Sum256",
 			InputTypes:       []string{"bytes"},
 			OutputTypes:      []string{"bytes32"},
-			Values:           []interface{}{sampleData},
+			Values:           []interface{}{blakeData},
 			Input: map[string]string{
-				"dataHex": hexutil.Encode(sampleData),
+				"dataHex": hexutil.Encode(blakeData),
 			},
 			AlgoGas: 3000,
 		},
@@ -488,11 +510,15 @@ func selectFixtures(fixtures []fixture, cfg config) ([]fixture, []string, error)
 
 func runFixture(ctx context.Context, client *rpc.Client, codeStorageABI abi.ABI, from common.Address, cfg config, fx fixture) (algorithmResult, error) {
 	result := algorithmResult{
-		Algorithm:      fx.Algorithm,
-		UpgradeName:    fx.UpgradeName,
-		Input:          fx.Input,
-		ABIInputTypes:  append([]string(nil), fx.InputTypes...),
-		ABIOutputTypes: append([]string(nil), fx.OutputTypes...),
+		Algorithm:          fx.Algorithm,
+		UpgradeName:        fx.UpgradeName,
+		LegacyAlgorithmGas: fx.AlgoGas,
+		Input:              fx.Input,
+		ABIInputTypes:      append([]string(nil), fx.InputTypes...),
+		ABIOutputTypes:     append([]string(nil), fx.OutputTypes...),
+	}
+	if cfg.algoGas != 0 {
+		result.LegacyAlgorithmGas = cfg.algoGas
 	}
 
 	// 1. WASM 升级交易：CodeStorage.uploadCode
@@ -1014,6 +1040,16 @@ func deterministicSchnorrProof(message []byte) []byte {
 	proof = append(proof, fixedBytes(y, size)...)
 	proof = append(proof, fixedBytes(t, size)...)
 	proof = append(proof, fixedBytes(s, size)...)
+	return proof
+}
+
+func referenceSchnorrProof(message []byte) []byte {
+	size := rfc3526FieldBytes()
+	proof := make([]byte, 3*size)
+	proof[size-1], proof[2*size-1] = 4, 4
+	digest := sha256.Sum256(append(append([]byte("cryptoupgrade-schnorr"), proof[:2*size]...), message...))
+	response := new(big.Int).Add(new(big.Int).SetBytes(digest[:]), big.NewInt(1)).Bytes()
+	copy(proof[len(proof)-len(response):], response)
 	return proof
 }
 

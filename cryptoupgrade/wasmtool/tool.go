@@ -168,6 +168,12 @@ func wrapperSource(spec Spec) ([]byte, error) {
 
 func formatWrapper(source string) ([]byte, error) {
 	const allocator = `var wasmInputBuffer []byte
+var wasmOutputBuffer []byte
+
+func wasmKeepOutput(output []byte) uint32 {
+	wasmOutputBuffer = output
+	return wasmMemoryPointer(&wasmOutputBuffer[0])
+}
 
 //go:wasmexport allocate
 func allocate(length uint32) uint32 {
@@ -184,6 +190,7 @@ func allocate(length uint32) uint32 {
 
 `
 	source = strings.Replace(source, "func main() {}", allocator+"func main() {}", 1)
+	source = strings.ReplaceAll(source, "return wasmMemoryPointer(&out[0])", "return wasmKeepOutput(out)")
 	formatted, err := format.Source([]byte(source))
 	if err != nil {
 		return nil, fmt.Errorf("format wrapper source: %w", err)

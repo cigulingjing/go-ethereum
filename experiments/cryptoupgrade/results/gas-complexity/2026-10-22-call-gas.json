@@ -1,0 +1,422 @@
+{
+  "kind": "pricing-model-only; no EVM execution or transaction receipts",
+  "calibrationSHA256": "bba18087494ea016a7b91a641b8a01bbcac01206eb498d231b7d0ffecb7d6e87",
+  "threshold": 2,
+  "alpha": {
+    "numerator": 1,
+    "denominator": 4
+  },
+  "loadMapping": [
+    {
+      "maxCalls": 0,
+      "multiplier": {
+        "numerator": 1,
+        "denominator": 1
+      }
+    },
+    {
+      "maxCalls": 1,
+      "multiplier": {
+        "numerator": 11,
+        "denominator": 10
+      }
+    },
+    {
+      "maxCalls": 2,
+      "multiplier": {
+        "numerator": 6,
+        "denominator": 5
+      }
+    },
+    {
+      "maxCalls": 3,
+      "multiplier": {
+        "numerator": 13,
+        "denominator": 10
+      }
+    },
+    {
+      "maxCalls": 18446744073709551615,
+      "multiplier": {
+        "numerator": 7,
+        "denominator": 5
+      }
+    }
+  ],
+  "blockGasLimit": 30000000,
+  "callsPerAlgorithm": 5,
+  "scenarios": [
+    {
+      "parentCalls": 0,
+      "multiplier": {
+        "numerator": 1,
+        "denominator": 1
+      },
+      "samples": [
+        {
+          "algorithm": "Add",
+          "metric": "operandBits",
+          "referenceValue": 64,
+          "baseGas": 100,
+          "callGas": [
+            100,
+            100,
+            125,
+            157,
+            196
+          ],
+          "cumulativeGas": [
+            100,
+            200,
+            325,
+            482,
+            678
+          ],
+          "totalFiveCallGas": 678,
+          "optimisticMaxCallsWithinLimit": 5
+        },
+        {
+          "algorithm": "Sha256",
+          "metric": "messageBytes",
+          "referenceValue": 256,
+          "baseGas": 740,
+          "callGas": [
+            740,
+            740,
+            925,
+            1157,
+            1446
+          ],
+          "cumulativeGas": [
+            740,
+            1480,
+            2405,
+            3562,
+            5008
+          ],
+          "totalFiveCallGas": 5008,
+          "optimisticMaxCallsWithinLimit": 5
+        },
+        {
+          "algorithm": "Blake2bSum256",
+          "metric": "messageBytes",
+          "referenceValue": 256,
+          "baseGas": 240,
+          "callGas": [
+            240,
+            240,
+            300,
+            375,
+            469
+          ],
+          "cumulativeGas": [
+            240,
+            480,
+            780,
+            1155,
+            1624
+          ],
+          "totalFiveCallGas": 1624,
+          "optimisticMaxCallsWithinLimit": 5
+        },
+        {
+          "algorithm": "Pbkdf2Sha256",
+          "metric": "iterations",
+          "referenceValue": 500,
+          "baseGas": 300600,
+          "callGas": [
+            300600,
+            300600,
+            375750,
+            469688,
+            587110
+          ],
+          "cumulativeGas": [
+            300600,
+            601200,
+            976950,
+            1446638,
+            2033748
+          ],
+          "totalFiveCallGas": 2033748,
+          "optimisticMaxCallsWithinLimit": 5
+        },
+        {
+          "algorithm": "Dh2048Secret",
+          "metric": "exponentBits",
+          "referenceValue": 128,
+          "baseGas": 2078080,
+          "callGas": [
+            2078080,
+            2078080,
+            2597600,
+            3247000,
+            4058750
+          ],
+          "cumulativeGas": [
+            2078080,
+            4156160,
+            6753760,
+            10000760,
+            14059510
+          ],
+          "totalFiveCallGas": 14059510,
+          "optimisticMaxCallsWithinLimit": 5
+        },
+        {
+          "algorithm": "PedersenCommit",
+          "metric": "messageBits",
+          "referenceValue": 128,
+          "baseGas": 2074300,
+          "callGas": [
+            2074300,
+            2074300,
+            2592875,
+            3241094,
+            4051368
+          ],
+          "cumulativeGas": [
+            2074300,
+            4148600,
+            6741475,
+            9982569,
+            14033937
+          ],
+          "totalFiveCallGas": 14033937,
+          "optimisticMaxCallsWithinLimit": 5
+        },
+        {
+          "algorithm": "SchnorrVerify",
+          "metric": "messageBytes",
+          "referenceValue": 256,
+          "baseGas": 7957400,
+          "callGas": [
+            7957400,
+            7957400,
+            9946750,
+            12433438,
+            15541797
+          ],
+          "cumulativeGas": [
+            7957400,
+            15914800,
+            25861550,
+            38294988,
+            53836785
+          ],
+          "totalFiveCallGas": 53836785,
+          "optimisticMaxCallsWithinLimit": 3
+        },
+        {
+          "algorithm": "PolynomialMul",
+          "metric": "polynomialLength",
+          "referenceValue": 4,
+          "baseGas": 220,
+          "callGas": [
+            220,
+            220,
+            275,
+            344,
+            430
+          ],
+          "cumulativeGas": [
+            220,
+            440,
+            715,
+            1059,
+            1489
+          ],
+          "totalFiveCallGas": 1489,
+          "optimisticMaxCallsWithinLimit": 5
+        }
+      ],
+      "mixedOnceGas": 12411680
+    },
+    {
+      "parentCalls": 4,
+      "multiplier": {
+        "numerator": 7,
+        "denominator": 5
+      },
+      "samples": [
+        {
+          "algorithm": "Add",
+          "metric": "operandBits",
+          "referenceValue": 64,
+          "baseGas": 100,
+          "callGas": [
+            140,
+            140,
+            175,
+            219,
+            274
+          ],
+          "cumulativeGas": [
+            140,
+            280,
+            455,
+            674,
+            948
+          ],
+          "totalFiveCallGas": 948,
+          "optimisticMaxCallsWithinLimit": 5
+        },
+        {
+          "algorithm": "Sha256",
+          "metric": "messageBytes",
+          "referenceValue": 256,
+          "baseGas": 740,
+          "callGas": [
+            1036,
+            1036,
+            1295,
+            1619,
+            2024
+          ],
+          "cumulativeGas": [
+            1036,
+            2072,
+            3367,
+            4986,
+            7010
+          ],
+          "totalFiveCallGas": 7010,
+          "optimisticMaxCallsWithinLimit": 5
+        },
+        {
+          "algorithm": "Blake2bSum256",
+          "metric": "messageBytes",
+          "referenceValue": 256,
+          "baseGas": 240,
+          "callGas": [
+            336,
+            336,
+            420,
+            525,
+            657
+          ],
+          "cumulativeGas": [
+            336,
+            672,
+            1092,
+            1617,
+            2274
+          ],
+          "totalFiveCallGas": 2274,
+          "optimisticMaxCallsWithinLimit": 5
+        },
+        {
+          "algorithm": "Pbkdf2Sha256",
+          "metric": "iterations",
+          "referenceValue": 500,
+          "baseGas": 300600,
+          "callGas": [
+            420840,
+            420840,
+            526050,
+            657563,
+            821954
+          ],
+          "cumulativeGas": [
+            420840,
+            841680,
+            1367730,
+            2025293,
+            2847247
+          ],
+          "totalFiveCallGas": 2847247,
+          "optimisticMaxCallsWithinLimit": 5
+        },
+        {
+          "algorithm": "Dh2048Secret",
+          "metric": "exponentBits",
+          "referenceValue": 128,
+          "baseGas": 2078080,
+          "callGas": [
+            2909312,
+            2909312,
+            3636640,
+            4545800,
+            5682250
+          ],
+          "cumulativeGas": [
+            2909312,
+            5818624,
+            9455264,
+            14001064,
+            19683314
+          ],
+          "totalFiveCallGas": 19683314,
+          "optimisticMaxCallsWithinLimit": 5
+        },
+        {
+          "algorithm": "PedersenCommit",
+          "metric": "messageBits",
+          "referenceValue": 128,
+          "baseGas": 2074300,
+          "callGas": [
+            2904020,
+            2904020,
+            3630025,
+            4537532,
+            5671915
+          ],
+          "cumulativeGas": [
+            2904020,
+            5808040,
+            9438065,
+            13975597,
+            19647512
+          ],
+          "totalFiveCallGas": 19647512,
+          "optimisticMaxCallsWithinLimit": 5
+        },
+        {
+          "algorithm": "SchnorrVerify",
+          "metric": "messageBytes",
+          "referenceValue": 256,
+          "baseGas": 7957400,
+          "callGas": [
+            11140360,
+            11140360,
+            13925450,
+            17406813,
+            21758516
+          ],
+          "cumulativeGas": [
+            11140360,
+            22280720,
+            36206170,
+            53612983,
+            75371499
+          ],
+          "totalFiveCallGas": 75371499,
+          "optimisticMaxCallsWithinLimit": 2
+        },
+        {
+          "algorithm": "PolynomialMul",
+          "metric": "polynomialLength",
+          "referenceValue": 4,
+          "baseGas": 220,
+          "callGas": [
+            308,
+            308,
+            385,
+            482,
+            602
+          ],
+          "cumulativeGas": [
+            308,
+            616,
+            1001,
+            1483,
+            2085
+          ],
+          "totalFiveCallGas": 2085,
+          "optimisticMaxCallsWithinLimit": 5
+        }
+      ],
+      "mixedOnceGas": 17376352
+    }
+  ]
+}

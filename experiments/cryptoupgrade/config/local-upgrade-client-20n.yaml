@@ -1,0 +1,33 @@
+local:
+  nodeCount: 20
+  outputDir: ../output/network/upgrade-client-20n
+  httpPortBase: 8861
+  signerAccount: signer
+  extraArgs: [--cache, "128"]
+  expose:
+    - {node: node1, httpHostPort: 8861}
+network:
+  name: cryptoupgrade-upgrade-client-20n
+  chainId: 11223345
+  networkId: 11223345
+  gasLimit: 30000000
+  peerTopology: full
+consensus:
+  type: clique
+  period: 5
+  epoch: 30000
+docker:
+  image: cryptoupgrade-geth:upgrade-client
+  networkName: cryptoupgrade-upgrade-client-20n
+  cpus: "0.50"
+  memory: 768m
+cryptoupgrade:
+  enabled: true
+  smokeTest: false
+  addSource: ../algorithm/go/wasm/add.wasm
+accounts:
+  signer:
+    address: 0xF5F871aA6Bd253914705898c66251f994aa426FA
+    privateKey: ./signer.key
+    password: "123456"
+    balance: "30000000000000000000000"

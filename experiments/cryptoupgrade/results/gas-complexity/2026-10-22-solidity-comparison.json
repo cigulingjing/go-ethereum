@@ -1,0 +1,1741 @@
+{
+  "kind": "offline counterfactual pricing comparison; Solidity and legacy WASM are real receipts",
+  "chainId": 11223344,
+  "calibrationSHA256": "bba18087494ea016a7b91a641b8a01bbcac01206eb498d231b7d0ffecb7d6e87",
+  "model": {
+    "alpha": {
+      "numerator": 1,
+      "denominator": 4
+    },
+    "threshold": 2,
+    "loadMapping": [
+      {
+        "maxCalls": 0,
+        "multiplier": {
+          "numerator": 1,
+          "denominator": 1
+        }
+      },
+      {
+        "maxCalls": 1,
+        "multiplier": {
+          "numerator": 11,
+          "denominator": 10
+        }
+      },
+      {
+        "maxCalls": 2,
+        "multiplier": {
+          "numerator": 6,
+          "denominator": 5
+        }
+      },
+      {
+        "maxCalls": 3,
+        "multiplier": {
+          "numerator": 13,
+          "denominator": 10
+        }
+      },
+      {
+        "maxCalls": 18446744073709551615,
+        "multiplier": {
+          "numerator": 7,
+          "denominator": 5
+        }
+      }
+    ],
+    "blockGasLimit": 30000000
+  },
+  "range": {
+    "parentCalls": [
+      0,
+      4
+    ],
+    "sameTransactionAlgorithmCallIndex": [
+      1,
+      5
+    ]
+  },
+  "method": "projected standalone = legacy WASM receipt - legacy algorithm charge + dynamic quote; i>1 is a counterfactual marginal quote, not a batched transaction receipt",
+  "algorithms": [
+    {
+      "algorithm": "Add",
+      "metric": "operandBits",
+      "inputLevel": 64,
+      "baseFee": 100,
+      "grid": [
+        {
+          "parentCalls": 0,
+          "callIndex": 1,
+          "algorithmQuote": 100,
+          "projectedStandaloneGas": 22336,
+          "differenceVsSolidity": 598,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 2,
+          "algorithmQuote": 100,
+          "projectedStandaloneGas": 22336,
+          "differenceVsSolidity": 598,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 3,
+          "algorithmQuote": 125,
+          "projectedStandaloneGas": 22361,
+          "differenceVsSolidity": 623,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 4,
+          "algorithmQuote": 157,
+          "projectedStandaloneGas": 22393,
+          "differenceVsSolidity": 655,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 5,
+          "algorithmQuote": 196,
+          "projectedStandaloneGas": 22432,
+          "differenceVsSolidity": 694,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 1,
+          "algorithmQuote": 110,
+          "projectedStandaloneGas": 22346,
+          "differenceVsSolidity": 608,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 2,
+          "algorithmQuote": 110,
+          "projectedStandaloneGas": 22346,
+          "differenceVsSolidity": 608,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 3,
+          "algorithmQuote": 138,
+          "projectedStandaloneGas": 22374,
+          "differenceVsSolidity": 636,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 4,
+          "algorithmQuote": 172,
+          "projectedStandaloneGas": 22408,
+          "differenceVsSolidity": 670,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 5,
+          "algorithmQuote": 215,
+          "projectedStandaloneGas": 22451,
+          "differenceVsSolidity": 713,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 1,
+          "algorithmQuote": 120,
+          "projectedStandaloneGas": 22356,
+          "differenceVsSolidity": 618,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 2,
+          "algorithmQuote": 120,
+          "projectedStandaloneGas": 22356,
+          "differenceVsSolidity": 618,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 3,
+          "algorithmQuote": 150,
+          "projectedStandaloneGas": 22386,
+          "differenceVsSolidity": 648,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 4,
+          "algorithmQuote": 188,
+          "projectedStandaloneGas": 22424,
+          "differenceVsSolidity": 686,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 5,
+          "algorithmQuote": 235,
+          "projectedStandaloneGas": 22471,
+          "differenceVsSolidity": 733,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 1,
+          "algorithmQuote": 130,
+          "projectedStandaloneGas": 22366,
+          "differenceVsSolidity": 628,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 2,
+          "algorithmQuote": 130,
+          "projectedStandaloneGas": 22366,
+          "differenceVsSolidity": 628,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 3,
+          "algorithmQuote": 163,
+          "projectedStandaloneGas": 22399,
+          "differenceVsSolidity": 661,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 4,
+          "algorithmQuote": 204,
+          "projectedStandaloneGas": 22440,
+          "differenceVsSolidity": 702,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 5,
+          "algorithmQuote": 254,
+          "projectedStandaloneGas": 22490,
+          "differenceVsSolidity": 752,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 1,
+          "algorithmQuote": 140,
+          "projectedStandaloneGas": 22376,
+          "differenceVsSolidity": 638,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 2,
+          "algorithmQuote": 140,
+          "projectedStandaloneGas": 22376,
+          "differenceVsSolidity": 638,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 3,
+          "algorithmQuote": 175,
+          "projectedStandaloneGas": 22411,
+          "differenceVsSolidity": 673,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 4,
+          "algorithmQuote": 219,
+          "projectedStandaloneGas": 22455,
+          "differenceVsSolidity": 717,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 5,
+          "algorithmQuote": 274,
+          "projectedStandaloneGas": 22510,
+          "differenceVsSolidity": 772,
+          "fitsStandaloneBlockGasLimit": true
+        }
+      ],
+      "solidityReceiptGas": 21738,
+      "legacyWasmReceiptGas": 25236,
+      "legacyAlgorithmGas": 3000,
+      "solidityTxHash": "0x2ac4fe3d747213ceb0954d6c3de070dd00a0eca7d30109aa5086745c186ced90",
+      "wasmTxHash": "0xdb167abccbed8720f4eb599bcd2745180e7b48977cef3a4553fd7af0ff7aaae0",
+      "input": {
+        "a": "9223372036854775807",
+        "b": "9223372036854775807",
+        "expected": "18446744073709551614"
+      },
+      "cheaperGridPoints": 0,
+      "inputEncodingComparable": true
+    },
+    {
+      "algorithm": "Sha256",
+      "metric": "messageBytes",
+      "inputLevel": 256,
+      "baseFee": 740,
+      "grid": [
+        {
+          "parentCalls": 0,
+          "callIndex": 1,
+          "algorithmQuote": 740,
+          "projectedStandaloneGas": 26952,
+          "differenceVsSolidity": 587,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 2,
+          "algorithmQuote": 740,
+          "projectedStandaloneGas": 26952,
+          "differenceVsSolidity": 587,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 3,
+          "algorithmQuote": 925,
+          "projectedStandaloneGas": 27137,
+          "differenceVsSolidity": 772,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 4,
+          "algorithmQuote": 1157,
+          "projectedStandaloneGas": 27369,
+          "differenceVsSolidity": 1004,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 5,
+          "algorithmQuote": 1446,
+          "projectedStandaloneGas": 27658,
+          "differenceVsSolidity": 1293,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 1,
+          "algorithmQuote": 814,
+          "projectedStandaloneGas": 27026,
+          "differenceVsSolidity": 661,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 2,
+          "algorithmQuote": 814,
+          "projectedStandaloneGas": 27026,
+          "differenceVsSolidity": 661,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 3,
+          "algorithmQuote": 1018,
+          "projectedStandaloneGas": 27230,
+          "differenceVsSolidity": 865,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 4,
+          "algorithmQuote": 1272,
+          "projectedStandaloneGas": 27484,
+          "differenceVsSolidity": 1119,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 5,
+          "algorithmQuote": 1590,
+          "projectedStandaloneGas": 27802,
+          "differenceVsSolidity": 1437,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 1,
+          "algorithmQuote": 888,
+          "projectedStandaloneGas": 27100,
+          "differenceVsSolidity": 735,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 2,
+          "algorithmQuote": 888,
+          "projectedStandaloneGas": 27100,
+          "differenceVsSolidity": 735,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 3,
+          "algorithmQuote": 1110,
+          "projectedStandaloneGas": 27322,
+          "differenceVsSolidity": 957,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 4,
+          "algorithmQuote": 1388,
+          "projectedStandaloneGas": 27600,
+          "differenceVsSolidity": 1235,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 5,
+          "algorithmQuote": 1735,
+          "projectedStandaloneGas": 27947,
+          "differenceVsSolidity": 1582,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 1,
+          "algorithmQuote": 962,
+          "projectedStandaloneGas": 27174,
+          "differenceVsSolidity": 809,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 2,
+          "algorithmQuote": 962,
+          "projectedStandaloneGas": 27174,
+          "differenceVsSolidity": 809,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 3,
+          "algorithmQuote": 1203,
+          "projectedStandaloneGas": 27415,
+          "differenceVsSolidity": 1050,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 4,
+          "algorithmQuote": 1504,
+          "projectedStandaloneGas": 27716,
+          "differenceVsSolidity": 1351,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 5,
+          "algorithmQuote": 1879,
+          "projectedStandaloneGas": 28091,
+          "differenceVsSolidity": 1726,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 1,
+          "algorithmQuote": 1036,
+          "projectedStandaloneGas": 27248,
+          "differenceVsSolidity": 883,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 2,
+          "algorithmQuote": 1036,
+          "projectedStandaloneGas": 27248,
+          "differenceVsSolidity": 883,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 3,
+          "algorithmQuote": 1295,
+          "projectedStandaloneGas": 27507,
+          "differenceVsSolidity": 1142,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 4,
+          "algorithmQuote": 1619,
+          "projectedStandaloneGas": 27831,
+          "differenceVsSolidity": 1466,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 5,
+          "algorithmQuote": 2024,
+          "projectedStandaloneGas": 28236,
+          "differenceVsSolidity": 1871,
+          "fitsStandaloneBlockGasLimit": true
+        }
+      ],
+      "solidityReceiptGas": 26365,
+      "legacyWasmReceiptGas": 29212,
+      "legacyAlgorithmGas": 3000,
+      "solidityTxHash": "0xf5ebb7b859a8bf82dfcfd712a7bde39c8fc57220707f27d2be527a25fc228591",
+      "wasmTxHash": "0x38ecf90e6bf0597833057353631a75afef844a02234cf7afecbac3c24173490f",
+      "input": {
+        "dataHex": "0x73737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373"
+      },
+      "cheaperGridPoints": 0,
+      "inputEncodingComparable": true
+    },
+    {
+      "algorithm": "Blake2bSum256",
+      "metric": "messageBytes",
+      "inputLevel": 32,
+      "baseFee": 160,
+      "grid": [
+        {
+          "parentCalls": 0,
+          "callIndex": 1,
+          "algorithmQuote": 160,
+          "projectedStandaloneGas": 22776,
+          "differenceVsSolidity": -90894,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 2,
+          "algorithmQuote": 160,
+          "projectedStandaloneGas": 22776,
+          "differenceVsSolidity": -90894,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 3,
+          "algorithmQuote": 200,
+          "projectedStandaloneGas": 22816,
+          "differenceVsSolidity": -90854,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 4,
+          "algorithmQuote": 250,
+          "projectedStandaloneGas": 22866,
+          "differenceVsSolidity": -90804,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 5,
+          "algorithmQuote": 313,
+          "projectedStandaloneGas": 22929,
+          "differenceVsSolidity": -90741,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 1,
+          "algorithmQuote": 176,
+          "projectedStandaloneGas": 22792,
+          "differenceVsSolidity": -90878,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 2,
+          "algorithmQuote": 176,
+          "projectedStandaloneGas": 22792,
+          "differenceVsSolidity": -90878,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 3,
+          "algorithmQuote": 220,
+          "projectedStandaloneGas": 22836,
+          "differenceVsSolidity": -90834,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 4,
+          "algorithmQuote": 275,
+          "projectedStandaloneGas": 22891,
+          "differenceVsSolidity": -90779,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 5,
+          "algorithmQuote": 344,
+          "projectedStandaloneGas": 22960,
+          "differenceVsSolidity": -90710,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 1,
+          "algorithmQuote": 192,
+          "projectedStandaloneGas": 22808,
+          "differenceVsSolidity": -90862,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 2,
+          "algorithmQuote": 192,
+          "projectedStandaloneGas": 22808,
+          "differenceVsSolidity": -90862,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 3,
+          "algorithmQuote": 240,
+          "projectedStandaloneGas": 22856,
+          "differenceVsSolidity": -90814,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 4,
+          "algorithmQuote": 300,
+          "projectedStandaloneGas": 22916,
+          "differenceVsSolidity": -90754,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 5,
+          "algorithmQuote": 375,
+          "projectedStandaloneGas": 22991,
+          "differenceVsSolidity": -90679,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 1,
+          "algorithmQuote": 208,
+          "projectedStandaloneGas": 22824,
+          "differenceVsSolidity": -90846,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 2,
+          "algorithmQuote": 208,
+          "projectedStandaloneGas": 22824,
+          "differenceVsSolidity": -90846,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 3,
+          "algorithmQuote": 260,
+          "projectedStandaloneGas": 22876,
+          "differenceVsSolidity": -90794,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 4,
+          "algorithmQuote": 325,
+          "projectedStandaloneGas": 22941,
+          "differenceVsSolidity": -90729,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 5,
+          "algorithmQuote": 407,
+          "projectedStandaloneGas": 23023,
+          "differenceVsSolidity": -90647,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 1,
+          "algorithmQuote": 224,
+          "projectedStandaloneGas": 22840,
+          "differenceVsSolidity": -90830,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 2,
+          "algorithmQuote": 224,
+          "projectedStandaloneGas": 22840,
+          "differenceVsSolidity": -90830,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 3,
+          "algorithmQuote": 280,
+          "projectedStandaloneGas": 22896,
+          "differenceVsSolidity": -90774,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 4,
+          "algorithmQuote": 350,
+          "projectedStandaloneGas": 22966,
+          "differenceVsSolidity": -90704,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 5,
+          "algorithmQuote": 438,
+          "projectedStandaloneGas": 23054,
+          "differenceVsSolidity": -90616,
+          "fitsStandaloneBlockGasLimit": true
+        }
+      ],
+      "solidityReceiptGas": 113670,
+      "legacyWasmReceiptGas": 25616,
+      "legacyAlgorithmGas": 3000,
+      "solidityTxHash": "0xca3143e3aa2ec04861ac7af0e7c6a7b11c25c010e564fb046b26637e88036e45",
+      "wasmTxHash": "0x0a18f2367acf5691f4a1c0671f7e40eb993801bec68ac3ce5def716266d28388",
+      "input": {
+        "dataHex": "0x7373737373737373737373737373737373737373737373737373737373737373"
+      },
+      "cheaperGridPoints": 25,
+      "inputEncodingComparable": true
+    },
+    {
+      "algorithm": "Pbkdf2Sha256",
+      "metric": "iterations",
+      "inputLevel": 500,
+      "baseFee": 300600,
+      "grid": [
+        {
+          "parentCalls": 0,
+          "callIndex": 1,
+          "algorithmQuote": 300600,
+          "projectedStandaloneGas": 323748,
+          "differenceVsSolidity": -12150559,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 2,
+          "algorithmQuote": 300600,
+          "projectedStandaloneGas": 323748,
+          "differenceVsSolidity": -12150559,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 3,
+          "algorithmQuote": 375750,
+          "projectedStandaloneGas": 398898,
+          "differenceVsSolidity": -12075409,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 4,
+          "algorithmQuote": 469688,
+          "projectedStandaloneGas": 492836,
+          "differenceVsSolidity": -11981471,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 5,
+          "algorithmQuote": 587110,
+          "projectedStandaloneGas": 610258,
+          "differenceVsSolidity": -11864049,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 1,
+          "algorithmQuote": 330660,
+          "projectedStandaloneGas": 353808,
+          "differenceVsSolidity": -12120499,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 2,
+          "algorithmQuote": 330660,
+          "projectedStandaloneGas": 353808,
+          "differenceVsSolidity": -12120499,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 3,
+          "algorithmQuote": 413325,
+          "projectedStandaloneGas": 436473,
+          "differenceVsSolidity": -12037834,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 4,
+          "algorithmQuote": 516657,
+          "projectedStandaloneGas": 539805,
+          "differenceVsSolidity": -11934502,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 5,
+          "algorithmQuote": 645821,
+          "projectedStandaloneGas": 668969,
+          "differenceVsSolidity": -11805338,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 1,
+          "algorithmQuote": 360720,
+          "projectedStandaloneGas": 383868,
+          "differenceVsSolidity": -12090439,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 2,
+          "algorithmQuote": 360720,
+          "projectedStandaloneGas": 383868,
+          "differenceVsSolidity": -12090439,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 3,
+          "algorithmQuote": 450900,
+          "projectedStandaloneGas": 474048,
+          "differenceVsSolidity": -12000259,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 4,
+          "algorithmQuote": 563625,
+          "projectedStandaloneGas": 586773,
+          "differenceVsSolidity": -11887534,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 5,
+          "algorithmQuote": 704532,
+          "projectedStandaloneGas": 727680,
+          "differenceVsSolidity": -11746627,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 1,
+          "algorithmQuote": 390780,
+          "projectedStandaloneGas": 413928,
+          "differenceVsSolidity": -12060379,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 2,
+          "algorithmQuote": 390780,
+          "projectedStandaloneGas": 413928,
+          "differenceVsSolidity": -12060379,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 3,
+          "algorithmQuote": 488475,
+          "projectedStandaloneGas": 511623,
+          "differenceVsSolidity": -11962684,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 4,
+          "algorithmQuote": 610594,
+          "projectedStandaloneGas": 633742,
+          "differenceVsSolidity": -11840565,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 5,
+          "algorithmQuote": 763243,
+          "projectedStandaloneGas": 786391,
+          "differenceVsSolidity": -11687916,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 1,
+          "algorithmQuote": 420840,
+          "projectedStandaloneGas": 443988,
+          "differenceVsSolidity": -12030319,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 2,
+          "algorithmQuote": 420840,
+          "projectedStandaloneGas": 443988,
+          "differenceVsSolidity": -12030319,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 3,
+          "algorithmQuote": 526050,
+          "projectedStandaloneGas": 549198,
+          "differenceVsSolidity": -11925109,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 4,
+          "algorithmQuote": 657563,
+          "projectedStandaloneGas": 680711,
+          "differenceVsSolidity": -11793596,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 5,
+          "algorithmQuote": 821954,
+          "projectedStandaloneGas": 845102,
+          "differenceVsSolidity": -11629205,
+          "fitsStandaloneBlockGasLimit": true
+        }
+      ],
+      "solidityReceiptGas": 12474307,
+      "legacyWasmReceiptGas": 48148,
+      "legacyAlgorithmGas": 25000,
+      "solidityTxHash": "0x91dc6137c6c692333f4209e5024a1df358e197c720a565ca4cdc0a964c47c3d4",
+      "wasmTxHash": "0x9abf32a984479d2bd2c737e2f07ab0df3d459bba659d345b6cbfbf754f19c287",
+      "input": {
+        "iterations": "500",
+        "keyLength": "32",
+        "passwordHex": "0x70617373776f7264",
+        "saltHex": "0x73616c74"
+      },
+      "cheaperGridPoints": 25,
+      "inputEncodingComparable": true
+    },
+    {
+      "algorithm": "Dh2048Secret",
+      "metric": "exponentBits",
+      "inputLevel": 128,
+      "baseFee": 2078080,
+      "grid": [
+        {
+          "parentCalls": 0,
+          "callIndex": 1,
+          "algorithmQuote": 2078080,
+          "projectedStandaloneGas": 2101736,
+          "differenceVsSolidity": 1690831,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 2,
+          "algorithmQuote": 2078080,
+          "projectedStandaloneGas": 2101736,
+          "differenceVsSolidity": 1690831,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 3,
+          "algorithmQuote": 2597600,
+          "projectedStandaloneGas": 2621256,
+          "differenceVsSolidity": 2210351,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 4,
+          "algorithmQuote": 3247000,
+          "projectedStandaloneGas": 3270656,
+          "differenceVsSolidity": 2859751,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 5,
+          "algorithmQuote": 4058750,
+          "projectedStandaloneGas": 4082406,
+          "differenceVsSolidity": 3671501,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 1,
+          "algorithmQuote": 2285888,
+          "projectedStandaloneGas": 2309544,
+          "differenceVsSolidity": 1898639,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 2,
+          "algorithmQuote": 2285888,
+          "projectedStandaloneGas": 2309544,
+          "differenceVsSolidity": 1898639,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 3,
+          "algorithmQuote": 2857360,
+          "projectedStandaloneGas": 2881016,
+          "differenceVsSolidity": 2470111,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 4,
+          "algorithmQuote": 3571700,
+          "projectedStandaloneGas": 3595356,
+          "differenceVsSolidity": 3184451,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 5,
+          "algorithmQuote": 4464625,
+          "projectedStandaloneGas": 4488281,
+          "differenceVsSolidity": 4077376,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 1,
+          "algorithmQuote": 2493696,
+          "projectedStandaloneGas": 2517352,
+          "differenceVsSolidity": 2106447,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 2,
+          "algorithmQuote": 2493696,
+          "projectedStandaloneGas": 2517352,
+          "differenceVsSolidity": 2106447,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 3,
+          "algorithmQuote": 3117120,
+          "projectedStandaloneGas": 3140776,
+          "differenceVsSolidity": 2729871,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 4,
+          "algorithmQuote": 3896400,
+          "projectedStandaloneGas": 3920056,
+          "differenceVsSolidity": 3509151,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 5,
+          "algorithmQuote": 4870500,
+          "projectedStandaloneGas": 4894156,
+          "differenceVsSolidity": 4483251,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 1,
+          "algorithmQuote": 2701504,
+          "projectedStandaloneGas": 2725160,
+          "differenceVsSolidity": 2314255,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 2,
+          "algorithmQuote": 2701504,
+          "projectedStandaloneGas": 2725160,
+          "differenceVsSolidity": 2314255,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 3,
+          "algorithmQuote": 3376880,
+          "projectedStandaloneGas": 3400536,
+          "differenceVsSolidity": 2989631,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 4,
+          "algorithmQuote": 4221100,
+          "projectedStandaloneGas": 4244756,
+          "differenceVsSolidity": 3833851,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 5,
+          "algorithmQuote": 5276375,
+          "projectedStandaloneGas": 5300031,
+          "differenceVsSolidity": 4889126,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 1,
+          "algorithmQuote": 2909312,
+          "projectedStandaloneGas": 2932968,
+          "differenceVsSolidity": 2522063,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 2,
+          "algorithmQuote": 2909312,
+          "projectedStandaloneGas": 2932968,
+          "differenceVsSolidity": 2522063,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 3,
+          "algorithmQuote": 3636640,
+          "projectedStandaloneGas": 3660296,
+          "differenceVsSolidity": 3249391,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 4,
+          "algorithmQuote": 4545800,
+          "projectedStandaloneGas": 4569456,
+          "differenceVsSolidity": 4158551,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 5,
+          "algorithmQuote": 5682250,
+          "projectedStandaloneGas": 5705906,
+          "differenceVsSolidity": 5295001,
+          "fitsStandaloneBlockGasLimit": true
+        }
+      ],
+      "solidityReceiptGas": 410905,
+      "legacyWasmReceiptGas": 223656,
+      "legacyAlgorithmGas": 200000,
+      "solidityTxHash": "0xbfc3b9e64dc14f004b6a780e1c8efa582e4d8b88f36f714211175a1cec55a0d8",
+      "wasmTxHash": "0xdea14522fb8ca1a1abbb368b358167124daff4efcc57e6d09f466fb70deb0816",
+      "input": {
+        "peerPublicKeyByteLen": "256",
+        "peerPublicKeyHex": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004",
+        "peerPublicKeySha256": "0xf28df1a76e0150b22b6a770bc3e555ddbf3145ec80adb4244a1c094a109c1c08",
+        "privateKeyHex": "0x80000000000000000000000000000001"
+      },
+      "cheaperGridPoints": 0,
+      "inputEncodingComparable": false,
+      "inputCaveat": "Solidity requires 256-byte left-padded peer public key; calibration used single byte 0x04 (same integer)."
+    },
+    {
+      "algorithm": "PedersenCommit",
+      "metric": "messageBits",
+      "inputLevel": 128,
+      "baseFee": 2074300,
+      "grid": [
+        {
+          "parentCalls": 0,
+          "callIndex": 1,
+          "algorithmQuote": 2074300
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 2,
+          "algorithmQuote": 2074300
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 3,
+          "algorithmQuote": 2592875
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 4,
+          "algorithmQuote": 3241094
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 5,
+          "algorithmQuote": 4051368
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 1,
+          "algorithmQuote": 2281730
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 2,
+          "algorithmQuote": 2281730
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 3,
+          "algorithmQuote": 2852163
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 4,
+          "algorithmQuote": 3565204
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 5,
+          "algorithmQuote": 4456504
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 1,
+          "algorithmQuote": 2489160
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 2,
+          "algorithmQuote": 2489160
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 3,
+          "algorithmQuote": 3111450
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 4,
+          "algorithmQuote": 3889313
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 5,
+          "algorithmQuote": 4861641
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 1,
+          "algorithmQuote": 2696590
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 2,
+          "algorithmQuote": 2696590
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 3,
+          "algorithmQuote": 3370738
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 4,
+          "algorithmQuote": 4213422
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 5,
+          "algorithmQuote": 5266778
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 1,
+          "algorithmQuote": 2904020
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 2,
+          "algorithmQuote": 2904020
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 3,
+          "algorithmQuote": 3630025
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 4,
+          "algorithmQuote": 4537532
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 5,
+          "algorithmQuote": 5671915
+        }
+      ],
+      "unavailable": "Solidity PedersenCommit reverts for both 128-bit and 16-bit calibrated scalars; no matched receipt."
+    },
+    {
+      "algorithm": "SchnorrVerify",
+      "metric": "messageBytes",
+      "inputLevel": 256,
+      "baseFee": 7957400,
+      "grid": [
+        {
+          "parentCalls": 0,
+          "callIndex": 1,
+          "algorithmQuote": 7957400,
+          "projectedStandaloneGas": 7987456,
+          "differenceVsSolidity": 5930772,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 2,
+          "algorithmQuote": 7957400,
+          "projectedStandaloneGas": 7987456,
+          "differenceVsSolidity": 5930772,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 3,
+          "algorithmQuote": 9946750,
+          "projectedStandaloneGas": 9976806,
+          "differenceVsSolidity": 7920122,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 4,
+          "algorithmQuote": 12433438,
+          "projectedStandaloneGas": 12463494,
+          "differenceVsSolidity": 10406810,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 5,
+          "algorithmQuote": 15541797,
+          "projectedStandaloneGas": 15571853,
+          "differenceVsSolidity": 13515169,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 1,
+          "algorithmQuote": 8753140,
+          "projectedStandaloneGas": 8783196,
+          "differenceVsSolidity": 6726512,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 2,
+          "algorithmQuote": 8753140,
+          "projectedStandaloneGas": 8783196,
+          "differenceVsSolidity": 6726512,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 3,
+          "algorithmQuote": 10941425,
+          "projectedStandaloneGas": 10971481,
+          "differenceVsSolidity": 8914797,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 4,
+          "algorithmQuote": 13676782,
+          "projectedStandaloneGas": 13706838,
+          "differenceVsSolidity": 11650154,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 5,
+          "algorithmQuote": 17095977,
+          "projectedStandaloneGas": 17126033,
+          "differenceVsSolidity": 15069349,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 1,
+          "algorithmQuote": 9548880,
+          "projectedStandaloneGas": 9578936,
+          "differenceVsSolidity": 7522252,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 2,
+          "algorithmQuote": 9548880,
+          "projectedStandaloneGas": 9578936,
+          "differenceVsSolidity": 7522252,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 3,
+          "algorithmQuote": 11936100,
+          "projectedStandaloneGas": 11966156,
+          "differenceVsSolidity": 9909472,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 4,
+          "algorithmQuote": 14920125,
+          "projectedStandaloneGas": 14950181,
+          "differenceVsSolidity": 12893497,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 5,
+          "algorithmQuote": 18650157,
+          "projectedStandaloneGas": 18680213,
+          "differenceVsSolidity": 16623529,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 1,
+          "algorithmQuote": 10344620,
+          "projectedStandaloneGas": 10374676,
+          "differenceVsSolidity": 8317992,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 2,
+          "algorithmQuote": 10344620,
+          "projectedStandaloneGas": 10374676,
+          "differenceVsSolidity": 8317992,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 3,
+          "algorithmQuote": 12930775,
+          "projectedStandaloneGas": 12960831,
+          "differenceVsSolidity": 10904147,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 4,
+          "algorithmQuote": 16163469,
+          "projectedStandaloneGas": 16193525,
+          "differenceVsSolidity": 14136841,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 5,
+          "algorithmQuote": 20204336,
+          "projectedStandaloneGas": 20234392,
+          "differenceVsSolidity": 18177708,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 1,
+          "algorithmQuote": 11140360,
+          "projectedStandaloneGas": 11170416,
+          "differenceVsSolidity": 9113732,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 2,
+          "algorithmQuote": 11140360,
+          "projectedStandaloneGas": 11170416,
+          "differenceVsSolidity": 9113732,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 3,
+          "algorithmQuote": 13925450,
+          "projectedStandaloneGas": 13955506,
+          "differenceVsSolidity": 11898822,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 4,
+          "algorithmQuote": 17406813,
+          "projectedStandaloneGas": 17436869,
+          "differenceVsSolidity": 15380185,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 5,
+          "algorithmQuote": 21758516,
+          "projectedStandaloneGas": 21788572,
+          "differenceVsSolidity": 19731888,
+          "fitsStandaloneBlockGasLimit": true
+        }
+      ],
+      "solidityReceiptGas": 2056684,
+      "legacyWasmReceiptGas": 230056,
+      "legacyAlgorithmGas": 200000,
+      "solidityTxHash": "0x510c8beecb0ab773bcb4a99c8e07b68c675dd7f886bf4fc050ac0a3d43b2d54d",
+      "wasmTxHash": "0xc72c3cbec68c01eed906826516e9c0b65064106680b24c883955f007f98c7cfd",
+      "input": {
+        "messageHex": "0x73737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373",
+        "proofByteLength": "768",
+        "proofHex": "0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f93eeaef1e88fac69ff1f6f1e9dd3a20e272934001c1096d4ed8df8d57f5ffa",
+        "proofSha256": "0xdbca247002d0f9009dc9ceb85f9165d6fc9d10757fabee4bcb3daaa552234b08"
+      },
+      "cheaperGridPoints": 0,
+      "inputEncodingComparable": true
+    },
+    {
+      "algorithm": "PolynomialMul",
+      "metric": "polynomialLength",
+      "inputLevel": 4,
+      "baseFee": 220,
+      "grid": [
+        {
+          "parentCalls": 0,
+          "callIndex": 1,
+          "algorithmQuote": 220,
+          "projectedStandaloneGas": 23972,
+          "differenceVsSolidity": -9773,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 2,
+          "algorithmQuote": 220,
+          "projectedStandaloneGas": 23972,
+          "differenceVsSolidity": -9773,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 3,
+          "algorithmQuote": 275,
+          "projectedStandaloneGas": 24027,
+          "differenceVsSolidity": -9718,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 4,
+          "algorithmQuote": 344,
+          "projectedStandaloneGas": 24096,
+          "differenceVsSolidity": -9649,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 0,
+          "callIndex": 5,
+          "algorithmQuote": 430,
+          "projectedStandaloneGas": 24182,
+          "differenceVsSolidity": -9563,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 1,
+          "algorithmQuote": 242,
+          "projectedStandaloneGas": 23994,
+          "differenceVsSolidity": -9751,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 2,
+          "algorithmQuote": 242,
+          "projectedStandaloneGas": 23994,
+          "differenceVsSolidity": -9751,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 3,
+          "algorithmQuote": 303,
+          "projectedStandaloneGas": 24055,
+          "differenceVsSolidity": -9690,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 4,
+          "algorithmQuote": 379,
+          "projectedStandaloneGas": 24131,
+          "differenceVsSolidity": -9614,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 1,
+          "callIndex": 5,
+          "algorithmQuote": 473,
+          "projectedStandaloneGas": 24225,
+          "differenceVsSolidity": -9520,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 1,
+          "algorithmQuote": 264,
+          "projectedStandaloneGas": 24016,
+          "differenceVsSolidity": -9729,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 2,
+          "algorithmQuote": 264,
+          "projectedStandaloneGas": 24016,
+          "differenceVsSolidity": -9729,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 3,
+          "algorithmQuote": 330,
+          "projectedStandaloneGas": 24082,
+          "differenceVsSolidity": -9663,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 4,
+          "algorithmQuote": 413,
+          "projectedStandaloneGas": 24165,
+          "differenceVsSolidity": -9580,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 2,
+          "callIndex": 5,
+          "algorithmQuote": 516,
+          "projectedStandaloneGas": 24268,
+          "differenceVsSolidity": -9477,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 1,
+          "algorithmQuote": 286,
+          "projectedStandaloneGas": 24038,
+          "differenceVsSolidity": -9707,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 2,
+          "algorithmQuote": 286,
+          "projectedStandaloneGas": 24038,
+          "differenceVsSolidity": -9707,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 3,
+          "algorithmQuote": 358,
+          "projectedStandaloneGas": 24110,
+          "differenceVsSolidity": -9635,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 4,
+          "algorithmQuote": 447,
+          "projectedStandaloneGas": 24199,
+          "differenceVsSolidity": -9546,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 3,
+          "callIndex": 5,
+          "algorithmQuote": 559,
+          "projectedStandaloneGas": 24311,
+          "differenceVsSolidity": -9434,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 1,
+          "algorithmQuote": 308,
+          "projectedStandaloneGas": 24060,
+          "differenceVsSolidity": -9685,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 2,
+          "algorithmQuote": 308,
+          "projectedStandaloneGas": 24060,
+          "differenceVsSolidity": -9685,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 3,
+          "algorithmQuote": 385,
+          "projectedStandaloneGas": 24137,
+          "differenceVsSolidity": -9608,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 4,
+          "algorithmQuote": 482,
+          "projectedStandaloneGas": 24234,
+          "differenceVsSolidity": -9511,
+          "fitsStandaloneBlockGasLimit": true
+        },
+        {
+          "parentCalls": 4,
+          "callIndex": 5,
+          "algorithmQuote": 602,
+          "projectedStandaloneGas": 24354,
+          "differenceVsSolidity": -9391,
+          "fitsStandaloneBlockGasLimit": true
+        }
+      ],
+      "solidityReceiptGas": 33745,
+      "legacyWasmReceiptGas": 31952,
+      "legacyAlgorithmGas": 8200,
+      "solidityTxHash": "0x8d50efafe205d1ec88fa5d4d37eaf2549edbf1bb026d5e2bf14154a91b5203c2",
+      "wasmTxHash": "0x2e1216964432dc61895ce316c9cd963024a573ff6657a8f9460500d1dadc7f58",
+      "input": {
+        "coefMax": "0",
+        "expectedPrefix": "[1,4,10]",
+        "leftLen": "4",
+        "modulus": "12289",
+        "mulIterations": "16",
+        "profile": "P1",
+        "rightLen": "4"
+      },
+      "cheaperGridPoints": 25,
+      "inputEncodingComparable": true
+    }
+  ]
+}

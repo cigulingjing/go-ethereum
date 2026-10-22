@@ -1,0 +1,99 @@
+{
+  "experiment": "tx-gas-comparison",
+  "referenceInputs": true,
+  "timestamp": "2026-10-22T13:28:16.768890174Z",
+  "rpc": "http://127.0.0.1:8545",
+  "chainId": 11223344,
+  "sender": "0xF5F871aA6Bd253914705898c66251f994aa426FA",
+  "command": [
+    "/tmp/go-build529247168/b001/exe/benchtxgas",
+    "-rpc",
+    "http://127.0.0.1:8545",
+    "-reference-inputs",
+    "-algorithms",
+    "Dh2048Secret,PedersenCommit,SchnorrVerify,PolynomialMul",
+    "-solc",
+    "/home/liuqi/project/.tools/solc/solc-0.8.26",
+    "-output-json",
+    "/tmp/cryptogas-reference-chain-20261022/solidity-baseline-last.json"
+  ],
+  "solc": "/home/liuqi/project/.tools/solc/solc-0.8.26",
+  "evmVersion": "paris",
+  "requestedAlgorithms": [
+    "Dh2048Secret",
+    "PedersenCommit",
+    "SchnorrVerify",
+    "PolynomialMul"
+  ],
+  "results": [
+    {
+      "algorithm": "Dh2048Secret",
+      "upgradeName": "Dh2048Secret",
+      "legacyAlgorithmGas": 200000,
+      "input": {
+        "peerPublicKeyByteLen": "256",
+        "peerPublicKeyHex": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004",
+        "peerPublicKeySha256": "0xf28df1a76e0150b22b6a770bc3e555ddbf3145ec80adb4244a1c094a109c1c08",
+        "privateKeyHex": "0x80000000000000000000000000000001"
+      },
+      "abiInputTypes": [
+        "bytes",
+        "bytes"
+      ],
+      "abiOutputTypes": [
+        "bytes"
+      ],
+      "wasmUpgrade": {
+        "txHash": "0x7373f17d4198a23bd3835dc2dca4bd7ecd719c87a32d0887ff3683c0429baa60",
+        "blockNumber": 21,
+        "status": 1,
+        "gasUsed": 500800,
+        "effectiveGasPrice": "71486836",
+        "calldataBytes": 30244,
+        "function": "Dh2048Secret",
+        "sourcePath": "/home/liuqi/project/go-ethereum/experiments/cryptoupgrade/algorithm/go/wasm/dh2048.wasm",
+        "wasmHash": "0xd96b736c15258b1571cd117d63f6c2bc502656e44bd81e390f57b9c9ebb1d979",
+        "sourceBytes": 45919,
+        "compressedBase64Bytes": 29856
+      },
+      "contractUpgrade": {
+        "txHash": "0xf4a168d50254ec2e8e6591a493c28365ebdb2ebf9696f1d4d27324570ddb04b0",
+        "blockNumber": 22,
+        "status": 1,
+        "gasUsed": 590802,
+        "effectiveGasPrice": "62964179",
+        "calldataBytes": 2516,
+        "function": "Dh2048Secret",
+        "sourcePath": "/home/liuqi/project/go-ethereum/experiments/cryptoupgrade/algorithm/contracts/src/Dh2048.sol",
+        "contract": "Dh2048",
+        "contractAddress": "0xf24b76C173410121Ab3089f5bd58B260C2D61242",
+        "contractBinBytes": 2516
+      },
+      "wasmExecution": {
+        "txHash": "0xdea14522fb8ca1a1abbb368b358167124daff4efcc57e6d09f466fb70deb0816",
+        "blockNumber": 23,
+        "status": 1,
+        "gasUsed": 223656,
+        "effectiveGasPrice": "55517248",
+        "calldataBytes": 580
+      },
+      "contractExecution": {
+        "txHash": "0xbfc3b9e64dc14f004b6a780e1c8efa582e4d8b88f36f714211175a1cec55a0d8",
+        "blockNumber": 24,
+        "status": 1,
+        "gasUsed": 410905,
+        "effectiveGasPrice": "48801946",
+        "calldataBytes": 420
+      },
+      "outputMatched": true,
+      "outputValue": "0xcbbdf565d27b4798a11b2d82d1426282d1baf61d59c86dddb20468733d2e5a07f3273b941a5129e930c12ddf0ca460ca0b1931c83ec98c5e1f01b2b546b67e3aa5c3b4b221681e63dc74247aadeaa29c4130d02ea8d550a43631fc88dd1ee0656089653bb659525c14351b31671d41e3b89b69180fe05fa275a8d215061ff013fb35b6b2c0244fec580a15ac8e09ed3b794b8675e42135c828ce8a95c8c9cdca915aafd5b0e81ba4b8c71e30be246397a2b89a5984856326968d4505c5ec54b43799b5c0573eec71fdcfae82c626641311c49f46277f59f5188ff6c622c15aa6970ed332e67cff60cec89fd27acbf8949d5b64b5ad759d32dae8d74986c762e3"
+    }
+  ],
+  "outputJson": "/tmp/cryptogas-reference-chain-20261022/solidity-baseline-last.json",
+  "notes": [
+    "all gas values are receipt gasUsed of real transactions on a single-node Clique chain, not eth_estimateGas",
+    "wasmUpgrade = CodeStorage.uploadCode transaction; contractUpgrade = Solidity deployment transaction",
+    "wasmExecution = CodeStorage.callFunc transaction; contractExecution = Solidity contract call transaction",
+    "execution outputs are validated identical via eth_call before sending execution transactions"
+  ]
+}

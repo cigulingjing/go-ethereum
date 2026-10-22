@@ -1,0 +1,265 @@
+{
+  "method": "ceil(anchorGas * median(run medians) / median(anchor medians))",
+  "runs": 3,
+  "anchorAlgorithm": "Add",
+  "anchorGas": 100,
+  "anchorMedianNs": 500,
+  "algorithms": {
+    "Add": {
+      "metric": "operandBits",
+      "referenceValue": 64,
+      "wasmSha256": "61b1d04b7cb15d8f2470d65054e957d51ae167f8f6582dbea16ca6074662851d",
+      "measurements": [
+        {
+          "value": 8,
+          "inputBytes": 64,
+          "medianNs": 500,
+          "rawProportionalGas": 100
+        },
+        {
+          "value": 64,
+          "inputBytes": 64,
+          "medianNs": 500,
+          "rawProportionalGas": 100
+        },
+        {
+          "value": 128,
+          "inputBytes": 64,
+          "medianNs": 600,
+          "rawProportionalGas": 120
+        },
+        {
+          "value": 254,
+          "inputBytes": 64,
+          "medianNs": 600,
+          "rawProportionalGas": 120
+        }
+      ],
+      "referenceBaseGas": 100
+    },
+    "Sha256": {
+      "metric": "messageBytes",
+      "referenceValue": 256,
+      "wasmSha256": "a24187bd6e739ae2e6a9856ce17059461a9aafbe93a93f9970da5e7478501af2",
+      "measurements": [
+        {
+          "value": 32,
+          "inputBytes": 96,
+          "medianNs": 1100,
+          "rawProportionalGas": 220
+        },
+        {
+          "value": 256,
+          "inputBytes": 320,
+          "medianNs": 3700,
+          "rawProportionalGas": 740
+        },
+        {
+          "value": 1024,
+          "inputBytes": 1088,
+          "medianNs": 11700,
+          "rawProportionalGas": 2340
+        },
+        {
+          "value": 4096,
+          "inputBytes": 4160,
+          "medianNs": 43400,
+          "rawProportionalGas": 8680
+        }
+      ],
+      "referenceBaseGas": 740
+    },
+    "Blake2bSum256": {
+      "metric": "messageBytes",
+      "referenceValue": 256,
+      "wasmSha256": "82e8c76239f462f32f7d8d7a77d45bde4051b2a2866b2155f071aaba61107a2b",
+      "measurements": [
+        {
+          "value": 32,
+          "inputBytes": 96,
+          "medianNs": 800,
+          "rawProportionalGas": 160
+        },
+        {
+          "value": 256,
+          "inputBytes": 320,
+          "medianNs": 1200,
+          "rawProportionalGas": 240
+        },
+        {
+          "value": 1024,
+          "inputBytes": 1088,
+          "medianNs": 3500,
+          "rawProportionalGas": 700
+        },
+        {
+          "value": 4096,
+          "inputBytes": 4160,
+          "medianNs": 12600,
+          "rawProportionalGas": 2520
+        }
+      ],
+      "referenceBaseGas": 240
+    },
+    "Pbkdf2Sha256": {
+      "metric": "iterations",
+      "referenceValue": 500,
+      "wasmSha256": "6387f7cb32e74ac6b3aa471e832646656cedad51b31dd33698595d05a57a4822",
+      "measurements": [
+        {
+          "value": 100,
+          "inputBytes": 256,
+          "medianNs": 283600,
+          "rawProportionalGas": 56720
+        },
+        {
+          "value": 500,
+          "inputBytes": 256,
+          "medianNs": 1503000,
+          "rawProportionalGas": 300600
+        },
+        {
+          "value": 1000,
+          "inputBytes": 256,
+          "medianNs": 2874100,
+          "rawProportionalGas": 574820
+        },
+        {
+          "value": 2000,
+          "inputBytes": 256,
+          "medianNs": 5725900,
+          "rawProportionalGas": 1145180
+        }
+      ],
+      "referenceBaseGas": 300600
+    },
+    "Dh2048Secret": {
+      "metric": "exponentBits",
+      "referenceValue": 128,
+      "wasmSha256": "58e1b54e6dbe72605694fa2954f5f167cee343f494b1fe87a32cbb6c94ba80bb",
+      "measurements": [
+        {
+          "value": 16,
+          "inputBytes": 192,
+          "medianNs": 319500,
+          "rawProportionalGas": 63900
+        },
+        {
+          "value": 64,
+          "inputBytes": 192,
+          "medianNs": 5578400,
+          "rawProportionalGas": 1115680
+        },
+        {
+          "value": 128,
+          "inputBytes": 192,
+          "medianNs": 10390400,
+          "rawProportionalGas": 2078080
+        },
+        {
+          "value": 256,
+          "inputBytes": 192,
+          "medianNs": 19642800,
+          "rawProportionalGas": 3928560
+        }
+      ],
+      "referenceBaseGas": 2078080
+    },
+    "PedersenCommit": {
+      "metric": "messageBits",
+      "referenceValue": 128,
+      "wasmSha256": "1adfb82c851acf0aec067179d11f0e805b8524a14bc61b3c38f12ab66d92ea99",
+      "measurements": [
+        {
+          "value": 16,
+          "inputBytes": 192,
+          "medianNs": 510600,
+          "rawProportionalGas": 102120
+        },
+        {
+          "value": 64,
+          "inputBytes": 192,
+          "medianNs": 5719100,
+          "rawProportionalGas": 1143820
+        },
+        {
+          "value": 128,
+          "inputBytes": 192,
+          "medianNs": 10371500,
+          "rawProportionalGas": 2074300
+        },
+        {
+          "value": 256,
+          "inputBytes": 192,
+          "medianNs": 19943500,
+          "rawProportionalGas": 3988700
+        }
+      ],
+      "referenceBaseGas": 2074300
+    },
+    "SchnorrVerify": {
+      "metric": "messageBytes",
+      "referenceValue": 256,
+      "wasmSha256": "33e19df2530e671449fb7016302b77c9a44ed51cd7901d9caa2ef6ce6c9d968f",
+      "measurements": [
+        {
+          "value": 16,
+          "inputBytes": 928,
+          "medianNs": 39880100,
+          "rawProportionalGas": 7976020
+        },
+        {
+          "value": 64,
+          "inputBytes": 960,
+          "medianNs": 40153200,
+          "rawProportionalGas": 8030640
+        },
+        {
+          "value": 256,
+          "inputBytes": 1152,
+          "medianNs": 39787000,
+          "rawProportionalGas": 7957400
+        },
+        {
+          "value": 1024,
+          "inputBytes": 1920,
+          "medianNs": 39657900,
+          "rawProportionalGas": 7931580
+        }
+      ],
+      "referenceBaseGas": 7957400
+    },
+    "PolynomialMul": {
+      "metric": "polynomialLength",
+      "referenceValue": 4,
+      "wasmSha256": "c8e77cb5411a3661eb8d91fc411056a8be51c8a59ef6acff590937a51d4d6721",
+      "measurements": [
+        {
+          "value": 2,
+          "inputBytes": 288,
+          "medianNs": 700,
+          "rawProportionalGas": 140
+        },
+        {
+          "value": 4,
+          "inputBytes": 416,
+          "medianNs": 1100,
+          "rawProportionalGas": 220
+        },
+        {
+          "value": 8,
+          "inputBytes": 672,
+          "medianNs": 2600,
+          "rawProportionalGas": 520
+        },
+        {
+          "value": 16,
+          "inputBytes": 1184,
+          "medianNs": 7400,
+          "rawProportionalGas": 1480
+        }
+      ],
+      "referenceBaseGas": 220
+    }
+  }
+}

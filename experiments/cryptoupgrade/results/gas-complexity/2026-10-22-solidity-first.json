@@ -1,0 +1,158 @@
+{
+  "experiment": "tx-gas-comparison",
+  "referenceInputs": true,
+  "timestamp": "2026-10-22T13:26:34.668270746Z",
+  "rpc": "http://127.0.0.1:8545",
+  "chainId": 11223344,
+  "sender": "0xF5F871aA6Bd253914705898c66251f994aa426FA",
+  "command": [
+    "/tmp/go-build4267416555/b001/exe/benchtxgas",
+    "-rpc",
+    "http://127.0.0.1:8545",
+    "-reference-inputs",
+    "-solc",
+    "/home/liuqi/project/.tools/solc/solc-0.8.26",
+    "-output-json",
+    "/tmp/cryptogas-reference-chain-20261022/solidity-baseline.json"
+  ],
+  "solc": "/home/liuqi/project/.tools/solc/solc-0.8.26",
+  "evmVersion": "paris",
+  "requestedAlgorithms": [
+    "Add",
+    "Sha256",
+    "Blake2bSum256",
+    "Pbkdf2Sha256",
+    "Dh2048Secret",
+    "PedersenCommit",
+    "SchnorrVerify",
+    "PolynomialMul"
+  ],
+  "results": [
+    {
+      "algorithm": "Add",
+      "upgradeName": "Add",
+      "legacyAlgorithmGas": 3000,
+      "input": {
+        "a": "9223372036854775807",
+        "b": "9223372036854775807",
+        "expected": "18446744073709551614"
+      },
+      "abiInputTypes": [
+        "int256",
+        "int256"
+      ],
+      "abiOutputTypes": [
+        "int256"
+      ],
+      "wasmUpgrade": {
+        "txHash": "0xc7de70d95c0ec15be12fb04f04eed19836407b81ba86a4e4d38123c4647d97aa",
+        "blockNumber": 1,
+        "status": 1,
+        "gasUsed": 152364,
+        "effectiveGasPrice": "876000000",
+        "calldataBytes": 8484,
+        "function": "Add",
+        "sourcePath": "/home/liuqi/project/go-ethereum/experiments/cryptoupgrade/algorithm/go/wasm/add.wasm",
+        "wasmHash": "0x3ccbedd0d23f7d7bc42706a41d077f86cf769b9eb857cbfe58765422a5051cb1",
+        "sourceBytes": 11287,
+        "compressedBase64Bytes": 8080
+      },
+      "contractUpgrade": {
+        "txHash": "0x9a3237d20bd48d13ff41e6cc4794db80012d7a78b3c0b06affa45a18f1a87c11",
+        "blockNumber": 2,
+        "status": 1,
+        "gasUsed": 90309,
+        "effectiveGasPrice": "767734904",
+        "calldataBytes": 196,
+        "function": "Add",
+        "sourcePath": "/home/liuqi/project/go-ethereum/experiments/cryptoupgrade/algorithm/contracts/src/Add.sol",
+        "contract": "AddContract",
+        "contractAddress": "0xc1613662F3Db873fB3Ef80b3F6981C66465698E6",
+        "contractBinBytes": 196
+      },
+      "wasmExecution": {
+        "txHash": "0xdb167abccbed8720f4eb599bcd2745180e7b48977cef3a4553fd7af0ff7aaae0",
+        "blockNumber": 3,
+        "status": 1,
+        "gasUsed": 25236,
+        "effectiveGasPrice": "672468942",
+        "calldataBytes": 228
+      },
+      "contractExecution": {
+        "txHash": "0x2ac4fe3d747213ceb0954d6c3de070dd00a0eca7d30109aa5086745c186ced90",
+        "blockNumber": 4,
+        "status": 1,
+        "gasUsed": 21738,
+        "effectiveGasPrice": "588676122",
+        "calldataBytes": 68
+      },
+      "outputMatched": true,
+      "outputValue": "18446744073709551614"
+    },
+    {
+      "algorithm": "Sha256",
+      "upgradeName": "Sha256",
+      "legacyAlgorithmGas": 3000,
+      "input": {
+        "dataHex": "0x73737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373"
+      },
+      "abiInputTypes": [
+        "bytes"
+      ],
+      "abiOutputTypes": [
+        "bytes"
+      ],
+      "wasmUpgrade": {
+        "txHash": "0x4c6a477748b8ee6322948214a6ecc7b74359c54e65c193eecff18b2202d18377",
+        "blockNumber": 5,
+        "status": 1,
+        "gasUsed": 126180,
+        "effectiveGasPrice": "515322650",
+        "calldataBytes": 6852,
+        "function": "Sha256",
+        "sourcePath": "/home/liuqi/project/go-ethereum/experiments/cryptoupgrade/algorithm/go/wasm/sha256.wasm",
+        "wasmHash": "0x6c4fa35b048e78ea8b6cee18ef875e5a659fd989c35742812144ce2dc0bf1cbd",
+        "sourceBytes": 8167,
+        "compressedBase64Bytes": 6448
+      },
+      "contractUpgrade": {
+        "txHash": "0x2cfff70fb69e6159cc2df6920130c0b88188cbb8fff3117dcac29243af37ea65",
+        "blockNumber": 6,
+        "status": 1,
+        "gasUsed": 130661,
+        "effectiveGasPrice": "451570497",
+        "calldataBytes": 385,
+        "function": "Sha256",
+        "sourcePath": "/home/liuqi/project/go-ethereum/experiments/cryptoupgrade/algorithm/contracts/src/Sha256.sol",
+        "contract": "Sha256Contract",
+        "contractAddress": "0x535c3a2d3c8eA375C1C8E3f5De27dEf00F575bbc",
+        "contractBinBytes": 385
+      },
+      "wasmExecution": {
+        "txHash": "0x38ecf90e6bf0597833057353631a75afef844a02234cf7afecbac3c24173490f",
+        "blockNumber": 7,
+        "status": 1,
+        "gasUsed": 29212,
+        "effectiveGasPrice": "395736921",
+        "calldataBytes": 484
+      },
+      "contractExecution": {
+        "txHash": "0xf5ebb7b859a8bf82dfcfd712a7bde39c8fc57220707f27d2be527a25fc228591",
+        "blockNumber": 8,
+        "status": 1,
+        "gasUsed": 26365,
+        "effectiveGasPrice": "346490244",
+        "calldataBytes": 324
+      },
+      "outputMatched": true,
+      "outputValue": "0x5dbb9529738ae602f76a348645d43c4ad1489c11b54f14ab8b983b735c101b23"
+    }
+  ],
+  "outputJson": "/tmp/cryptogas-reference-chain-20261022/solidity-baseline.json",
+  "notes": [
+    "all gas values are receipt gasUsed of real transactions on a single-node Clique chain, not eth_estimateGas",
+    "wasmUpgrade = CodeStorage.uploadCode transaction; contractUpgrade = Solidity deployment transaction",
+    "wasmExecution = CodeStorage.callFunc transaction; contractExecution = Solidity contract call transaction",
+    "execution outputs are validated identical via eth_call before sending execution transactions"
+  ]
+}

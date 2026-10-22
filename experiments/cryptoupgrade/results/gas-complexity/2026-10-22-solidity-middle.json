@@ -1,0 +1,161 @@
+{
+  "experiment": "tx-gas-comparison",
+  "referenceInputs": true,
+  "timestamp": "2026-10-22T13:27:20.927249677Z",
+  "rpc": "http://127.0.0.1:8545",
+  "chainId": 11223344,
+  "sender": "0xF5F871aA6Bd253914705898c66251f994aa426FA",
+  "command": [
+    "/tmp/go-build2954926373/b001/exe/benchtxgas",
+    "-rpc",
+    "http://127.0.0.1:8545",
+    "-reference-inputs",
+    "-algorithms",
+    "Blake2bSum256,Pbkdf2Sha256,Dh2048Secret,PedersenCommit,SchnorrVerify,PolynomialMul",
+    "-solc",
+    "/home/liuqi/project/.tools/solc/solc-0.8.26",
+    "-output-json",
+    "/tmp/cryptogas-reference-chain-20261022/solidity-baseline-rest.json"
+  ],
+  "solc": "/home/liuqi/project/.tools/solc/solc-0.8.26",
+  "evmVersion": "paris",
+  "requestedAlgorithms": [
+    "Blake2bSum256",
+    "Pbkdf2Sha256",
+    "Dh2048Secret",
+    "PedersenCommit",
+    "SchnorrVerify",
+    "PolynomialMul"
+  ],
+  "results": [
+    {
+      "algorithm": "Blake2bSum256",
+      "upgradeName": "Sum256",
+      "legacyAlgorithmGas": 3000,
+      "input": {
+        "dataHex": "0x7373737373737373737373737373737373737373737373737373737373737373"
+      },
+      "abiInputTypes": [
+        "bytes"
+      ],
+      "abiOutputTypes": [
+        "bytes32"
+      ],
+      "wasmUpgrade": {
+        "txHash": "0x07de5c32f535417772e996b8e79bfe3de3888596ec18dc01aef54ee684821bb2",
+        "blockNumber": 11,
+        "status": 1,
+        "gasUsed": 129120,
+        "effectiveGasPrice": "234664234",
+        "calldataBytes": 7044,
+        "function": "Sum256",
+        "sourcePath": "/home/liuqi/project/go-ethereum/experiments/cryptoupgrade/algorithm/go/wasm/blake2b.wasm",
+        "wasmHash": "0x0587faade3ad4b3c4ccdbdd0ebd4d15093433cdf6914466e10d0ea51dad83acd",
+        "sourceBytes": 8724,
+        "compressedBase64Bytes": 6628
+      },
+      "contractUpgrade": {
+        "txHash": "0xcce3bf9b33aed4e20d2ce536382d0fb91b61f3a68946a99133dd93c1ec14b9f3",
+        "blockNumber": 12,
+        "status": 1,
+        "gasUsed": 856731,
+        "effectiveGasPrice": "205704943",
+        "calldataBytes": 3748,
+        "function": "Sum256",
+        "sourcePath": "/home/liuqi/project/go-ethereum/experiments/cryptoupgrade/algorithm/contracts/src/Blake2b.sol",
+        "contract": "Blake2b",
+        "contractAddress": "0xa72918600c39949F4A183ee949C88AAD85eB63A1",
+        "contractBinBytes": 3748
+      },
+      "wasmExecution": {
+        "txHash": "0x0a18f2367acf5691f4a1c0671f7e40eb993801bec68ac3ce5def716266d28388",
+        "blockNumber": 13,
+        "status": 1,
+        "gasUsed": 25616,
+        "effectiveGasPrice": "181561284",
+        "calldataBytes": 260
+      },
+      "contractExecution": {
+        "txHash": "0xca3143e3aa2ec04861ac7af0e7c6a7b11c25c010e564fb046b26637e88036e45",
+        "blockNumber": 14,
+        "status": 1,
+        "gasUsed": 113670,
+        "effectiveGasPrice": "159029182",
+        "calldataBytes": 100
+      },
+      "outputMatched": true,
+      "outputValue": "0x034fd6e6bd1a8cce22856eaf55a0cf2adcd789ceedebfa881047f83dc917b6a6"
+    },
+    {
+      "algorithm": "Pbkdf2Sha256",
+      "upgradeName": "Pbkdf2Sha256",
+      "legacyAlgorithmGas": 25000,
+      "input": {
+        "iterations": "500",
+        "keyLength": "32",
+        "passwordHex": "0x70617373776f7264",
+        "saltHex": "0x73616c74"
+      },
+      "abiInputTypes": [
+        "bytes",
+        "bytes",
+        "uint256",
+        "uint256"
+      ],
+      "abiOutputTypes": [
+        "bytes"
+      ],
+      "wasmUpgrade": {
+        "txHash": "0x9684b2537ea1925bb867636a9677cae0324780674ec5cf2df0d73dcc0ea8346f",
+        "blockNumber": 15,
+        "status": 1,
+        "gasUsed": 173300,
+        "effectiveGasPrice": "139423196",
+        "calldataBytes": 9764,
+        "function": "Pbkdf2Sha256",
+        "sourcePath": "/home/liuqi/project/go-ethereum/experiments/cryptoupgrade/algorithm/go/wasm/pbkdf2_sha256.wasm",
+        "wasmHash": "0x7422a3d54b527cb3ad019830cf53922dfacf0cb1eadd2462e3bbea4b9b22a077",
+        "sourceBytes": 12191,
+        "compressedBase64Bytes": 9376
+      },
+      "contractUpgrade": {
+        "txHash": "0xba96534b3acf132b72cadd933acdc496a82f437d38b1326e8937a2537f0b4567",
+        "blockNumber": 16,
+        "status": 1,
+        "gasUsed": 388984,
+        "effectiveGasPrice": "122317298",
+        "calldataBytes": 1582,
+        "function": "Pbkdf2Sha256",
+        "sourcePath": "/home/liuqi/project/go-ethereum/experiments/cryptoupgrade/algorithm/contracts/src/Pbkdf2Sha256.sol",
+        "contract": "Pbkdf2Sha256Contract",
+        "contractAddress": "0xB031a5647Bb01c27934Ae5fc1a88c970014cF374",
+        "contractBinBytes": 1582
+      },
+      "wasmExecution": {
+        "txHash": "0x9abf32a984479d2bd2c737e2f07ab0df3d459bba659d345b6cbfbf754f19c287",
+        "blockNumber": 17,
+        "status": 1,
+        "gasUsed": 48148,
+        "effectiveGasPrice": "107539797",
+        "calldataBytes": 420
+      },
+      "contractExecution": {
+        "txHash": "0x91dc6137c6c692333f4209e5024a1df358e197c720a565ca4cdc0a964c47c3d4",
+        "blockNumber": 18,
+        "status": 1,
+        "gasUsed": 12474307,
+        "effectiveGasPrice": "94264367",
+        "calldataBytes": 260
+      },
+      "outputMatched": true,
+      "outputValue": "0xd64e8195b42b448b3b11993fe808dba4ab8b27ee81e672ee8977bc7416e258a3"
+    }
+  ],
+  "outputJson": "/tmp/cryptogas-reference-chain-20261022/solidity-baseline-rest.json",
+  "notes": [
+    "all gas values are receipt gasUsed of real transactions on a single-node Clique chain, not eth_estimateGas",
+    "wasmUpgrade = CodeStorage.uploadCode transaction; contractUpgrade = Solidity deployment transaction",
+    "wasmExecution = CodeStorage.callFunc transaction; contractExecution = Solidity contract call transaction",
+    "execution outputs are validated identical via eth_call before sending execution transactions"
+  ]
+}
