@@ -185,14 +185,20 @@ func (l *Loader) compileAndInstantiate(ctx context.Context, wasmPath, compiledPa
 		}
 	}
 	recordTrace(ctx, "wasm_instantiated", wasmPath, compiledPath, time.Since(instantiateStart), nil)
+	inputOffset := memory.Size()
+	if inputOffset < inputMemoryOffset {
+		inputOffset = inputMemoryOffset
+	}
 
 	return &preparedModule{
-		runtime:   rt,
-		module:    instance,
-		execute:   execute,
-		memory:    memory,
-		wasmPath:  wasmPath,
-		cachePath: compiledPath,
+		runtime:     rt,
+		module:      instance,
+		execute:     execute,
+		allocate:    instance.ExportedFunction("allocate"),
+		memory:      memory,
+		inputOffset: inputOffset,
+		wasmPath:    wasmPath,
+		cachePath:   compiledPath,
 	}, nil
 }
 
@@ -210,12 +216,14 @@ func recordTrace(ctx context.Context, stage, wasmPath, compiledPath string, dura
 }
 
 type preparedModule struct {
-	runtime   wazero.Runtime
-	module    api.Module
-	execute   api.Function
-	memory    api.Memory
-	wasmPath  string
-	cachePath string
+	runtime     wazero.Runtime
+	module      api.Module
+	execute     api.Function
+	allocate    api.Function
+	memory      api.Memory
+	inputOffset uint32
+	wasmPath    string
+	cachePath   string
 
 	mu sync.Mutex
 }
@@ -254,13 +262,23 @@ func (m *preparedModule) Execute(ctx context.Context, timeout time.Duration, inp
 	}
 	defer cancel()
 
-	if err := m.ensureInputCapacity(inputMemoryOffset, uint32(len(input))); err != nil {
+	inputOffset := m.inputOffset
+	if m.allocate != nil {
+		allocated, err := m.allocate.Call(execCtx, api.EncodeU32(uint32(len(input))))
+		if err != nil {
+			return nil, fmt.Errorf("allocate wasm input for %s: %w", m.wasmPath, err)
+		}
+		if len(allocated) != 1 {
+			return nil, fmt.Errorf("allocate wasm input for %s returned %d values, want 1", m.wasmPath, len(allocated))
+		}
+		inputOffset = api.DecodeU32(allocated[0])
+	} else if err := m.ensureInputCapacity(inputOffset, uint32(len(input))); err != nil {
 		return nil, err
 	}
-	if !m.memory.Write(inputMemoryOffset, input) {
+	if !m.memory.Write(inputOffset, input) {
 		return nil, fmt.Errorf("write %d input bytes to wasm memory", len(input))
 	}
-	results, err := m.execute.Call(execCtx, api.EncodeU32(inputMemoryOffset), api.EncodeU32(uint32(len(input))))
+	results, err := m.execute.Call(execCtx, api.EncodeU32(inputOffset), api.EncodeU32(uint32(len(input))))
 	if err != nil {
 		return nil, fmt.Errorf("execute wasm module %s: %w", m.wasmPath, err)
 	}

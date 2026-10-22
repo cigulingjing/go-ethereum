@@ -155,6 +155,8 @@ func wrapperSource(spec Spec) ([]byte, error) {
 		return formatWrapper(fmt.Sprintf(bytesBytesWrapperTemplate, spec.Function))
 	case signatureKey([]string{"bytes", "bytes"}, []string{"bool"}):
 		return formatWrapper(fmt.Sprintf(bytesBoolWrapperTemplate, spec.Function))
+	case signatureKey([]string{"bytes", "bytes", "bytes"}, []string{"bool"}):
+		return formatWrapper(fmt.Sprintf(bytesBytesBytesBoolWrapperTemplate, spec.Function))
 	case signatureKey([]string{"bytes", "bytes", "uint256", "uint256"}, []string{"bytes"}):
 		return formatWrapper(fmt.Sprintf(bytesBytesUintWrapperTemplate, spec.Function))
 	case signatureKey([]string{"uint256[]", "uint256[]", "uint256"}, []string{"uint256[]"}):
@@ -165,6 +167,23 @@ func wrapperSource(spec Spec) ([]byte, error) {
 }
 
 func formatWrapper(source string) ([]byte, error) {
+	const allocator = `var wasmInputBuffer []byte
+
+//go:wasmexport allocate
+func allocate(length uint32) uint32 {
+	needed := int(length)
+	if needed == 0 {
+		needed = 1
+	}
+	if cap(wasmInputBuffer) < needed {
+		wasmInputBuffer = make([]byte, needed)
+	}
+	wasmInputBuffer = wasmInputBuffer[:needed]
+	return wasmMemoryPointer(&wasmInputBuffer[0])
+}
+
+`
+	source = strings.Replace(source, "func main() {}", allocator+"func main() {}", 1)
 	formatted, err := format.Source([]byte(source))
 	if err != nil {
 		return nil, fmt.Errorf("format wrapper source: %w", err)
@@ -527,6 +546,12 @@ func wasmAlign32(length int) int {
 
 func main() {}
 `
+
+var bytesBytesBytesBoolWrapperTemplate = strings.Replace(
+	strings.Replace(bytesBoolWrapperTemplate,
+		"if left == nil || right == nil {",
+		"third := wasmReadBytesArg(input, 2)\n\tif left == nil || right == nil || third == nil {", 1),
+	"result := %s(left, right)", "result := %s(left, right, third)", 1)
 
 const bytesBoolWrapperTemplate = `package main
 

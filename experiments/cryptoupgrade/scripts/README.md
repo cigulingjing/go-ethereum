@@ -193,6 +193,72 @@ go run ./experiments/cryptoupgrade/scripts/benchtxgas \
 
 常用参数：`-from`，`-solc`，`-poly-profile P1`，`-output-json`。默认结果目录为 `experiments/cryptoupgrade/output/results/tx-gas/`。
 
+### SHA-256 轻量 WASM 升级 Gas 对照
+
+`algorithm/go/sha256.go` 使用独立 SHA-256 实现，避免 `crypto/sha256` 的传递依赖扩大 WASM。使用 TinyGo 0.42.0（Go 1.25）生成模块，并测试 Go 与 WASM 输出：
+
+```bash
+go test ./experiments/cryptoupgrade/algorithm/go -run '^TestSha256' -count=1
+go run ./cryptoupgrade/wasmtool/cmd/wasmbuild \
+  -source experiments/cryptoupgrade/algorithm/go/sha256.go \
+  -out experiments/cryptoupgrade/algorithm/go/wasm/sha256.wasm \
+  -function Sha256 -itype bytes -otype bytes
+go test ./cryptoupgrade/internal/wasmruntime -run '^TestSha256WasmExecute$' -count=1
+```
+
+比较升级 Gas 时，在全新单节点网络（`local-1node.yaml`，Clique `period: 0`）上运行更新后的 `geth`；不要把已上传算法的历史版本原地替换。先从优化前的 Git 快照提取原制品，然后用**长度相同**的名称、同一 ABI 和算法 Gas 配置分别上传：
+
+```bash
+git show e72de4db4cee2b02fe5b9ab131e807a7d854363f:experiments/cryptoupgrade/algorithm/go/wasm/sha256.wasm > /tmp/sha256-baseline.wasm
+make geth
+go run ./experiments/cryptoupgrade/scripts/render \
+  -config experiments/cryptoupgrade/config/local-1node.yaml \
+  -out "$(pwd)/experiments/cryptoupgrade/output/network/sha256-size-test" \
+  -geth "$(pwd)/build/bin/geth"
+# 在另一终端运行 CRYPTOUPGRADE_MODULE="$(pwd)" ./experiments/cryptoupgrade/output/network/sha256-size-test/node1/start.sh，宿主机 RPC 为 8545。
+KEY=$(cat experiments/cryptoupgrade/config/signer.key)
+go run ./experiments/cryptoupgrade/scripts/upload-wasm \
+  -wasm /tmp/sha256-baseline.wasm -name Sha256BaselineA \
+  -itype bytes -otype bytes -algo-gas 3000 -rpc http://127.0.0.1:8545 -key "$KEY"
+go run ./experiments/cryptoupgrade/scripts/upload-wasm \
+  -wasm experiments/cryptoupgrade/algorithm/go/wasm/sha256.wasm -name Sha256Optimized \
+  -itype bytes -otype bytes -algo-gas 3000 -rpc http://127.0.0.1:8545 -key "$KEY"
+```
+
+本次新链收据对照：原 WASM 68,288 字节、编码 52,504 字节、863,152 Gas；优化后 8,167 字节、编码 6,448 字节、126,288 Gas，减少 736,864 Gas（85.37%）。交易数据、制品哈希和结果保存在 `output/results/sha256-optimized-20261022-172110/comparison.json`。小型 WASM 的执行需要更新后的运行时：其输入区位于模块初始化内存之外，避免固定 64 KiB 地址覆盖模块堆。
+
+### 无 `crypto` 导入的实验算法
+
+`PedersenCommit`、`Pbkdf2Sha256`、`Ed25519Verify` 分别在各自的独立 Go 源码中实现所需的 SHA-256、HMAC-SHA256 或 SHA-512/Ed25519 计算，不依赖 `crypto` 标准库。使用 TinyGo 0.42.0 / Go 1.25.0 和当前 `wasmbuild` 配置时，原始 WASM 大小对比如下（此处不是上链 Gas 测量）：
+
+| 算法 | 原始制品 | 新制品 |
+| --- | ---: | ---: |
+| PedersenCommit | 95,780 B | 48,068 B |
+| Pbkdf2Sha256 | 72,580 B | 12,191 B |
+| Ed25519Verify | 无 | 39,440 B |
+
+重建和验证命令：
+
+```bash
+go run ./cryptoupgrade/wasmtool/cmd/wasmbuild -source experiments/cryptoupgrade/algorithm/go/pedersen_commit.go -out experiments/cryptoupgrade/algorithm/go/wasm/pedersen_commit.wasm -function PedersenCommit -itype bytes,bytes -otype bytes
+go run ./cryptoupgrade/wasmtool/cmd/wasmbuild -source experiments/cryptoupgrade/algorithm/go/pbkdf2_sha256.go -out experiments/cryptoupgrade/algorithm/go/wasm/pbkdf2_sha256.wasm -function Pbkdf2Sha256 -itype bytes,bytes,uint256,uint256 -otype bytes
+go run ./cryptoupgrade/wasmtool/cmd/wasmbuild -source experiments/cryptoupgrade/algorithm/go/ed25519.go -out experiments/cryptoupgrade/algorithm/go/wasm/ed25519.wasm -function Ed25519Verify -itype bytes,bytes,bytes -otype bool
+go test ./experiments/cryptoupgrade/algorithm/go ./cryptoupgrade/internal/wasmruntime
+```
+
+Ed25519 验签使用实验性 `math/big` 运算，并非恒定时间实现或经审计的生产密码库；制品缩小也不等于 Gas 必然同比减少，升级成本应使用实际交易收据测量。
+
+### Schnorr 验签 WASM
+
+`SchnorrVerify` 在算法源码中计算 SHA-256 挑战值，不再导入 `crypto/sha256`；原始 WASM 从 95,960 B 降为 48,630 B（TinyGo 0.42.0 / Go 1.25.0）。这只是制品体积对比，并非升级交易的 Gas 实测。重建与验证：
+
+```bash
+go run ./cryptoupgrade/wasmtool/cmd/wasmbuild -source experiments/cryptoupgrade/algorithm/go/schnorr_proof.go -out experiments/cryptoupgrade/algorithm/go/wasm/schnorr_proof.wasm -function SchnorrVerify -itype bytes,bytes -otype bool
+go test ./experiments/cryptoupgrade/algorithm/go ./cryptoupgrade/internal/wasmruntime -run 'TestSchnorr' -count=1
+```
+
+新构建的 WASM wrapper 暴露 `allocate`，执行器使用模块自身的可复用输入缓冲区，避免连续调用时原先固定输入地址与模块堆重叠。未导出 `allocate` 的旧制品仍沿用兼容路径，已有链上版本不自动替换。
+
 ### `benchthroughput`
 
 测量多个交易数量下的算法吞吐量，支持 WASM upgrade 和 Solidity contract 方案。
