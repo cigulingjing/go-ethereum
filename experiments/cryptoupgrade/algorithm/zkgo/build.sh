@@ -9,7 +9,7 @@ HARNESS="$ZKGO/_harness"
 WASI_SDK_PATH="${WASI_SDK_PATH:-$HOME/.local/opt/wasi-sdk/wasi-sdk-24.0-x86_64-linux}"
 BLST_VER="${BLST_VER:-v0.3.16}"
 BLST_CFLAGS="-O3 -std=gnu11 -D__BLST_NO_ASM__ -D__BLST_NO_CPUID__"
-MCL_SRC="${MCL_SRC:-/tmp/mcl}"
+MCL_SRC="${MCL_SRC:-$ZKGO/groth16_bn254_verify/native}"
 MCL_CXXFLAGS="-O3 -std=c++14 -DNDEBUG -DMCL_DONT_USE_XBYAK -DMCL_BINT_ASM=0 -DMCL_MSM=0 -DMCL_FP_BIT=256 -DMCL_FR_BIT=256"
 MCL_CFLAGS="-O3 -std=gnu11"
 WASM_CXXFLAGS="-O3 -std=c++14 -fno-exceptions -fno-rtti -fno-threadsafe-statics -DNDEBUG -DMCL_BINT_ASM=0 -DMCL_MSM=0 -DMCL_FP_BIT=256 -DMCL_FR_BIT=256 -DCYBOZU_DONT_USE_EXCEPTION -DCYBOZU_DONT_USE_STRING"
@@ -28,11 +28,11 @@ need_mcl() {
 }
 
 ensure_mcl() {
-  if [ -f "$MCL_SRC/src/fp.cpp" ] && [ -f "$MCL_SRC/include/mcl/bn_c256.h" ]; then
-    return
+  if [ ! -f "$MCL_SRC/src/fp.cpp" ] || [ ! -f "$MCL_SRC/include/mcl/bn_c256.h" ] ||
+     [ ! -d "$MCL_SRC/include/cybozu" ] || [ ! -d "$MCL_SRC/src/xbyak" ]; then
+    echo "missing local mcl sources at $MCL_SRC; set MCL_SRC to a local mcl directory" >&2
+    exit 1
   fi
-  echo "cloning herumi/mcl into $MCL_SRC"
-  git clone --depth 1 https://github.com/herumi/mcl.git "$MCL_SRC"
 }
 
 snapshot_blst() {
@@ -66,12 +66,14 @@ EOF
 snapshot_mcl() {
   local algo_dir="$ZKGO/groth16_bn254_verify"
   local native="$algo_dir/native"
-  mkdir -p "$native/include" "$native/src"
-  cp -a "$MCL_SRC/include/mcl" "$native/include/"
-  cp -a "$MCL_SRC/include/cybozu" "$native/include/"
-  cp -a "$MCL_SRC/src/fp.cpp" "$native/src/"
-  find "$MCL_SRC/src" -maxdepth 1 -type f \( -name '*.hpp' -o -name '*.h' \) -exec cp -a {} "$native/src/" \;
-  cp -a "$MCL_SRC/src/xbyak" "$native/src/"
+  if [ ! "$MCL_SRC" -ef "$native" ]; then
+    mkdir -p "$native/include" "$native/src"
+    cp -a "$MCL_SRC/include/mcl" "$native/include/"
+    cp -a "$MCL_SRC/include/cybozu" "$native/include/"
+    cp -a "$MCL_SRC/src/fp.cpp" "$native/src/"
+    find "$MCL_SRC/src" -maxdepth 1 -type f \( -name '*.hpp' -o -name '*.h' \) -exec cp -a {} "$native/src/" \;
+    cp -a "$MCL_SRC/src/xbyak" "$native/src/"
+  fi
   cat > "$algo_dir/SOURCE.txt" <<EOF
 algorithm=groth16_bn254_verify
 curve=bn254
