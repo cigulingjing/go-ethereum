@@ -66,10 +66,12 @@ def run_case(root, binary, matrix, case, index):
     config["accounts"]["signer"]["privateKey"] = str((BASE_CONFIG.parent / "signer.key").resolve())
     config["accounts"]["signer"]["address"] = f"0x{config['accounts']['signer']['address']:040x}"
     config["cryptoupgrade"]["addSource"] = str((ROOT / "experiments/cryptoupgrade/algorithm/go/wasm/add.wasm").resolve())
-    profile = config["cryptoupgrade"]["pricing"]["profile"]
-    profile["threshold"] = case["threshold"]
-    profile["alpha"] = {"numerator": case["alphaNumerator"], "denominator": case["alphaDenominator"]}
-    profile["algorithms"][0]["bands"][0]["gas"] = case["baseGas"]
+    pricing_path = case_root / "pricing.json"
+    pricing_path.write_text(json.dumps({
+        "threshold": case["threshold"],
+        "alpha": {"numerator": case["alphaNumerator"], "denominator": case["alphaDenominator"]},
+        "bands": [{"maxMetric": 2**64-1, "gas": case["baseGas"]}],
+    }, indent=2) + "\n", encoding="utf-8")
     config_path = case_root / "config.yaml"
     config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
     log_path = case_root / "commands.log"
@@ -121,6 +123,12 @@ def run_case(root, binary, matrix, case, index):
                          "-pbkdf-iterations", "10", "-warmup", "2", "-n", "2",
                          "-receipt-samples", "0", "-output-json", str(setup_path)], log_path, environment)
             reference = json.loads(setup_path.read_text(encoding="utf-8"))["results"][0]["setup"]["contract"]["address"]
+            run_command(["go", "run", "./experiments/cryptoupgrade/scripts/upload-wasm",
+                         "-rpc", rpc, "-wasm", str(WASM), "-name", "Pbkdf2Sha256",
+                         "-mode", "immediate", "-version", "2", "-pricing", str(pricing_path),
+                         "-itype", "bytes,bytes,uint256,uint256", "-otype", "bytes",
+                         "-algo-gas", str(case["baseGas"]), "-chain-id", str(11223400 + index),
+                         "-key-file", config["accounts"]["signer"]["privateKey"]], log_path, environment)
             billing = case_root / "billing"
             run_command(["go", "run", "./experiments/cryptoupgrade/scripts/chapterfive/benchbilling",
                          "-rpc", rpc, "-reference", reference, "-genesis", str(genesis_path),

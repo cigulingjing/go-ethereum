@@ -1,6 +1,11 @@
 package model
 
-import "strings"
+import (
+	"encoding/hex"
+	"strings"
+
+	"github.com/ethereum/go-ethereum/cryptoupgrade/pricing"
+)
 
 // Aigis-sig2 没有合适的 Solidity 对照实现，固定作为 EvoCrypt WASM 试点算法。
 const (
@@ -13,8 +18,10 @@ const (
 // AlgorithmInfo 描述动态算法在链上提交并由节点本地激活的元数据。
 // 该类型只承载跨模块数据，升级状态和持久化流程由上层模块管理。
 type AlgorithmInfo struct {
-	Code           string `json:"code"`
-	Gas            uint64 `json:"gas"`
+	Code string `json:"code"`
+	Gas  uint64 `json:"gas"`
+	// Pricing 保存随提案发布的规范 ABI bytes（hex）；空值表示固定 Gas。
+	Pricing        string `json:"pricing,omitempty"`
 	IType          string `json:"itype"`
 	OType          string `json:"otype"`
 	WasmHash       string `json:"wasmHash,omitempty"`
@@ -95,4 +102,12 @@ func splitTypes(types string) []string {
 		parts[index] = strings.TrimSpace(parts[index])
 	}
 	return parts
+}
+
+func (i AlgorithmInfo) PricingSchedule() (pricing.Schedule, error) {
+	raw, err := hex.DecodeString(i.Pricing)
+	if err != nil {
+		return pricing.Schedule{}, err
+	}
+	return pricing.Decode(raw)
 }

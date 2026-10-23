@@ -12,25 +12,31 @@ python3 experiments/cryptoupgrade/scripts/chapterfive/plot_pbkdf2.py \
   experiments/cryptoupgrade/output/results/chapter-five-recheck
 ```
 
-本采集入口固定三路径相同输入和七档内部迭代次数，按 3 轮×30 次 `eth_call`、每档每路径 9 笔真实收据报告。调用计费使用单独的 `local-1node-pricing.yaml` 创世配置及 `Pbkdf2Batch.sol`；不可把两条链的 Gas 费率混为一谈。
+本采集入口固定三路径相同输入和七档内部迭代次数，按 3 轮×30 次 `eth_call`、每档每路径 9 笔真实收据报告。调用计费使用单独的 `local-1node-pricing.yaml` 网络及 `Pbkdf2Batch.sol`，计价参数通过算法版本提案发布，不能写入 genesis。
 
 EvoCrypt 的 `WithCloseOnContextDone` 对照补测见 `results/chapter-five/20261023-single-node-pbkdf2-no-termination/report.md`。仅隔离实验节点可设 `EVOCRYPT_EXPERIMENT_DISABLE_WAZERO_TERMINATION=1`，使其值为 `false`；正常节点默认仍为 `true`。关闭后 WASM 的上下文取消和执行超时不能终止失控计算，不应在生产或共享网络使用。补测仅收集 EvoCrypt 的 `eth_call` 往返时间，不测 Gas。
 
-5.2.2 在**独立单节点链**中固定 10 次 PBKDF2 内部迭代，预注册单笔调用次数 `1,2,3,4,5,6,8,12,16`；仅 PBKDF2 版本 1 在激活块之后采用固定 `g₀=3000`、`N₀=2`、`α=1/2` 的实验计费。父区块倍率恒为 1（暂不实现跨区块自适应计费）。每个目标块只含一笔目标交易，其父块仅含一笔普通自转账；链上 `receipt.gasUsed` 是累计 Gas。先检查创世 profile、上传算法与部署 Solidity 参考合约（可复用 `benchexecutionefficiency -algorithms Pbkdf2Sha256 -pbkdf-iterations 10 -warmup 2 -n 2 -receipt-samples 0` 的 `setup.contract.address`），随后运行：
+5.2.2 在**独立单节点链**中固定 10 次 PBKDF2 内部迭代，预注册单笔调用次数 `1,2,3,4,5,6,8,12,16`；仅携带计价参数的 PBKDF2 版本在激活块之后采用固定 `g₀=3000`、`N₀=2`、`α=1/2` 的实验计费。父区块倍率恒为 1（暂不实现跨区块自适应计费）。每个目标块只含一笔目标交易，其父块仅含一笔普通自转账；链上 `receipt.gasUsed` 是累计 Gas。先上传算法与部署 Solidity 参考合约（可复用 `benchexecutionefficiency -algorithms Pbkdf2Sha256 -pbkdf-iterations 10 -warmup 2 -n 2 -receipt-samples 0` 的 `setup.contract.address`），再将计价参数与版本 2 一起发布；采集器从链上核对生效版本参数后运行：
 
 ```bash
 make geth
 go run ./experiments/cryptoupgrade/scripts/render -config experiments/cryptoupgrade/config/local-1node-pricing.yaml -geth "$(pwd)/build/bin/geth"
 ./experiments/cryptoupgrade/output/network/local-1node-pricing/node1/start.sh
 go run ./experiments/cryptoupgrade/scripts/benchexecutionefficiency \
-  -algorithms Pbkdf2Sha256 -rpc http://127.0.0.1:8545 \
+  -algorithms Pbkdf2Sha256 -rpc http://127.0.0.1:8761 \
   -pbkdf-wasm experiments/cryptoupgrade/results/chapter-five/20261022-single-node-pbkdf2-rebuilt/pbkdf2_sha256.wasm \
   -pbkdf-iterations 10 -solc /home/liuqi/project/.tools/solc/solc-0.8.26 \
   -warmup 2 -n 2 -receipt-samples 0 \
   -output-json experiments/cryptoupgrade/output/results/billing-setup.json
+go run ./experiments/cryptoupgrade/scripts/upload-wasm \
+  -rpc http://127.0.0.1:8761 -key-file experiments/cryptoupgrade/config/signer.key \
+  -chain-id 11223345 -name Pbkdf2Sha256 -mode immediate -version 2 \
+  -wasm experiments/cryptoupgrade/results/chapter-five/20261022-single-node-pbkdf2-rebuilt/pbkdf2_sha256.wasm \
+  -itype bytes,bytes,uint256,uint256 -otype bytes -algo-gas 3000 \
+  -pricing experiments/cryptoupgrade/config/pbkdf2-pricing.json
 REFERENCE_ADDRESS=$(python3 -c 'import json; print(json.load(open("experiments/cryptoupgrade/output/results/billing-setup.json"))["results"][0]["setup"]["contract"]["address"])')
 go run ./experiments/cryptoupgrade/scripts/chapterfive/benchbilling \
-  -reference "$REFERENCE_ADDRESS" \
+  -rpc http://127.0.0.1:8761 -reference "$REFERENCE_ADDRESS" \
   -genesis experiments/cryptoupgrade/output/network/local-1node-pricing/genesis.json \
   -output experiments/cryptoupgrade/output/results/billing-recheck
 python3 experiments/cryptoupgrade/scripts/chapterfive/plot_billing.py \
@@ -39,7 +45,7 @@ python3 experiments/cryptoupgrade/scripts/chapterfive/plot_billing.py \
 
 新计费不改变原生预编译，也**不能**把人为配置的较低 Gas 当作执行时间优势，或把单笔交易内递增当作跨交易抗攻击能力。旧插件上传的版本索引在节点重启后可能无法恢复；运行前务必验证已激活版本/重新上传，不能默默将重启前后数据混采。
 
-基于同一 5.2.2 配置的单因素敏感性实验将 `g₀` 设为 1500/3000/6000、`α` 设为 1/4、1/2、3/4，或将阈值 `N₀` 设为 1/2/4，其余参数固定。七个场景（共用一组基线）及选择依据在 `results/chapter-five/20261023-pricing-sensitivity/matrix.json` 中冻结。每个场景在独立单节点链上分别运行并上传相同的归档 PBKDF2 模块，不能对同一创世链运行时改费率。依次运行和汇总：
+基于同一 5.2.2 配置的单因素敏感性实验将 `g₀` 设为 1500/3000/6000、`α` 设为 1/4、1/2、3/4，或将阈值 `N₀` 设为 1/2/4，其余参数固定。七个场景（共用一组基线）及选择依据在 `results/chapter-five/20261023-pricing-sensitivity/matrix.json` 中冻结。每个场景在独立单节点链上分别运行并上传相同的归档 PBKDF2 模块，费用变更必须发布新版本，不能原地修改已登记版本。依次运行和汇总：
 
 ```bash
 go build -o experiments/cryptoupgrade/output/results/pricing-sensitivity/geth ./cmd/geth
@@ -346,3 +352,25 @@ IMAGE=cryptoupgrade-geth:lab \
 ### 20 节点升级激活一致性实验
 
 该实验只验证一次 `UpgradeConsistencyProbe` 的 v1→v2 版本选择和状态一致性，不测吞吐量/RPC 性能。详见 `experiments/cryptoupgrade/scripts/upgradeconsistency/README.md`。
+
+## 随升级提案发布 Gas 参数
+
+`upload-wasm -pricing <schedule.json>` 支持 `-mode version`（配合 `-activation-block`）和 `-mode immediate`。
+文件是单个算法版本的完整配置，例如 `config/pbkdf2-pricing.json`：
+
+```json
+{
+  "threshold": 2,
+  "alpha": {"numerator": 1, "denominator": 2},
+  "bands": [{"maxMetric": 18446744073709551615, "gas": 3000}]
+}
+```
+
+每个算法、每个版本可使用不同参数。输入指标为 ABI 参数编码字节数，费用为
+`ceil(B(inputBytes) * (1 + alpha)^max(0, index - threshold))`。
+计数按交易和算法隔离。分档必须覆盖 uint64 大小范围，边界递增、Gas 为正且不递减，最多 64 档；alpha 分母为 1–10000。
+参数由工具编码成 ABI bytes，同一笔升级交易提交，并通过 `getVersionPricing(name, version)` 查询。
+未指定 `-pricing` 的提案继续按其 `-algo-gas` 固定收费；指定后使用该版本 Schedule，不叠加固定 Gas。
+
+迁移旧实验时移除 YAML `cryptoupgrade.pricing` / genesis `config.cryptoUpgradePricing`，在新实验链发布带参数的算法版本。
+旧全局配置会明确报错；`updataGas` 和修改已登记版本的提交也会被拒绝（相同提案允许幂等重放）。归档实验结果仍描述当时实现，不应混用为新方案的实测结果。

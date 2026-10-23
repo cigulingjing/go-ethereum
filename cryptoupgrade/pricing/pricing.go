@@ -34,6 +34,7 @@ type LoadBand struct {
 	Multiplier Ratio  `json:"multiplier" yaml:"multiplier"`
 }
 
+// Profile 仅供旧实验计算及识别已弃用的链配置；运行时使用版本独立的 Schedule。
 type Profile struct {
 	Threshold  uint64      `json:"threshold" yaml:"threshold"`
 	Alpha      Ratio       `json:"alpha" yaml:"alpha"`
@@ -130,15 +131,19 @@ func (p Profile) Quote(name string, version, metricValue, index, parentCalls uin
 	if multiplier.Denominator == 0 || p.Alpha.Denominator == 0 || p.Alpha.Denominator > maxAlphaDenominator {
 		return 0, errors.New("invalid gas profile")
 	}
+	return quote(base, index, p.Threshold, p.Alpha, multiplier)
+}
+
+func quote(base, index, threshold uint64, alpha, multiplier Ratio) (uint64, error) {
 	numerator := new(big.Int).Mul(new(big.Int).SetUint64(base), new(big.Int).SetUint64(multiplier.Numerator))
 	denominator := new(big.Int).SetUint64(multiplier.Denominator)
-	if index > p.Threshold && p.Alpha.Numerator > 0 {
-		exponent := index - p.Threshold
-		factorNumerator := new(big.Int).SetUint64(p.Alpha.Denominator)
-		factorNumerator.Add(factorNumerator, new(big.Int).SetUint64(p.Alpha.Numerator))
-		factorDenominator := new(big.Int).SetUint64(p.Alpha.Denominator)
-		period := p.Alpha.Denominator / p.Alpha.Numerator
-		if p.Alpha.Denominator%p.Alpha.Numerator != 0 {
+	if index > threshold && alpha.Numerator > 0 {
+		exponent := index - threshold
+		factorNumerator := new(big.Int).SetUint64(alpha.Denominator)
+		factorNumerator.Add(factorNumerator, new(big.Int).SetUint64(alpha.Numerator))
+		factorDenominator := new(big.Int).SetUint64(alpha.Denominator)
+		period := alpha.Denominator / alpha.Numerator
+		if alpha.Denominator%alpha.Numerator != 0 {
 			period++
 		}
 		if exponent/period >= 64 {

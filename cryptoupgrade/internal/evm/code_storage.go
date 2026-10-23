@@ -3,6 +3,7 @@ package evm
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/model"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/pricing"
 )
 
 // CodeUploadedTopic is the stable legacy codeUploaded event signature.
@@ -36,7 +38,6 @@ type State interface {
 	UploadedVersion(name string, version uint64) (model.AlgorithmVersionInfo, bool)
 	SetUploadedVersion(name string, info model.AlgorithmVersionInfo)
 	ActiveVersionAt(name string, blockNumber uint64) (model.AlgorithmVersionInfo, bool)
-	UpdateGas(name string, gas uint64) (found, activeUpdated bool)
 	Save() error
 }
 
@@ -129,19 +130,18 @@ func (d *Dispatcher) Run(input []byte, readOnly bool, emitLog LogSink) ([]byte, 
 		name := model.NormalizeAlgorithmName(args[0].(string))
 		info, _ := d.state.ActiveVersionAt(name, d.blockNumber)
 		return method.Outputs.Pack(info.Code, info.Gas, info.IType, info.OType, info.Version, info.ActivationBlock)
+	case "getVersionPricing":
+		info, ok := d.state.UploadedVersion(model.NormalizeAlgorithmName(args[0].(string)), args[1].(uint64))
+		if !ok {
+			return nil, errors.New("algorithm version is not registered")
+		}
+		raw, err := hex.DecodeString(info.Pricing)
+		if err != nil {
+			return nil, err
+		}
+		return method.Outputs.Pack(raw)
 	case "updataGas":
-		if readOnly {
-			return nil, errors.New("CodeStorage updataGas is not allowed in static context")
-		}
-		name := model.NormalizeAlgorithmName(args[0].(string))
-		found, activeUpdated := d.state.UpdateGas(name, args[1].(uint64))
-		if !found {
-			return nil, fmt.Errorf("algorithm %s is not loaded", name)
-		}
-		if activeUpdated {
-			return nil, d.state.Save()
-		}
-		return nil, nil
+		return nil, errors.New("gas is immutable; publish a new algorithm version")
 	case "uploadCode":
 		if readOnly {
 			return nil, errors.New("CodeStorage uploadCode is not allowed in static context")
@@ -153,6 +153,9 @@ func (d *Dispatcher) Run(input []byte, readOnly bool, emitLog LogSink) ([]byte, 
 			IType: args[3].(string),
 			OType: args[4].(string),
 		}
+		if err := d.validateVersionInfo(name, model.LegacyVersion(info)); err != nil {
+			return nil, err
+		}
 		// uploadCode 只登记链上数据并发出事件；编译和加载必须由 event/activation 异步完成。
 		d.state.SetUploaded(name, info)
 		if emitLog != nil {
@@ -163,7 +166,7 @@ func (d *Dispatcher) Run(input []byte, readOnly bool, emitLog LogSink) ([]byte, 
 			emitLog([]common.Hash{CodeUploadedTopic}, eventData)
 		}
 		return nil, nil
-	case "uploadCodeVersion":
+	case "uploadCodeVersion", "uploadCodeVersionWithPricing":
 		if readOnly {
 			return nil, errors.New("CodeStorage uploadCodeVersion is not allowed in static context")
 		}
@@ -178,12 +181,19 @@ func (d *Dispatcher) Run(input []byte, readOnly bool, emitLog LogSink) ([]byte, 
 			Version:         args[1].(uint64),
 			ActivationBlock: args[6].(uint64),
 		}
-		if err := validateVersionInfo(name, info); err != nil {
+		if strings.HasSuffix(method.Name, "WithPricing") {
+			raw := args[len(args)-1].([]byte)
+			if _, err := pricing.Decode(raw); err != nil {
+				return nil, fmt.Errorf("invalid algorithm pricing: %w", err)
+			}
+			info.Pricing = hex.EncodeToString(raw)
+		}
+		if err := d.validateVersionInfo(name, info); err != nil {
 			return nil, err
 		}
 		d.state.SetUploadedVersion(name, info)
 		return nil, d.emitCodeVersionUploaded(emitLog, name, info.Version, info.ActivationBlock)
-	case "uploadCodeImmediate":
+	case "uploadCodeImmediate", "uploadCodeImmediateWithPricing":
 		if readOnly {
 			return nil, errors.New("CodeStorage uploadCodeImmediate is not allowed in static context")
 		}
@@ -198,7 +208,14 @@ func (d *Dispatcher) Run(input []byte, readOnly bool, emitLog LogSink) ([]byte, 
 			Version:         args[1].(uint64),
 			ActivationBlock: d.blockNumber,
 		}
-		if err := validateVersionInfo(name, info); err != nil {
+		if strings.HasSuffix(method.Name, "WithPricing") {
+			raw := args[len(args)-1].([]byte)
+			if _, err := pricing.Decode(raw); err != nil {
+				return nil, fmt.Errorf("invalid algorithm pricing: %w", err)
+			}
+			info.Pricing = hex.EncodeToString(raw)
+		}
+		if err := d.validateVersionInfo(name, info); err != nil {
 			return nil, err
 		}
 		d.state.SetUploadedVersion(name, info)
@@ -228,7 +245,13 @@ func (d *Dispatcher) emitCodeVersionUploaded(emitLog LogSink, name string, versi
 	return nil
 }
 
-func validateVersionInfo(name string, info model.AlgorithmVersionInfo) error {
+func (d *Dispatcher) validateVersionInfo(name string, info model.AlgorithmVersionInfo) error {
+	// 相同提案允许交易试执行/重放；本地编译信息不属于提案，不能参与比较。
+	if previous, exists := d.state.UploadedVersion(name, info.Version); exists {
+		if previous.Code != info.Code || previous.Gas != info.Gas || previous.IType != info.IType || previous.OType != info.OType || previous.Pricing != info.Pricing || previous.ActivationBlock != info.ActivationBlock {
+			return errors.New("algorithm version already exists with different metadata")
+		}
+	}
 	if name == "" {
 		return errors.New("algorithm name is empty")
 	}

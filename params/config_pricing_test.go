@@ -14,8 +14,8 @@ func TestExperimentalCryptoUpgradePricingConfig(t *testing.T) {
 		Load: []pricing.LoadBand{{MaxCalls: math.MaxUint64, Multiplier: pricing.Ratio{Numerator: 1, Denominator: 1}}}}
 	config := *AllCliqueProtocolChanges
 	config.CryptoUpgradePricing = &CryptoUpgradePricingConfig{ActivationBlock: 10, Profile: profile}
-	if err := config.CheckConfigForkOrder(); err != nil {
-		t.Fatal(err)
+	if err := config.CheckConfigForkOrder(); err == nil {
+		t.Fatal("obsolete chain-level pricing accepted")
 	}
 	changed := config
 	other := *config.CryptoUpgradePricing

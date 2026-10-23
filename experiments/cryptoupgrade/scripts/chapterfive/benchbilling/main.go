@@ -23,6 +23,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/cryptoupgrade"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/pricing"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rpc"
@@ -81,10 +82,10 @@ func run() error {
 	repeats := flag.Int("repeats", 10, "receipts per path per level per round")
 	warmup := flag.Int("warmup", 10, "eth_call and mined warmups per path and level")
 	iterations := flag.Uint64("iterations", 10, "fixed PBKDF2 internal iterations")
-	baseGas := flag.Uint64("base-gas", 3000, "expected PBKDF2 base gas frozen in genesis")
-	alphaNumerator := flag.Uint64("alpha-numerator", 1, "expected alpha numerator frozen in genesis")
-	alphaDenominator := flag.Uint64("alpha-denominator", 2, "expected alpha denominator frozen in genesis")
-	threshold := flag.Uint64("threshold", 2, "expected intra-transaction threshold frozen in genesis")
+	baseGas := flag.Uint64("base-gas", 3000, "expected PBKDF2 base gas published in the algorithm proposal")
+	alphaNumerator := flag.Uint64("alpha-numerator", 1, "expected alpha numerator published in the algorithm proposal")
+	alphaDenominator := flag.Uint64("alpha-denominator", 2, "expected alpha denominator published in the algorithm proposal")
+	threshold := flag.Uint64("threshold", 2, "expected intra-transaction threshold published in the algorithm proposal")
 	flag.Parse()
 	if !common.IsHexAddress(*reference) || *output == "" || *genesisPath == "" || *rounds < 1 || *repeats < 1 || *iterations < 1 {
 		return errors.New("reference, genesis, new output directory, rounds, repeats and iterations are required")
@@ -142,9 +143,18 @@ func run() error {
 	if err := json.Unmarshal(genesisJSON, &genesisConfig); err != nil {
 		return err
 	}
-	if genesisConfig.Config.Pricing == nil || genesisConfig.Config.Pricing.ActivationBlock > deployed.BlockNumber.Uint64() || !reflect.DeepEqual(genesisConfig.Config.Pricing.Profile, profile) {
-		return errors.New("genesis tariff does not match frozen experiment profile or has not activated")
+	if genesisConfig.Config.Pricing != nil {
+		return errors.New("obsolete genesis pricing; submit an algorithm-version pricing proposal")
 	}
+	schedule, version, err := querySchedule(ctx, client, from, deployed.BlockNumber)
+	if err != nil {
+		return err
+	}
+	expectedSchedule := pricing.Schedule{Threshold: *threshold, Alpha: profile.Alpha, Bands: profile.Algorithms[0].Bands}
+	if !reflect.DeepEqual(schedule, expectedSchedule) {
+		return errors.New("active proposal pricing does not match expected experiment schedule")
+	}
+	profile.Algorithms[0].Version = version
 	genesisDigest := sha256.Sum256(genesisJSON)
 	profileJSON, err := json.Marshal(profile)
 	if err != nil {
@@ -155,13 +165,14 @@ func run() error {
 	expected := crypto.Keccak256Hash(derived)
 	manifest := map[string]interface{}{"section": "5.2.2", "nodeCount": 1, "genesisHash": genesis.Hash,
 		"batchAddress": address, "referenceAddress": *reference, "profile": profile, "levels": levels,
+		"pricingSource": "algorithm-version proposal", "algorithmVersion": version, "schedule": schedule,
 		"genesisFileSha256": hex.EncodeToString(genesisDigest[:]),
 		"profileSha256":     hex.EncodeToString(profileDigest[:]),
 		"rounds":            *rounds, "repeats": *repeats, "ethCallWarmupPerPathAndLevel": *warmup,
 		"minedWarmupPerPathAndLevel": *warmup,
 		"iterations":                 *iterations, "expectedOutputHash": expected,
 		"gasBoundary":       "mined receipt.gasUsed including intrinsic and calldata",
-		"parentLoad":        "parent is a neutral self-transfer or empty block; empty blocks between target and preceding transfer are checked; M(C)=1 fixed at genesis",
+		"parentLoad":        "parent is a neutral self-transfer or empty block; empty blocks between target and preceding transfer are checked; M(C)=1; pricing read from the selected algorithm proposal",
 		"solidityPrimitive": "SHA-256 precompile used within Solidity HMAC",
 		"warning":           "configured base gas is not a measured execution-time advantage; transaction-local tariff does not imply cross-transaction attack resistance"}
 	if err := writeJSON(filepath.Join(*output, "manifest.json"), manifest); err != nil {
@@ -237,7 +248,7 @@ func run() error {
 					entry := sample{Path: method, CallsPerTx: count, Iterations: *iterations, Round: round, Repeat: repeat, OutputHash: expected}
 					if method == "evocryptCalls" {
 						for index := uint64(1); index <= count; index++ {
-							quoted, err := profile.Quote("Pbkdf2Sha256", 1, 0, index, 0)
+							quoted, err := schedule.Quote(0, index)
 							if err != nil {
 								return err
 							}
@@ -396,4 +407,30 @@ func writeJSON(path string, value interface{}) error {
 		return err
 	}
 	return os.WriteFile(path, append(content, '\n'), 0644)
+}
+
+func querySchedule(ctx context.Context, client *rpc.Client, from common.Address, height *big.Int) (pricing.Schedule, uint64, error) {
+	query := func(method string, args ...interface{}) ([]interface{}, error) {
+		data, err := cryptoupgrade.CodeStorageABI.Pack(method, args...)
+		if err != nil {
+			return nil, err
+		}
+		var raw hexutil.Bytes
+		to := common.CodeStorageAddress
+		if err := client.CallContext(ctx, &raw, "eth_call", transaction{From: from, To: &to, Gas: 1_000_000, Data: data}, hexutil.EncodeBig(height)); err != nil {
+			return nil, err
+		}
+		return cryptoupgrade.CodeStorageABI.Unpack(method, raw)
+	}
+	values, err := query("getActiveVersion", "Pbkdf2Sha256")
+	if err != nil {
+		return pricing.Schedule{}, 0, err
+	}
+	version := values[0].(uint64)
+	values, err = query("getVersionPricing", "Pbkdf2Sha256", version)
+	if err != nil {
+		return pricing.Schedule{}, version, err
+	}
+	schedule, err := pricing.Decode(values[0].([]byte))
+	return schedule, version, err
 }

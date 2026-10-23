@@ -3,6 +3,7 @@ package event
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
@@ -242,8 +243,33 @@ func (s *Service) GetVersionInfo(ctx context.Context, client Client, name string
 	if !codeOK || !gasOK || !inputOK || !outputOK || !versionOK || !activationOK {
 		return model.AlgorithmVersionInfo{}, errors.New("CodeStorage getVersionInfo returned unexpected ABI types")
 	}
+	pricingInput, err := s.contractABI.Pack("getVersionPricing", name, version)
+	if err != nil {
+		return model.AlgorithmVersionInfo{}, err
+	}
+	pricingOutput, err := client.CallContract(ctx, ethereum.CallMsg{To: &s.address, Data: pricingInput}, nil)
+	if err != nil {
+		return model.AlgorithmVersionInfo{}, fmt.Errorf("query version pricing: %w", err)
+	}
+	pricingValues, err := s.contractABI.Unpack("getVersionPricing", pricingOutput)
+	if err != nil {
+		return model.AlgorithmVersionInfo{}, err
+	}
+	if len(pricingValues) != 1 {
+		return model.AlgorithmVersionInfo{}, errors.New("invalid version pricing response")
+	}
+	raw, ok := pricingValues[0].([]byte)
+	if !ok {
+		return model.AlgorithmVersionInfo{}, errors.New("invalid version pricing type")
+	}
+	info := model.AlgorithmInfo{Code: code, Gas: gas, IType: inputTypes, OType: outputTypes, Pricing: hex.EncodeToString(raw)}
+	if info.Pricing != "" {
+		if _, err := info.PricingSchedule(); err != nil {
+			return model.AlgorithmVersionInfo{}, err
+		}
+	}
 	return model.AlgorithmVersionInfo{
-		AlgorithmInfo:   model.AlgorithmInfo{Code: code, Gas: gas, IType: inputTypes, OType: outputTypes},
+		AlgorithmInfo:   info,
 		Version:         storedVersion,
 		ActivationBlock: activationBlock,
 	}, nil

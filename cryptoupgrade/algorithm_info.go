@@ -63,10 +63,6 @@ func setUploadedAlgorithmVersionInfo(name string, info algoVersionInfo) {
 	runtimeAlgorithmRepository.SetUploadedVersion(name, info)
 }
 
-func updateCodeStorageAlgorithmGas(name string, gas uint64) (bool, bool) {
-	return runtimeAlgorithmRepository.UpdateGas(name, gas)
-}
-
 func storeAlgoMap(filename string) error {
 	return runtimeAlgorithmRepository.SaveTo(filename)
 }

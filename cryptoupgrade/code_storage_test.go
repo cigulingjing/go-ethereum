@@ -158,7 +158,7 @@ func TestCallFuncBeforeActivationUsesLocalActiveState(t *testing.T) {
 	}
 }
 
-func TestUpdataGasUpdatesUploadedAndActiveMetadata(t *testing.T) {
+func TestUpdataGasRejectsMutation(t *testing.T) {
 	resetAlgorithmInfoForTest(t)
 	withRuntimePluginPaths(t, newPluginPaths(t.TempDir()), nil)
 	info := algoInfo{
@@ -173,15 +173,15 @@ func TestUpdataGasUpdatesUploadedAndActiveMetadata(t *testing.T) {
 	if err != nil {
 		t.Fatalf("pack updataGas: %v", err)
 	}
-	if _, err := RunCodeStorageCall(input, false, nil); err != nil {
-		t.Fatalf("RunCodeStorageCall updataGas failed: %v", err)
+	if _, err := RunCodeStorageCall(input, false, nil); err == nil {
+		t.Fatal("in-place gas mutation accepted")
 	}
 	uploaded, ok := getUploadedAlgorithmInfo("Add")
-	if !ok || uploaded.Gas != 19 {
+	if !ok || uploaded.Gas != 7 {
 		t.Fatalf("unexpected uploaded gas after update: ok=%t info=%#v", ok, uploaded)
 	}
 	active, ok := getAlgorithmInfo("Add")
-	if !ok || active.Gas != 19 {
+	if !ok || active.Gas != 7 {
 		t.Fatalf("unexpected active gas after update: ok=%t info=%#v", ok, active)
 	}
 }

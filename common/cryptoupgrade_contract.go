@@ -77,6 +77,121 @@ var CoinbaseABI_json = `[
 var MutivoucherABI_json = `[]`
 
 var CodeStorageABI_json = `[
+{
+  "type": "function",
+  "name": "getVersionPricing",
+  "stateMutability": "view",
+  "inputs": [
+    {
+      "internalType": "string",
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "internalType": "uint64",
+      "name": "version",
+      "type": "uint64"
+    }
+  ],
+  "outputs": [
+    {
+      "internalType": "bytes",
+      "name": "",
+      "type": "bytes"
+    }
+  ]
+},
+{
+  "type": "function",
+  "name": "uploadCodeVersionWithPricing",
+  "stateMutability": "nonpayable",
+  "inputs": [
+    {
+      "internalType": "string",
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "internalType": "uint64",
+      "name": "version",
+      "type": "uint64"
+    },
+    {
+      "internalType": "string",
+      "name": "code",
+      "type": "string"
+    },
+    {
+      "internalType": "uint64",
+      "name": "gas",
+      "type": "uint64"
+    },
+    {
+      "internalType": "string",
+      "name": "itype",
+      "type": "string"
+    },
+    {
+      "internalType": "string",
+      "name": "otype",
+      "type": "string"
+    },
+    {
+      "internalType": "uint64",
+      "name": "activationBlock",
+      "type": "uint64"
+    },
+    {
+      "internalType": "bytes",
+      "name": "pricing",
+      "type": "bytes"
+    }
+  ],
+  "outputs": []
+},
+{
+  "type": "function",
+  "name": "uploadCodeImmediateWithPricing",
+  "stateMutability": "nonpayable",
+  "inputs": [
+    {
+      "internalType": "string",
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "internalType": "uint64",
+      "name": "version",
+      "type": "uint64"
+    },
+    {
+      "internalType": "string",
+      "name": "code",
+      "type": "string"
+    },
+    {
+      "internalType": "uint64",
+      "name": "gas",
+      "type": "uint64"
+    },
+    {
+      "internalType": "string",
+      "name": "itype",
+      "type": "string"
+    },
+    {
+      "internalType": "string",
+      "name": "otype",
+      "type": "string"
+    },
+    {
+      "internalType": "bytes",
+      "name": "pricing",
+      "type": "bytes"
+    }
+  ],
+  "outputs": []
+},
   {
     "anonymous": false,
     "inputs": [

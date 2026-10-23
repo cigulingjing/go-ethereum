@@ -1,4 +1,4 @@
-# 独立实验链：在创世配置冻结交易内递增费率，未设置父区块负载项。
+# 独立实验链：通过算法版本提案发布交易内计价参数。
 local:
   nodeCount: 1
   outputDir: ../output/network/local-1node-pricing
@@ -27,20 +27,7 @@ cryptoupgrade:
   enabled: true
   smokeTest: false
   addSource: ../algorithm/go/wasm/add.wasm
-  pricing:
-    activationBlock: 1
-    profile:
-      threshold: 2
-      alpha: {numerator: 1, denominator: 2}
-      algorithms:
-        - name: Pbkdf2Sha256
-          version: 1
-          metric: encodedInputBytes
-          bands:
-            - {maxMetric: 18446744073709551615, gas: 3000}
-      load:
-        - maxCalls: 18446744073709551615
-          multiplier: {numerator: 1, denominator: 1}
+  # 计价参数通过 upload-wasm -pricing 随算法版本提交。
 accounts:
   signer:
     address: 0xF5F871aA6Bd253914705898c66251f994aa426FA

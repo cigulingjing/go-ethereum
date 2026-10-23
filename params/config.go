@@ -483,7 +483,8 @@ type ChainConfig struct {
 	BlobScheduleConfig *BlobScheduleConfig `json:"blobSchedule,omitempty"`
 }
 
-// CryptoUpgradePricingConfig enables an experimental, genesis-frozen intra-transaction tariff.
+// CryptoUpgradePricingConfig is retained to reject obsolete genesis pricing explicitly.
+// Pricing parameters must now be submitted with each algorithm-version proposal.
 type CryptoUpgradePricingConfig struct {
 	ActivationBlock uint64          `json:"activationBlock" yaml:"activationBlock"`
 	Profile         pricing.Profile `json:"profile" yaml:"profile"`
@@ -916,21 +917,7 @@ func (c *ChainConfig) CheckCompatible(newcfg *ChainConfig, height uint64, time u
 // to guarantee that forks can be implemented in a different order than on official networks
 func (c *ChainConfig) CheckConfigForkOrder() error {
 	if c.CryptoUpgradePricing != nil {
-		profile := c.CryptoUpgradePricing.Profile
-		if err := profile.Validate(); err != nil {
-			return fmt.Errorf("invalid cryptoUpgradePricing: %w", err)
-		}
-		if len(profile.Load) != 1 || profile.Load[0].Multiplier.Numerator != profile.Load[0].Multiplier.Denominator {
-			return errors.New("experimental cryptoUpgradePricing requires neutral parent-block load")
-		}
-		for _, algorithm := range profile.Algorithms {
-			if len(algorithm.Name) > 0 && algorithm.Name[0] >= 'a' && algorithm.Name[0] <= 'z' {
-				return fmt.Errorf("cryptoUpgradePricing algorithm %q must use canonical name", algorithm.Name)
-			}
-			if algorithm.Metric != "encodedInputBytes" {
-				return fmt.Errorf("unsupported cryptoUpgradePricing metric %q", algorithm.Metric)
-			}
-		}
+		return errors.New("cryptoUpgradePricing is no longer supported; publish pricing with an algorithm upgrade proposal")
 	}
 	type fork struct {
 		name      string

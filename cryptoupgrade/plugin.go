@@ -106,19 +106,23 @@ func RequiredGasAt(algoName string, blockNumber uint64) (uint64, error) {
 }
 
 func RequiredGasForCall(input []byte) (uint64, error) {
-	algoName, _, err := ParseCall(input)
+	algoName, encoded, err := ParseCall(input)
 	if err != nil {
 		return 0, err
 	}
-	return RequiredGas(algoName)
+	gas, err := RequiredGas(algoName)
+	if err != nil {
+		return 0, err
+	}
+	if _, ok := builtin.Lookup(capitalString(algoName)); ok {
+		return gas, nil
+	}
+	info, _ := getActiveAlgorithmVersionInfo(capitalString(algoName))
+	return quoteAlgorithmInput(info.Base(), encoded, 1)
 }
 
 func RequiredGasForCallAt(input []byte, blockNumber uint64) (uint64, error) {
-	algoName, _, err := ParseCall(input)
-	if err != nil {
-		return 0, err
-	}
-	return RequiredGasAt(algoName, blockNumber)
+	return RequiredGasForCallAtIndex(input, blockNumber, 1)
 }
 
 func RunCall(input []byte) ([]byte, error) {
@@ -178,8 +182,13 @@ func callUpgradeAlgoWithInfoContext(ctx context.Context, funcName string, wasmPa
 		}()
 	}
 	log.Info("Loaded upgrade algorithm", "name", funcName, "wasmPath", wasmPath, "compiledPath", compiledPath)
+	// 直接 Go 调用按单次调用报价；EVM 已在进入 runtime 前按交易内索引扣费。
+	requiredGas, err := quoteAlgorithmInput(funcInfo, encodedInput, 1)
+	if err != nil {
+		return nil, gas, err
+	}
 	// Gas sufficient check
-	if gas < funcInfo.Gas {
+	if gas < requiredGas {
 		return nil, gas, errors.New("out of gas")
 	}
 	output, err := wasmruntime.Default.Execute(context.Background(), wasmPath, compiledPath, encodedInput)
@@ -189,7 +198,7 @@ func callUpgradeAlgoWithInfoContext(ctx context.Context, funcName string, wasmPa
 	}
 
 	// Gas deduction and return output
-	remainGas := gas - funcInfo.Gas
+	remainGas := gas - requiredGas
 	log.Info("Successfully called upgrade algorithm", "gas", gas, "output", output)
 	return output, remainGas, nil
 }

@@ -381,40 +381,6 @@ func (r *Repository) latestActiveVersionLocked(name string) (model.AlgorithmVers
 	return selected, ok
 }
 
-// UpdateGas 同步更新待激活及活动版本的 gas。
-func (r *Repository) UpdateGas(name string, gas uint64) (found, activeUpdated bool) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	if info, ok := r.uploaded[name]; ok {
-		info.Gas = gas
-		r.uploaded[name] = info
-		found = true
-	}
-	if info, ok := r.active[name]; ok {
-		info.Gas = gas
-		r.active[name] = info
-		found = true
-		activeUpdated = true
-	}
-	if info, ok := r.activeVersion[name]; ok {
-		info.Gas = gas
-		r.activeVersion[name] = info
-	}
-	if versions := r.activeVersions[name]; versions != nil {
-		for version, info := range versions {
-			info.Gas = gas
-			versions[version] = info
-		}
-	}
-	if versions := r.uploadedVersions[name]; versions != nil {
-		for version, info := range versions {
-			info.Gas = gas
-			versions[version] = info
-		}
-	}
-	return found, activeUpdated
-}
-
 // Save 将活动算法 metadata 原子持久化到默认 algorithm_info.json。
 func (r *Repository) Save() error {
 	if err := r.workspace.EnsureDirs(); err != nil {
@@ -469,6 +435,13 @@ func (r *Repository) LoadFrom(filename string) error {
 	if err := json.Unmarshal(data, &loaded); err != nil {
 		return err
 	}
+	for _, info := range loaded {
+		if info.Pricing != "" {
+			if _, err := info.PricingSchedule(); err != nil {
+				return err
+			}
+		}
+	}
 	r.mu.Lock()
 	r.active = loaded
 	for name, info := range loaded {
@@ -492,6 +465,15 @@ func (r *Repository) LoadVersionsFrom(filename string) error {
 	loaded := make(map[string]map[uint64]model.AlgorithmVersionInfo)
 	if err := json.Unmarshal(data, &loaded); err != nil {
 		return err
+	}
+	for _, versions := range loaded {
+		for _, info := range versions {
+			if info.Pricing != "" {
+				if _, err := info.PricingSchedule(); err != nil {
+					return err
+				}
+			}
+		}
 	}
 	r.mu.Lock()
 	r.activeVersions = loaded

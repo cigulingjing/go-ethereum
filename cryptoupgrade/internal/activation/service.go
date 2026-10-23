@@ -78,6 +78,11 @@ func (s *Service) ActivateVersion(ctx context.Context, name string, info model.A
 	if info.Version == 0 {
 		return errors.New("algorithm version is zero")
 	}
+	if info.Pricing != "" {
+		if _, err := info.PricingSchedule(); err != nil {
+			return fmt.Errorf("invalid version pricing: %w", err)
+		}
+	}
 	if current, ok := s.repository.PreparedVersion(name, info.Version); ok && current == info {
 		return nil
 	}

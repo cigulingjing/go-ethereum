@@ -3,6 +3,7 @@ package event
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"math/big"
@@ -17,6 +18,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/activationtrace"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/model"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/pricing"
 )
 
 type fakeActivator struct {
@@ -57,7 +59,7 @@ func (*fakeClient) SubscribeFilterLogs(context.Context, ethereum.FilterQuery, ch
 }
 
 func (c *fakeClient) CallContract(_ context.Context, msg ethereum.CallMsg, _ *big.Int) ([]byte, error) {
-	for _, methodName := range []string{"getInfo", "getVersionInfo"} {
+	for _, methodName := range []string{"getInfo", "getVersionInfo", "getVersionPricing"} {
 		method := c.contractABI.Methods[methodName]
 		if len(msg.Data) >= 4 && bytes.Equal(method.ID, msg.Data[:4]) {
 			values, err := method.Inputs.Unpack(msg.Data[4:])
@@ -70,6 +72,13 @@ func (c *fakeClient) CallContract(_ context.Context, msg ethereum.CallMsg, _ *bi
 			}
 			c.callVersion = values[1].(uint64)
 			info := c.versionInfo
+			if methodName == "getVersionPricing" {
+				raw, err := hex.DecodeString(info.Pricing)
+				if err != nil {
+					return nil, err
+				}
+				return method.Outputs.Pack(raw)
+			}
 			return method.Outputs.Pack(info.Code, info.Gas, info.IType, info.OType, info.Version, info.ActivationBlock)
 		}
 	}
@@ -151,6 +160,11 @@ func TestHandleVersionedEventQueriesAndDelegatesActivation(t *testing.T) {
 		Version:         2,
 		ActivationBlock: 42,
 	}
+	raw, err := (pricing.Schedule{Threshold: 2, Alpha: pricing.Ratio{Numerator: 1, Denominator: 2}, Bands: []pricing.InputBand{{MaxMetric: ^uint64(0), Gas: 15}}}).Encode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	info.Pricing = hex.EncodeToString(raw)
 	client := &fakeClient{contractABI: contractABI, versionInfo: info}
 	activator := new(fakeActivator)
 	service := NewService(contractABI, common.CodeStorageAddress, common.Hash{1}, activator)

@@ -47,36 +47,23 @@ func isCryptoUpgradeCall(addr common.Address, input []byte) bool {
 
 func runCryptoUpgradeCall(evm *EVM, input []byte, gas GasBudget, logger *tracing.Hooks, readOnly bool) (ret []byte, remaining GasBudget, err error) {
 	blockNumber := evm.Context.BlockNumber.Uint64()
-	gasCost, err := cryptoupgrade.RequiredGasForCodeStorageCallAt(input, blockNumber)
-	if err != nil {
-		return nil, gas, err
-	}
+	// 调用计数按算法隔离；费用参数随选定版本读取，不再查找链级 Profile。
 	var pricedName string
-	configuration := evm.chainConfig.CryptoUpgradePricing
-	if configuration != nil && blockNumber >= configuration.ActivationBlock {
-		name, encodedInput, parseErr := cryptoupgrade.ParseCall(input)
-		if parseErr == nil {
-			name = cryptoupgrade.NormalizeAlgorithmName(name)
-			for _, algorithm := range configuration.Profile.Algorithms {
-				if algorithm.Name != name {
-					continue
-				}
-				version, ok := cryptoupgrade.ActiveVersionAt(name, blockNumber)
-				if !ok {
-					return nil, gas, errors.New("configured algorithm version is not active")
-				}
-				index := evm.cryptoUpgradePricingCalls[name] + 1
-				gasCost, err = configuration.Profile.Quote(name, version, uint64(len(encodedInput)), index, 0)
-				if err != nil {
-					if errors.Is(err, pricing.ErrGasOverflow) {
-						return nil, gas, ErrOutOfGas
-					}
-					return nil, gas, err
-				}
-				pricedName = name
-				break
-			}
+	index := uint64(1)
+	if name, _, parseErr := cryptoupgrade.ParseCall(input); parseErr == nil {
+		pricedName = cryptoupgrade.NormalizeAlgorithmName(name)
+		count := evm.cryptoUpgradePricingCalls[pricedName]
+		if count == ^uint64(0) {
+			return nil, gas, ErrOutOfGas
 		}
+		index = count + 1
+	}
+	gasCost, err := cryptoupgrade.RequiredGasForCodeStorageCallAtIndex(input, blockNumber, index)
+	if err != nil {
+		if errors.Is(err, pricing.ErrGasOverflow) {
+			return nil, gas, ErrOutOfGas
+		}
+		return nil, gas, err
 	}
 	prior, ok := gas.ChargeRegular(gasCost)
 	if !ok {

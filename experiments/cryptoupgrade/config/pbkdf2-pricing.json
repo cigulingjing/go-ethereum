@@ -1,0 +1,5 @@
+{
+  "threshold": 2,
+  "alpha": {"numerator": 1, "denominator": 2},
+  "bands": [{"maxMetric": 18446744073709551615, "gas": 3000}]
+}

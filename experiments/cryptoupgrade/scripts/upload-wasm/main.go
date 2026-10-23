@@ -2,10 +2,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"math/big"
 	"os"
 	"strings"
@@ -16,6 +18,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/cryptoupgrade"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/pricing"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
@@ -36,13 +39,15 @@ func main() {
 		mode            = flag.String("mode", "upload", "upload | immediate | version")
 		version         = flag.Uint64("version", 1, "版本号（immediate/version 模式）")
 		activationBlock = flag.Uint64("activation-block", 0, "生效高度（version 模式）")
-		algoGas         = flag.Uint64("algo-gas", 7, "算法 Gas 配置")
+		algoGas         = flag.Uint64("algo-gas", 7, "固定 Gas（未指定 -pricing 时生效）")
+		pricingPath     = flag.String("pricing", "", "随版本提案发布的单算法 Schedule JSON 文件")
+		keyFile         = flag.String("key-file", "", "签名私钥文件，与 -key 二选一")
 		inputTypes      = flag.String("itype", "int256,int256", "输入类型")
 		outputTypes     = flag.String("otype", "int256", "输出类型")
 		rpcURL          = flag.String("rpc", "http://127.0.0.1:8761", "HTTP RPC URL")
 		privateKey      = flag.String("key", "", "签名私钥（32 字节 hex，可带 0x 前缀）")
 		chainIDFlag     = flag.Uint64("chain-id", 11223344, "链 ID")
-		txGas           = flag.Uint64("tx-gas", 0, "交易 Gas 上限（0 表示 estimate）")
+		txGas           = flag.Uint64("tx-gas", 0, "交易 Gas 上限（0 使用升级交易默认上限）")
 		waitTimeout     = flag.Duration("wait", 2*time.Minute, "等待 receipt 超时")
 		waitActive      = flag.Bool("wait-active", true, "upload 模式完成后轮询 getActiveVersion")
 		jsonOut         = flag.String("output-json", "", "可选结果 JSON 路径")
@@ -55,6 +60,16 @@ func main() {
 	name := strings.TrimSpace(*algorithm)
 	if name == "" {
 		name = inferAlgorithmName(*wasmPath)
+	}
+	if *keyFile != "" {
+		if *privateKey != "" {
+			fatal(fmt.Errorf("use either -key or -key-file"))
+		}
+		raw, err := os.ReadFile(*keyFile)
+		if err != nil {
+			fatal(err)
+		}
+		*privateKey = strings.TrimSpace(string(raw))
 	}
 	keyHex, err := parsePrivateKeyHex(*privateKey)
 	if err != nil {
@@ -70,7 +85,24 @@ func main() {
 	if err != nil {
 		fatal(fmt.Errorf("encode wasm: %w", err))
 	}
-	data, err := packUpload(*mode, name, encoded, *version, *activationBlock, *algoGas, *inputTypes, *outputTypes)
+	var data []byte
+	if *pricingPath != "" {
+		raw, readErr := os.ReadFile(*pricingPath)
+		if readErr != nil {
+			fatal(readErr)
+		}
+		schedule, decodeErr := readSchedule(raw)
+		if decodeErr != nil {
+			fatal(decodeErr)
+		}
+		pricingData, encodeErr := schedule.Encode()
+		if encodeErr != nil {
+			fatal(encodeErr)
+		}
+		data, err = packPricedUpload(*mode, name, encoded, *version, *activationBlock, *algoGas, *inputTypes, *outputTypes, pricingData)
+	} else {
+		data, err = packUpload(*mode, name, encoded, *version, *activationBlock, *algoGas, *inputTypes, *outputTypes)
+	}
 	if err != nil {
 		fatal(err)
 	}
@@ -88,15 +120,10 @@ func main() {
 		fatal(fmt.Errorf("pending nonce: %w", err))
 	}
 	to := common.CodeStorageAddress
-	callMsg := ethereum.CallMsg{From: from, To: &to, Data: data}
 	gasLimit := *txGas
 	if gasLimit == 0 {
-		gasLimit, err = client.EstimateGas(ctx, callMsg)
-		if err != nil {
-			gasLimit = cryptoupgradeRequiredGas(data)
-		} else {
-			gasLimit = gasLimit * 12 / 10
-		}
+		// 当前元数据仓库不参与 eth_estimateGas 回滚；避免试执行提前登记 immediate 版本。
+		gasLimit = cryptoupgradeRequiredGas(data)
 	}
 	gasPrice, err := client.SuggestGasPrice(ctx)
 	if err != nil {
@@ -144,7 +171,7 @@ func main() {
 		fatal(fmt.Errorf("transaction reverted"))
 	}
 
-	if *waitActive && *mode == "upload" {
+	if *waitActive && (*mode == "upload" || *mode == "immediate") {
 		if err := waitAlgorithmActive(ctx, client, name, *version); err != nil {
 			fatal(err)
 		}
@@ -265,4 +292,34 @@ func waitAlgorithmActive(ctx context.Context, client *ethclient.Client, name str
 func fatal(err error) {
 	fmt.Fprintln(os.Stderr, err)
 	os.Exit(1)
+}
+
+func readSchedule(raw []byte) (pricing.Schedule, error) {
+	var schedule pricing.Schedule
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&schedule); err != nil {
+		return schedule, err
+	}
+	if err := decoder.Decode(new(interface{})); err != io.EOF {
+		return schedule, fmt.Errorf("pricing file must contain one JSON object")
+	}
+	return schedule, schedule.Validate()
+}
+
+func packPricedUpload(mode, name, encoded string, version, activationBlock, algoGas uint64, itype, otype string, data []byte) ([]byte, error) {
+	if _, err := pricing.Decode(data); err != nil {
+		return nil, err
+	}
+	switch strings.ToLower(mode) {
+	case "immediate":
+		return cryptoupgrade.CodeStorageABI.Pack("uploadCodeImmediateWithPricing", name, version, encoded, algoGas, itype, otype, data)
+	case "version":
+		if activationBlock == 0 {
+			return nil, fmt.Errorf("version mode requires -activation-block")
+		}
+		return cryptoupgrade.CodeStorageABI.Pack("uploadCodeVersionWithPricing", name, version, encoded, algoGas, itype, otype, activationBlock, data)
+	default:
+		return nil, fmt.Errorf("-pricing requires -mode version or immediate")
+	}
 }

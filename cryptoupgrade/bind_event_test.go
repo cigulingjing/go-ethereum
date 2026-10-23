@@ -3,6 +3,7 @@ package cryptoupgrade
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"errors"
 	"math/big"
 	"testing"
@@ -39,7 +40,7 @@ func (c *fakeEventClient) CallContract(_ context.Context, msg ethereum.CallMsg, 
 	if msg.To == nil || *msg.To != common.CodeStorageAddress {
 		return nil, errUnexpectedQuery
 	}
-	for _, methodName := range []string{"getInfo", "getVersionInfo"} {
+	for _, methodName := range []string{"getInfo", "getVersionInfo", "getVersionPricing"} {
 		method := CodeStorageABI.Methods[methodName]
 		if len(msg.Data) >= 4 && bytes.Equal(method.ID, msg.Data[:4]) {
 			values, err := method.Inputs.Unpack(msg.Data[4:])
@@ -52,6 +53,13 @@ func (c *fakeEventClient) CallContract(_ context.Context, msg ethereum.CallMsg, 
 			}
 			c.callVersion = values[1].(uint64)
 			info := c.versionInfo
+			if methodName == "getVersionPricing" {
+				raw, err := hex.DecodeString(info.Pricing)
+				if err != nil {
+					return nil, err
+				}
+				return method.Outputs.Pack(raw)
+			}
 			return method.Outputs.Pack(info.Code, info.Gas, info.IType, info.OType, info.Version, info.ActivationBlock)
 		}
 	}

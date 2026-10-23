@@ -18,7 +18,7 @@ func TimingFields(to *common.Address, input []byte) stagelog.Fields {
 	switch method.Name {
 	case "callFunc":
 		fields["flow"] = "call"
-	case "uploadCode", "uploadCodeVersion", "uploadCodeImmediate":
+	case "uploadCode", "uploadCodeVersion", "uploadCodeImmediate", "uploadCodeVersionWithPricing", "uploadCodeImmediateWithPricing":
 		fields["flow"] = "upgrade"
 	default:
 		return fields
@@ -36,10 +36,10 @@ func TimingFields(to *common.Address, input []byte) stagelog.Fields {
 	if method.Name == "uploadCode" {
 		fields["version"] = uint64(1)
 	}
-	if method.Name == "uploadCodeVersion" || method.Name == "uploadCodeImmediate" {
+	if method.Name == "uploadCodeVersion" || method.Name == "uploadCodeImmediate" || method.Name == "uploadCodeVersionWithPricing" || method.Name == "uploadCodeImmediateWithPricing" {
 		fields["version"] = args[1]
 	}
-	if method.Name == "uploadCodeVersion" {
+	if method.Name == "uploadCodeVersion" || method.Name == "uploadCodeVersionWithPricing" {
 		fields["activationBlock"] = args[6]
 	}
 	return fields

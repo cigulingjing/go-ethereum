@@ -257,6 +257,9 @@ func (cfg *Config) Normalize() error {
 
 // Validate 检查配置是否满足多节点私链启动的最低要求。
 func (cfg *Config) Validate() error {
+	if cfg.CryptoUpgrade.Pricing != nil {
+		return fmt.Errorf("cryptoupgrade.pricing is no longer supported; use upload-wasm -pricing with a version proposal")
+	}
 	if len(cfg.Nodes) == 0 {
 		return fmt.Errorf("network must define at least one node")
 	}
