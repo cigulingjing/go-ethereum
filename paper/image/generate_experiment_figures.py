@@ -225,7 +225,47 @@ def grouped_bar(
     plt.close(fig)
 
 
-def save_figure(fig: plt.Figure, stem: str) -> None:
+def upgrade_line(algos, series, ylabel, stem, log_y=False):
+    """保留升级实验数据与类别顺序，使用 Fig. 5 的颜色和点形。"""
+    styles = {"Solidity": ("#566477", "s"), "EvoCrypt": ("#087F8C", "o")}
+    # 按正文半版心尺寸绘制，两张图固定相同轴区域，避免紧裁剪改变比例。
+    with mpl.rc_context({"font.size": 6.5, "axes.labelsize": 6.5,
+                         "xtick.labelsize": 6.5, "ytick.labelsize": 6.5,
+                         "legend.fontsize": 6.5}):
+        fig, ax = plt.subplots(figsize=(2.35, 1.9))
+        x = np.arange(len(algos))
+        for name, values, _ in sorted(series, key=lambda item: item[0] != "Solidity"):
+            color, marker = styles[name]
+            ax.plot(x, values, color=color, marker=marker, label=name,
+                    markersize=3, linewidth=1.1, zorder=3)
+        ax.set_xticks(x)
+        ax.set_xticklabels(display_labels(algos), rotation=90, ha="right",
+                           rotation_mode="anchor")
+        ax.tick_params(axis="x", length=0, pad=3)
+        ax.tick_params(axis="y", length=2, pad=2)
+        ax.set_ylabel(ylabel, labelpad=3)
+        if log_y:
+            assert all(value > 0 for _, values, _ in series for value in values)
+            ax.set_yscale("log")
+            ax.set_ylim(70000, 1500000)
+            ax.set_yticks([100000, 200000, 500000, 1000000])
+            ax.yaxis.set_major_formatter(mpl.ticker.FuncFormatter(
+                lambda value, _: format_axis_value(value)))
+            ax.minorticks_off()
+        else:
+            ax.set_ylim(0, 4.7)
+            ax.set_yticks([0, 1, 2, 3, 4])
+        ax.grid(axis="y", color="#E4E8EC", linewidth=0.5, zorder=0)
+        ax.legend(loc="lower left", bbox_to_anchor=(0, 1.04), ncol=2,
+                  handlelength=1.35, handletextpad=0.35, columnspacing=0.8,
+                  borderaxespad=0)
+        fig.subplots_adjust(left=0.24, right=0.98, bottom=0.34, top=0.82)
+        fig.canvas.draw()
+        save_figure(fig, stem, crop=False)
+        plt.close(fig)
+
+
+def save_figure(fig: plt.Figure, stem: str, crop: bool = True) -> None:
     # 导出前执行多面板对齐门禁：单面板图记录 NOT APPLICABLE，
     # 多面板几何异常时阻断导出，避免交付错位版面。
     scripts_dir = os.environ.get(
@@ -250,9 +290,9 @@ def save_figure(fig: plt.Figure, stem: str) -> None:
     svg_path = OUT_DIR / f"{stem}.svg"
     pdf_path = OUT_DIR / f"{stem}.pdf"
     png_path = OUT_DIR / f"{stem}.png"
-    fig.savefig(svg_path, bbox_inches="tight")
-    fig.savefig(pdf_path, bbox_inches="tight")
-    fig.savefig(png_path, dpi=600, bbox_inches="tight")
+    fig.savefig(svg_path, bbox_inches="tight" if crop else None)
+    fig.savefig(pdf_path, bbox_inches="tight" if crop else None)
+    fig.savefig(png_path, dpi=600, bbox_inches="tight" if crop else None)
     print(f"Wrote {svg_path.name}, {pdf_path.name}, {png_path.name}")
 
 
@@ -269,13 +309,13 @@ def main() -> None:
     # Chart 1: upgrade gas — EvoCrypt vs Solidity
     if only in (None, "upgrade-gas"):
         algos, upgrade_gas, contract_gas = load_upgrade_gas()
-        grouped_bar(
+        upgrade_line(
             algos,
             [
                 ("EvoCrypt", upgrade_gas, PALETTE["evocrypt"]),
                 ("Solidity", contract_gas, PALETTE["solidity"]),
             ],
-            ylabel="Estimated gas",
+            ylabel="Transaction gas used",
             stem="figure_upgrade_gas_comparison",
             log_y=True,
         )
@@ -283,7 +323,7 @@ def main() -> None:
     # Chart 2: upgrade latency — EvoCrypt vs Solidity
     if only in (None, "upgrade-latency"):
         algos, upgrade_lat, contract_lat = load_upgrade_latency()
-        grouped_bar(
+        upgrade_line(
             algos,
             [
                 ("EvoCrypt", upgrade_lat, PALETTE["evocrypt"]),

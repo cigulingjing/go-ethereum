@@ -217,11 +217,8 @@ const addWrapperTemplate = `package main
 
 import (
 	"encoding/binary"
-	"math/big"
 	"unsafe"
 )
-
-const wasmWordSize = 32
 
 //go:wasmexport execute
 func execute(inputPtr, inputLen uint32) uint32 {
@@ -229,16 +226,11 @@ func execute(inputPtr, inputLen uint32) uint32 {
 	if len(input) < 64 {
 		return 0
 	}
-	left := wasmDecodeInt256(input[:32])
-	right := wasmDecodeInt256(input[32:64])
-	if left == nil || right == nil {
-		return 0
-	}
+	var left, right Int256
+	copy(left[:], input[:32])
+	copy(right[:], input[32:64])
 	result := %s(left, right)
-	if result == nil {
-		return 0
-	}
-	out := wasmEncodeLengthPrefixed(wasmEncodeInt256(result))
+	out := wasmEncodeLengthPrefixed(result[:])
 	return wasmMemoryPointer(&out[0])
 }
 
@@ -253,30 +245,6 @@ func wasmMemoryPointer(ptr *byte) uint32 {
 	return uint32(uintptr(unsafe.Pointer(ptr)))
 }
 
-func wasmDecodeInt256(slot []byte) *big.Int {
-	if len(slot) != wasmWordSize {
-		return nil
-	}
-	value := new(big.Int).SetBytes(slot)
-	if slot[0]&0x80 != 0 {
-		limit := new(big.Int).Lsh(big.NewInt(1), 256)
-		value.Sub(value, limit)
-	}
-	return value
-}
-
-func wasmEncodeInt256(value *big.Int) []byte {
-	if value == nil {
-		return nil
-	}
-	limit := new(big.Int).Lsh(big.NewInt(1), 256)
-	encoded := new(big.Int).Set(value)
-	if encoded.Sign() < 0 {
-		encoded.Add(encoded, limit)
-	}
-	return wasmLeftPad32(encoded.Bytes())
-}
-
 func wasmEncodeLengthPrefixed(payload []byte) []byte {
 	if payload == nil {
 		payload = []byte{}
@@ -284,15 +252,6 @@ func wasmEncodeLengthPrefixed(payload []byte) []byte {
 	out := make([]byte, 4+len(payload))
 	binary.LittleEndian.PutUint32(out[:4], uint32(len(payload)))
 	copy(out[4:], payload)
-	return out
-}
-
-func wasmLeftPad32(raw []byte) []byte {
-	if len(raw) >= wasmWordSize {
-		return append([]byte(nil), raw[len(raw)-wasmWordSize:]...)
-	}
-	out := make([]byte, wasmWordSize)
-	copy(out[wasmWordSize-len(raw):], raw)
 	return out
 }
 

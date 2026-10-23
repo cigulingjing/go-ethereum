@@ -99,34 +99,33 @@ activationHeight
 
 ## 5 Evaluation
 
-### 5.1 Experimental Setup
+本章以根目录 `evocrypt-old.tex` 第五章为基线。5.1–5.3 以旧稿为基础，Table 1 和 Fig. 3 右图已用 2026-10-23 当前源码复测数据更新；5.4 替换为本次 PBKDF2 专项调用实验；旧稿 complex-algorithm 三段论述移至新增 5.5，并同步更新数据。
 
-实验在 20 节点 Clique 私有链（`period=0`，chain ID 11223344）上进行，客户端为修改版 Geth v1.17.5-unstable（commit df28d2ab8），Go 1.25.7 编译；Solidity 使用 solc 0.8.26，WASM 使用 TinyGo 0.42.0 构建。升级延迟为控制端可观测的 setup 时间，**不含共识与出块等待**；执行阶段指标为 `eth_call` 延迟与 `eth_estimateGas` 对 `callFunc` 返回的 `gasEstimate`（非 receipt `gasUsed`）。主机硬件规格待补全以便完全复现。
+### 5.1 Implementation
 
-下表列出 8 个被测算法在三路径上的实现体量（均为源文件或模块字节数，单位 B），以及各自在评测中的**作用**。Go 大小指 `experiments/cryptoupgrade/algorithm/go/` 下 Native 参考源码；WASM 为上传的 TinyGo 模块；Solidity 为 `contracts/src/` 下基准合约 `.sol` 源文件大小。Dh2048Secret、PedersenCommit 的 Solidity 列为薄封装合约体积，模运算逻辑在共享库 `BigMod.sol`（8524 B）中；部署 bytecode 与 Gas 以链接后完整实现为准。
-
-| 算法名字 | Go (B) | WASM (B) | Solidity (B) | 作用 |
-|---|---:|---:|---:|---|
-| Add | 156 | 11287 | 181 | 非密码基线 |
-| Sha256 | 210 | 68288 | 219 | 密码哈希 |
-| Blake2bSum256 | 4911 | 8724 | 5340 | 密码哈希 |
-| Pbkdf2Sha256 | 1377 | 72580 | 2269 | 密钥派生 |
-| Dh2048Secret | 1595 | 45919 | 473* | 密钥交换 |
-| PedersenCommit | 1871 | 95780 | 645* | 承诺方案 |
-| SchnorrVerify | 2171 | 95960 | 962 | 数字签名验证 |
-| PolynomialMul | 790 | 7987 | 953 | 代数运算 |
-
-\* 仅统计算法合约 `.sol` 源文件；模运算见共享 `BigMod.sol`。
-
-对比方案：升级效率比较 EvoCrypt（WASM 升级上传）与 Solidity 合约部署的 **setup 延迟**及对应 setup 交易的 **`gasEstimate`**（普通 EVM 交易计价，非协议层升级 Gas 机制）；执行效率在 setup 完成后比较 EvoCrypt、**Native algorithm** 与 Solidity Contract 的 `callFunc` 延迟与调用 Gas。
+保留旧稿实验平台、工具链、八种基础算法的实现体量表和指标说明。该部分的旧实验设置与 5.4 的新增单节点实验分开表述。
 
 ### 5.2 Upgrade Efficiency
 
-EvoCrypt 与 Solidity 实现密码算法可调用化过程的 setup 延迟对比，以及 upload/部署交易的 `gasEstimate` 对比（Figure upgrade-latency / upgrade-gas）；协议设计不对升级交易单独定义协处理器 Gas 规则，仅调用阶段使用链上 invocation gas 元数据。
+保留旧稿升级延迟；升级 Gas 使用 2026-10-23 当前源码复测的 receipt.gasUsed，七种算法比 Solidity 部署更低，Add 更高。Table 1 采用同次重建的源码和制品字节数。完整证据见 `experiments/cryptoupgrade/results/artifact-upgrade-recheck/20261023/report.md`。缺失 PDF 从 `/home/liuqi/project/go-ethereum-e72de4d/paper/image/` 复制到当前 `paper/image/`。
 
-### 5.3 Execution Efficiency
+### 5.3 Upgrade Consistency
 
-EvoCrypt 与 Solidity 升级后，以及与 Native 方案，密码算法执行耗时与调用 Gas 对比
+保留旧稿 20 节点升级一致性论述和 `consistence_scene.pdf`。
+
+### 5.4 Execution Efficiency
+
+仅讨论 PBKDF2：
+
+- 调用效率：内部迭代次数 1–100，比较 Solidity、Precompiled Contract 和 EvoCrypt；指标为 `eth_call` RPC 延迟中位数，不能写成纯算法执行时间。
+- 调用 Gas：内部迭代固定 10 次，同笔交易调用次数为 1、2、3、4、5、6、8、12、16；基线为 g₀=3000、α=1/2、N₀=2，使用真实收据总 Gas，并展示三个参数的敏感性。
+- 图源为 `paper/image/experiments_result.xlsx`；基线 Gas 与 `experiments/cryptoupgrade/results/chapter-five/20261023-single-node-billing/report.md` 一致。正文明确费用优势仅适用于实验费率。
+
+### 5.5 Functional Validation
+
+保留旧稿 complex-algorithm 三段论述顺序：验证目标与指标、成功接入对扩展能力的支持、相对原生实现的性能代价。仅保留六种复杂算法，表中时间取自本次工作簿“复杂算法实验”，使用 WASM/native 比值列替代旧版模块大小列，避免将旧模块体积作为本次实验测量值。
+
+Groth16/BLS12-381 的 WASM 时间采用工作簿的 24.809 ms，原生为 3.518 ms；整体比值范围为 1.91–7.05 倍。表格和正文使用独立验证微基准口径，不与 5.4 的 RPC 延迟混合。保留旧稿扩展能力论述，但不把六种算法的微基准解释为本次新增链上上传实验。
 
 
 ## 6 Related Work

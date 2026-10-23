@@ -1,12 +1,12 @@
 {
-  "pdf": "../gas/pbkdf2_cumulative_gas.pdf",
+  "pdf": "pbkdf2_cumulative_gas.pdf",
   "auditable": true,
   "verdict": "PASS",
   "page_count": 1,
-  "visible_text_box_count": 65,
-  "text_trace_count": 65,
-  "stroke_path_count": 204,
-  "filled_region_count": 161,
+  "visible_text_box_count": 19,
+  "text_trace_count": 20,
+  "stroke_path_count": 81,
+  "filled_region_count": 65,
   "image_region_count": 0,
   "summary": {
     "fail": 0,

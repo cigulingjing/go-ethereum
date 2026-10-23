@@ -74,7 +74,7 @@ The main contributions of this article are summarized as follows.
 
 Research on cryptographic algorithm upgrades in blockchain systems has not yet resolved the combined problem of efficient invocation and practical implementation. Related approaches can be organized by the layer at which they support upgrades: protocol and client, contract, or dynamic runtime.
 
-Blockchain upgrades at the protocol or client layer replace execution rules through a coordinated transition. Cardano switches protocol eras with a hard-fork combinator at designated heights, and work on updatable blockchains studies how old and new chains stay synchronized \cite{cardanoHardForkCombinator,cardanoEvolution,ciampi2020updatable}. Soft forks encode selected policy changes in rules that can be adopted without replacing the protocol \cite{zindros2021softPower}. Phoenix and Polkadot are closest to EvoCrypt in supporting live replacement: Phoenix compiles upgrade code carried in transactions at runtime, while Polkadot replaces governance-approved on-chain WASM runtime logic during block synchronization \cite{wang2023phoenix,polkadotRuntimeUpgrades}. Both nevertheless replace client or chain-runtime components rather than a contract-facing cryptographic algorithm. They do not specify how a contract names an algorithm, binds its interface, or switches versions without redeploying the caller. EvoCrypt narrows the replacement boundary to individual WASM modules behind a stable Solidity-facing interface. Consistency follows from an on-chain proposal whose control fields carry the module hash and Activation Block, and whose gas fields are bound to the individual algorithm.
+Blockchain upgrades at the protocol or client layer replace execution rules through a coordinated transition. Cardano switches protocol eras with a hard-fork combinator at designated heights, and work on updatable blockchains studies how old and new chains stay synchronized \cite{cardanoHardForkCombinator,cardanoEvolution,ciampi2020updatable}. Soft forks encode selected policy changes in rules that can be adopted without replacing the protocol \cite{zindros2021softPower}. Phoenix and Polkadot are closest to EvoCrypt in supporting live replacement: Phoenix compiles upgrade code carried in transactions at runtime, while Polkadot replaces on-chain WASM runtime logic during block synchronization \cite{wang2023phoenix,polkadotRuntimeUpgrades}. Both nevertheless replace client or chain-runtime components rather than a contract-facing cryptographic algorithm. They do not specify how a contract names an algorithm, binds its interface, or switches versions without redeploying the caller. EvoCrypt narrows the replacement boundary to individual WASM modules behind a stable Solidity-facing interface. Consistency follows from an on-chain proposal whose control fields carry the module hash and Activation Block, and whose gas fields are bound to the individual algorithm.
 
 Contract-level schemes update application logic without replacing the entire blockchain client, using deployable contracts, proxy indirection, or bytecode rewriting. EVMPatch patches deployed Ethereum smart contracts through bytecode rewriting and proxy-based deployment, while Solidity implementations offer application-level flexibility within the EVM \cite{rodler2021evmpatch,ethereumEVM}. LEAGAN extends contract-level upgradeability through data separation, incremental hashing, revision control, and status-contract-based version management \cite{kumar2025leagan}. Precompiled Contracts provide a complementary client-side path for selected cryptographic routines through reserved EVM-facing addresses \cite{evmCodesPrecompiled,eip196,eip197}. Contract-level implementations remain constrained by EVM execution cost and state or interface compatibility, whereas adding or replacing a Precompiled Contract normally requires changes to client and protocol rules.
 
@@ -85,36 +85,36 @@ Dynamic software-update schemes move replacement below the application layer by 
 EvoCrypt is a cryptographic coprocessor framework for dynamically upgrading contract-facing cryptographic algorithms. This section presents the system model, the upgrade protocol, and the invocation protocol that together define the design. We focus on the coordination, version-selection, and contract-facing execution rules of EvoCrypt, while the prototype implementation and experimental configuration are described in Section~\ref{sec5}.
 
 \subsection{System Model}\label{sec3.1}
-EvoCrypt separates governance, chain state, contract execution, and module execution into four cooperating components: the Community, the Blockchain, the EVM, and the Cryptographic Coprocessor. The Community includes developers and an authorizing committee that proposes and approves algorithm upgrades. The Blockchain maintains the canonical chain and shared world state, including smart contracts and the Management Contract. The EVM processes smart-contract transactions, while the node-local Cryptographic Coprocessor prepares, activates, and executes replaceable cryptographic modules.
+EvoCrypt separates algorithm development, chain state, contract execution, and module execution into four cooperating components: the Community, the Blockchain, the EVM, and the Cryptographic Coprocessor. The Community includes developers who implement cryptographic algorithms and proposers who submit algorithm upgrades. The Blockchain maintains the canonical chain and shared world state, including smart contracts and the Management Contract. The EVM processes smart-contract transactions, while the node-local Cryptographic Coprocessor prepares, activates, and executes replaceable cryptographic modules.
 
-Two chain-derived paths connect these components. An approved proposer records an upgrade through the Management Contract, whereas a contract initiates an invocation through the EVM of a Blockchain node. The Management Contract stores each admitted upgrade proposal, including the gas rule bound to its algorithm, and exposes the contract-facing upgrade and invocation interfaces. The coprocessor uses the resulting chain state to prepare and execute the corresponding module. Figure~\ref{fig:overview} summarizes these objects and their relationships.
+Two chain-derived paths connect these components. A proposer records an upgrade through the Management Contract, whereas a contract initiates an invocation through the EVM of a Blockchain node. The Management Contract stores each admitted upgrade proposal, including the gas rule bound to its algorithm, and exposes the contract-facing upgrade and invocation interfaces. The coprocessor uses the resulting chain state to prepare and execute the corresponding module. Figure~\ref{fig:overview} summarizes these objects and their relationships.
 
 % [H] 让图留在引用段落之后，不进入浮动队列。
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\textwidth]{../image/overview.pdf}
-\caption{System model for proposed EvoCrypt framework.}
+\caption{System model of EvoCrypt.}
 \label{fig:overview}
 \end{figure}
 
 \subsection{Upgrade Protocol}\label{sec3.2}
-\noindent\textbf{On-chain publication.} On-chain publication provides the authoritative record that coordinates node-local preparation and height-based activation. After the committee approves a proposal, a committee-authorized proposer submits it through the designated upgrade interface. The Management Contract admits the proposal only after the committee has reached consensus on its three parts, stores that record, and emits an upgrade event.
+\noindent\textbf{On-chain publication.} On-chain publication provides the authoritative record that coordinates node-local preparation and height-based activation. A proposer submits an upgrade proposal through the designated upgrade interface. The Management Contract records its algorithm, gas, and control components and emits an upgrade event.
 
 The EVM records the proposal but does not compile or instantiate the WASM module. Node-dependent preparation therefore remains outside the transaction that changes the chain state. Every node reconstructs the same version from the admitted proposal. Its algorithm part names the algorithm and version and fixes the entry and output parameters; its gas part supplies the pricing rule bound to that algorithm; its control part supplies the Activation Block and the hash used to verify the bytecode. Only $\langle a,v,H_{a,v}\rangle$ is emitted as a notification index. Let $\mathcal{V}_{a}$ denote the versions already registered for algorithm $a$; the authoritative record prevents nodes from preparing different artifacts or execution rules for the same upgrade.
 
 \begin{definition}[Upgrade proposal]
 \label{def:version-metadata}
-Let $a$ be an algorithm name and $v$ a version number. An admitted upgrade proposal has an algorithm component, a gas component, and a control component,
+Let $a$ be an algorithm name and $v$ a version number. An admitted upgrade proposal is
 \begin{equation}
-\mu_{a,v}=\bigl(\mathsf{Alg}_{a,v},\,\Gamma_{a,v},\,\mathsf{Ctl}_{a,v}\bigr),
+\begin{aligned}
+\mu_{a,v}&=\bigl(\mathsf{Alg}_{a,v},\,\Gamma_{a,v},\,\mathsf{Ctl}_{a,v}\bigr),\\
+\mathsf{Alg}_{a,v}&=\bigl(a,\,v,\,C_{a,v},\,\tau^{\mathrm{in}}_{a,v},\,\tau^{\mathrm{out}}_{a,v}\bigr),\\
+\Gamma_{a,v}&=\bigl(g^{\mathrm{reg}}_{a,v},\,B_{a},\,\alpha_{a},\,N_{0,a}\bigr),\\
+\mathsf{Ctl}_{a,v}&=\bigl(H_{a,v},\,h_{a,v}\bigr),
+\end{aligned}
 \label{eq:version-metadata}
 \end{equation}
-\begin{align}
-\mathsf{Alg}_{a,v}&=\bigl(a,\,v,\,C_{a,v},\,\tau^{\mathrm{in}}_{a,v},\,\tau^{\mathrm{out}}_{a,v}\bigr), \label{eq:proposal-alg}\\
-\Gamma_{a,v}&=\bigl(g^{\mathrm{reg}}_{a,v},\,B_{a},\,\alpha_{a},\,N_{0,a}\bigr), \label{eq:proposal-gas}\\
-\mathsf{Ctl}_{a,v}&=\bigl(H_{a,v},\,h_{a,v}\bigr). \label{eq:proposal-ctrl}
-\end{align}
-The algorithm component carries the compiled WASM bytecode $C_{a,v}$ together with the entry-parameter descriptor $\tau^{\mathrm{in}}_{a,v}$ and the output-parameter descriptor $\tau^{\mathrm{out}}_{a,v}$. The gas component carries the version's registered charge $g^{\mathrm{reg}}_{a,v}$ and the pricing parameters of algorithm $a$: the input-size band $B_{a}$, the growth parameter $\alpha_{a}$, and the call threshold $N_{0,a}$. The control component carries the Activation Block height $H_{a,v}$ and the verification hash $h_{a,v}=\mathrm{Keccak256}(C_{a,v})$. The Management Contract stores an encoding of all three components. Each node recomputes the hash from the recovered bytecode during preparation and accepts the module only when the result equals $h_{a,v}$.
+where $C_{a,v}$ is the WASM bytecode, $\tau^{\mathrm{in}}_{a,v}$ and $\tau^{\mathrm{out}}_{a,v}$ are its ABI descriptors, $g^{\mathrm{reg}}_{a,v}$ is the registered charge, $(B_{a},\alpha_{a},N_{0,a})$ are the pricing parameters, $H_{a,v}$ is the Activation Block, and $h_{a,v}=\mathrm{Keccak256}(C_{a,v})$.
 \end{definition}
 
 \noindent\textbf{Node-local preparation.} Node-local preparation converts the admitted metadata record into executable state without changing the active version. After observing the upgrade event, each client recovers $\mu_{a,v}$, checks that the event index agrees with the stored record, decodes the artifact, and recomputes its hash. The Upgrade Handler then compiles and instantiates the module and validates its required entry point. Once these checks succeed, the node records $(a,v)$ as prepared. Algorithm~\ref{alg:upgrade-protocol} gives the complete publication and preparation procedure.
@@ -127,7 +127,7 @@ Preparation is deliberately separated from the chain-level upgrade record. Node-
 \begin{algorithmic}[1]
 \Require Upgrade proposal $\mu_{a,v}$ as in~\eqref{eq:version-metadata}; node set $\mathcal{N}$
 \Ensure Prepared set updated on every $n_i\in\mathcal{N}$
-\State committee-authorized proposer submits $\mu_{a,v}$ through the designated upgrade interface
+\State proposer submits $\mu_{a,v}$ through the designated upgrade interface
 \State Management Contract stores $\mu_{a,v}$; emits event $\langle a,v,H_{a,v}\rangle$
 \ForAll{$n_i\in\mathcal{N}$}
     \State observe $\langle a,v,H_{a,v}\rangle$; fetch $\mu'_{a,v}$ from Management Contract
@@ -151,24 +151,18 @@ When a selected version is not yet prepared, the node reloads its authoritative 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\textwidth]{../image/upgrade_protocol.pdf}
-\caption{Node-local preparation and deterministic activation of an EvoCrypt upgrade.}
+\caption{Node-local preparation and deterministic activation.}
 \label{fig:upgrade-protocol}
 \end{figure}
 
 \begin{definition}[Active version]
 \label{def:active-version}
-Let $\mathcal{V}_{a}$ be the registered version set of algorithm $a$, and let $b$ be the execution block height. The version used at height $b$ is
+Let $\mathcal{V}_{a}$ be the registered versions of algorithm $a$ and $b$ the execution height. The version used at height $b$ is
 \begin{equation}
-v^{*}(a,b)=
-\underset{v \in \mathcal{V}_{a}}{\arg\max}
-\left\{
-\left(H_{a,v},\,v\right)
-\;\middle|\;
-H_{a,v} \leq b
-\right\}.
+v^{*}(a,b)=\arg\max\{(H_{a,v},v): v\in\mathcal{V}_{a},\, H_{a,v}\le b\},
 \label{eq:version-select}
 \end{equation}
-The $\arg\max$ is lexicographic on the pair $(H_{a,v},v)$: among versions whose activation height does not exceed $b$, the rule prefers the latest activation height and, for a tied height, the larger version number. If the feasible set is empty, no version is active and the invocation fails with a missing-version error.
+in lexicographic order, later activation height first and then larger version number. If no such version exists, the invocation fails with a missing-version error.
 \end{definition}
 
 \subsection{Invocation Protocol}\label{sec3.3}
@@ -176,13 +170,13 @@ A unified Management Contract entry point keeps the contract-facing call boundar
 
 \begin{definition}[Algorithm-level gas schedule]
 \label{def:gas-schedule}
-Let $i\geq 1$ be one plus the number of earlier charged calls to algorithm $a$ within the current transaction, and let $b$ be its execution height. The pricing parameters $B_{a}$, $\alpha_{a}$, and $N_{0,a}$ come from the gas component $\Gamma_{a,v}$ of the admitted proposal. The charge $G(a,v,x,i,b)$ equals $G_{\mathrm{prof}}(a,v,x,i)$ when that component supplies a pricing rule, and equals $g^{\mathrm{reg}}_{a,v}$ otherwise. For that rule,
+Let $i\geq 1$ be one plus the number of earlier charged calls to algorithm $a$ in the current transaction, resetting for each transaction and algorithm, and let $b$ be the execution height. Using the pricing parameters in $\Gamma_{a,v}$, the charge $G(a,v,x,i,b)$ equals $G_{\mathrm{prof}}(a,v,x,i)$ when $\Gamma_{a,v}$ supplies a pricing rule, and equals $g^{\mathrm{reg}}_{a,v}$ otherwise:
 \begin{equation}
 G_{\mathrm{prof}}(a,v,x,i)=
-\left\lceil B_{a}(|x|)(1+\alpha_{a})^{\max(0,i-N_{0,a})}\right\rceil,
+\left\lceil B_{a}(|x|)(1+\alpha_{a})^{\max(0,i-N_{0,a})}\right\rceil.
 \label{eq:profile-gas}
 \end{equation}
-where $B_{a}$ selects the input-size band stored for $a$, $N_{0,a}$ is that algorithm's transaction-local call threshold, and $\alpha_{a}$ is its growth parameter. The current implementation passes a zero parent-call count, so the load multiplier of this rule is one. The index resets for each transaction and algorithm. The algorithm's pricing rule \emph{replaces}, rather than adds to, $g^{\mathrm{reg}}_{a,v}$; an invalid or missing configured version is an error, not a fallback to the registered charge. The versioned consistency model treats $g^{\mathrm{reg}}_{a,v}$ as immutable and excludes the legacy \texttt{updataGas} mutation path. The transaction's total gas additionally includes ordinary EVM, calldata, and intrinsic costs.
+$G_{\mathrm{prof}}$ replaces $g^{\mathrm{reg}}_{a,v}$ for that call. An invalid or missing configured version is an error.
 \end{definition}
 
 \begin{algorithm}[!htb]
@@ -213,7 +207,7 @@ Because $G$ depends only on the selected version, the pricing parameters in the 
 
 \section{Security Analysis}\label{sec4}
 
-This section formalizes the upgrade protocol and derives the invocation guarantees from it. Section~\ref{sec4.1} fixes the ledger and registry abstractions, the trusted assumptions, the adversary, and game-based definitions for the two failure modes an upgrade mechanism must exclude: honest nodes selecting different versions for the same height, and an honest node executing bytecode other than the admitted artifact. Section~\ref{sec4.2} shows that EvoCrypt excludes the first unconditionally relative to the ledger abstraction and the second by a tight reduction to the collision resistance of $\mathrm{Keccak256}$, and combines both into an upgrade-soundness theorem. Section~\ref{sec4.3} extends consistency to invocation outcomes and proves resistance to gas-charge evasion, and Section~\ref{sec4.4} treats the residual risks the model leaves open and the governed recovery path that addresses them.
+This section formalizes the upgrade protocol and derives the invocation guarantees from it. Section~\ref{sec4.1} fixes the ledger and registry abstractions, the trusted assumptions, the adversary, and game-based definitions for the two failure modes an upgrade mechanism must exclude: honest nodes selecting different versions for the same height, and an honest node executing bytecode other than the admitted artifact. Section~\ref{sec4.2} shows that EvoCrypt excludes the first unconditionally relative to the ledger abstraction and the second by a tight reduction to the collision resistance of $\mathrm{Keccak256}$, and combines both into an upgrade-soundness theorem. Section~\ref{sec4.3} extends consistency to invocation outcomes and proves resistance to gas-charge evasion.
 
 \subsection{Security Model}\label{sec4.1}
 
@@ -233,9 +227,9 @@ For all honest $n,n'\in\mathcal{N}$ and every $b\le\min(|\mathcal{L}_n|,|\mathca
 
 Prefix equality expresses ledger persistence~\cite{garay2015backbone}; the gas parameters are fields of the admitted proposals on that prefix. Blocks subject to reorganization are re-executed by ordinary EVM rules and lie outside the model.
 
-\begin{assumption}[Committee-gated admission]
-\label{asm:committee}
-The Management Contract admits $\mu_{a,v}$ only on a committee-authorized submission, and every admitted record is well formed: (i) $h_{a,v}=\mathrm{Keccak256}(C_{a,v})$; (ii) $u_{a,v}<H_{a,v}$, i.e., the record is committed strictly before its Activation Block; (iii) $(a,v)$ is unique, and an admitted record is never modified or removed; (iv) $C_{a,v}$ passes validation of the configured WASM Runtime. The committee is further trusted to review the implementation and its registered gas charge before admission. Conditions (i)--(iii) can be enforced by the contract itself; listing them as assumptions keeps the analysis independent of the contract implementation.
+\begin{assumption}[Registry validity]
+\label{asm:registry}
+Every upgrade record $\mu_{a,v}$ admitted by the Management Contract is well formed: (i) $h_{a,v}=\mathrm{Keccak256}(C_{a,v})$; (ii) $u_{a,v}<H_{a,v}$, i.e., the record is committed strictly before its Activation Block; (iii) $(a,v)$ is unique, and an admitted record is never modified or removed; (iv) $C_{a,v}$ passes validation of the configured WASM Runtime. Conditions (i)--(iii) can be enforced by the contract itself; listing them as assumptions keeps the analysis independent of the contract implementation.
 \end{assumption}
 
 \begin{assumption}[Collision resistance]
@@ -259,7 +253,7 @@ $\mathrm{Keccak256}$ is unkeyed, so~\eqref{eq:cr-adv} is read in the concrete se
 The WASM Runtime exposes a validation predicate $\mathsf{Validate}(C)\in\{0,1\}$ and an execution function $\mathsf{Exec}(C,x)$ whose outputs, including error outcomes, depend only on $(C,x)$ and the fixed, allowlisted host interface. It enforces bounded linear memory, import validation and the configured resource limits, and exposes no host state or capability beyond that interface.
 \end{assumption}
 
-\noindent\textbf{Adversary.} The PPT adversary $\mathcal{A}$ may (a) submit arbitrary transactions, including invocation inputs and candidate upgrade proposals, the latter admitted only subject to Assumption~\ref{asm:committee}; (b) schedule the delivery of upgrade events, delay or interrupt node-local preparation, and crash and restart nodes so that preparation retries; and (c) tamper with the node-local artifact path, i.e., replace the byte sequence $\widehat{C}$ that a node obtains when it decodes, persists or reloads an artifact, modelling corrupted caches, persisted copies and untrusted retrieval channels. It cannot violate Assumptions~\ref{asm:ledger}--\ref{asm:cr}, forge committee authorization, or alter the client binary. The model thus excludes a compromised Geth binary, a broken consensus protocol, a captured committee, a failed implementation review, and a primitive whose underlying assumption is false.
+\noindent\textbf{Adversary.} The PPT adversary $\mathcal{A}$ may (a) submit arbitrary transactions, including invocation inputs and candidate upgrade proposals, the latter admitted only subject to Assumption~\ref{asm:registry}; (b) schedule the delivery of upgrade events, delay or interrupt node-local preparation, and crash and restart nodes so that preparation retries; and (c) tamper with the node-local artifact path, i.e., replace the byte sequence $\widehat{C}$ that a node obtains when it decodes, persists or reloads an artifact, modelling corrupted caches, persisted copies and untrusted retrieval channels. It cannot violate Assumptions~\ref{asm:ledger}--\ref{asm:cr} or alter the client binary. The model thus excludes a compromised Geth binary, a broken consensus protocol, and a primitive whose underlying assumption is false. Registry validity does not imply that a registered implementation is cryptographically correct or that its gas parameters accurately price resource use.
 
 \noindent\textbf{Security definitions.} Each experiment below runs $\mathcal{A}$ against the honest nodes in this model and outputs $1$ when $\mathcal{A}$ causes the undesirable event; the advantage of $\mathcal{A}$ is the probability of output $1$ over all coins.
 
@@ -289,29 +283,29 @@ In $\mathsf{Exp}^{\mathrm{gas}}_{\mathcal{A}}(\kappa)$, $\mathcal{A}$ submits in
 
 \begin{lemma}[Activation timeliness]
 \label{lem:timeliness}
-Under Assumption~\ref{asm:committee}, for every honest node $n$ and every $\mu_{a,v}\in\mathsf{Reg}(\mathcal{L}_n)$: (i) $v^{*}_{n}(a,b)\neq v$ for every $b<H_{a,v}$, and (ii) $v$ lies in the feasible set of~\eqref{eq:version-select} at every $b$ with $H_{a,v}\le b\le|\mathcal{L}_n|$.
+Under Assumption~\ref{asm:registry}, for every honest node $n$ and every $\mu_{a,v}\in\mathsf{Reg}(\mathcal{L}_n)$: (i) $v^{*}_{n}(a,b)\neq v$ for every $b<H_{a,v}$, and (ii) $v$ lies in the feasible set of~\eqref{eq:version-select} at every $b$ with $H_{a,v}\le b\le|\mathcal{L}_n|$.
 \end{lemma}
 
 \begin{proof}
-(i) The feasible set contains only versions with $H_{a,v}\le b$. (ii) By Assumption~\ref{asm:committee}(ii), $u_{a,v}<H_{a,v}\le b$, so the admitting transaction lies in $\mathcal{L}_n[1..b]$, and by (iii) the record is never removed; hence $\mu_{a,v}\in\mathsf{Reg}(\mathcal{L}_n[1..b])$ and $H_{a,v}\le b$ places $v$ in the feasible set.\qed
+(i) The feasible set contains only versions with $H_{a,v}\le b$. (ii) By Assumption~\ref{asm:registry}(ii), $u_{a,v}<H_{a,v}\le b$, so the admitting transaction lies in $\mathcal{L}_n[1..b]$, and by (iii) the record is never removed; hence $\mu_{a,v}\in\mathsf{Reg}(\mathcal{L}_n[1..b])$ and $H_{a,v}\le b$ places $v$ in the feasible set.\qed
 \end{proof}
 
 The lemma confines the preparation window of $(a,v)$ to heights $u_{a,v}<b<H_{a,v}$ and excludes retroactive activation: appending a block never changes the version designated for an already-executed height, so a node replaying history agrees with nodes that executed it live.
 
 \begin{theorem}[Activation consistency]
 \label{thm:activation}
-Under Assumptions~\ref{asm:ledger} and~\ref{asm:committee}, every adversary $\mathcal{A}$, including a computationally unbounded one, has $\mathsf{Adv}^{\mathrm{div}}_{\mathcal{A}}(\kappa)=0$.
+Under Assumptions~\ref{asm:ledger} and~\ref{asm:registry}, every adversary $\mathcal{A}$, including a computationally unbounded one, has $\mathsf{Adv}^{\mathrm{div}}_{\mathcal{A}}(\kappa)=0$.
 \end{theorem}
 
 \begin{proof}
-Fix any output $(a,b,n,n')$ of $\mathcal{A}$. By Assumption~\ref{asm:ledger}, $P=\mathcal{L}_n[1..b]=\mathcal{L}_{n'}[1..b]$, and by Definition~\ref{def:registry} $\mathsf{Reg}(P)$ is a function of $P$, so both nodes hold the same records and the same feasible set $\{(H_{a,v},v): H_{a,v}\le b\}$. By Assumption~\ref{asm:committee}(iii) its elements are pairwise distinct, so the lexicographic maximum in~\eqref{eq:version-select} is unique when the set is non-empty, and both nodes return $\bot$ when it is empty; hence $v^{*}_{n}(a,b)=v^{*}_{n'}(a,b)$. No adversarial capability enters this computation: scheduling, preparation timing, crashes and artifact tampering act on node-local state, whereas line~\ref{line:resolve} of Algorithm~\ref{alg:invocation-protocol} evaluates~\eqref{eq:version-select} on the registry before any node-local state is consulted. The experiment therefore never outputs $1$, whatever the running time of $\mathcal{A}$.\qed
+Fix any output $(a,b,n,n')$ of $\mathcal{A}$. By Assumption~\ref{asm:ledger}, $P=\mathcal{L}_n[1..b]=\mathcal{L}_{n'}[1..b]$, and by Definition~\ref{def:registry} $\mathsf{Reg}(P)$ is a function of $P$, so both nodes hold the same records and the same feasible set $\{(H_{a,v},v): H_{a,v}\le b\}$. By Assumption~\ref{asm:registry}(iii) its elements are pairwise distinct, so the lexicographic maximum in~\eqref{eq:version-select} is unique when the set is non-empty, and both nodes return $\bot$ when it is empty; hence $v^{*}_{n}(a,b)=v^{*}_{n'}(a,b)$. No adversarial capability enters this computation: scheduling, preparation timing, crashes and artifact tampering act on node-local state, whereas line~\ref{line:resolve} of Algorithm~\ref{alg:invocation-protocol} evaluates~\eqref{eq:version-select} on the registry before any node-local state is consulted. The experiment therefore never outputs $1$, whatever the running time of $\mathcal{A}$.\qed
 \end{proof}
 
 Theorem~\ref{thm:activation} is information-theoretic. The next theorem shows that binding the executed bytecode to the registry costs exactly one collision-resistance assumption.
 
 \begin{theorem}[Module binding]
 \label{thm:binding}
-Under Assumption~\ref{asm:committee}, for every PPT adversary $\mathcal{A}$ there exists a PPT algorithm $\mathcal{B}$, running in the time of $\mathcal{A}$ plus the cost of simulating the honest nodes, such that
+Under Assumption~\ref{asm:registry}, for every PPT adversary $\mathcal{A}$ there exists a PPT algorithm $\mathcal{B}$, running in the time of $\mathcal{A}$ plus the cost of simulating the honest nodes, such that
 \begin{equation}
 \mathsf{Adv}^{\mathrm{sub}}_{\mathcal{A}}(\kappa)\le\mathsf{Adv}^{\mathrm{cr}}_{\mathrm{Keccak256}}(\mathcal{B}).
 \label{eq:binding-bound}
@@ -322,7 +316,7 @@ In particular, $\mathsf{Adv}^{\mathrm{sub}}_{\mathcal{A}}(\kappa)$ is negligible
 \begin{proof}
 On input $1^{\kappa}$, $\mathcal{B}$ runs $\mathsf{Exp}^{\mathrm{sub}}_{\mathcal{A}}(\kappa)$ internally: it simulates the ledger and every honest node, executing Algorithms~\ref{alg:upgrade-protocol} and~\ref{alg:invocation-protocol} on their behalf, and answers the scheduling and artifact-tampering requests of $\mathcal{A}$ exactly as the real experiment would. The simulation is perfect because the model contains no secret state. Whenever a simulated honest node is about to mark $(a,v)$ prepared with $\widehat{C}$ (Algorithm~\ref{alg:upgrade-protocol}, line~\ref{line:mark-prepared}) or to execute $\widehat{C}$ for $(a,v)$ (Algorithm~\ref{alg:invocation-protocol}, line~\ref{line:execute}), $\mathcal{B}$ reads $C_{a,v}$ from the simulated registry; if $\widehat{C}\neq C_{a,v}$ it outputs $(\widehat{C},C_{a,v})$ and halts, and otherwise it eventually outputs $\bot$.
 
-Let $E$ be the event that $\mathsf{Exp}^{\mathrm{sub}}_{\mathcal{A}}(\kappa)$ outputs $1$; by perfect simulation, $\Pr[E]=\mathsf{Adv}^{\mathrm{sub}}_{\mathcal{A}}(\kappa)$ in the run of $\mathcal{B}$. On $E$, an honest node accepted $\widehat{C}$ for $(a,v)$, which happens only after verifying $\mathrm{Keccak256}(\widehat{C})=h_{a,v}$ against the canonical record (Algorithm~\ref{alg:upgrade-protocol}, line~\ref{line:hash-check}; the prepared set is keyed by $h_{a,v}$, so execution reloads the artifact under the same check). By Assumption~\ref{asm:committee}(i), $h_{a,v}=\mathrm{Keccak256}(C_{a,v})$, so $(\widehat{C},C_{a,v})$ is a collision and $\Pr[E]\le\mathsf{Adv}^{\mathrm{cr}}_{\mathrm{Keccak256}}(\mathcal{B})$, which is~\eqref{eq:binding-bound}. The reduction is tight: it loses no advantage and does not guess the target record.\qed
+Let $E$ be the event that $\mathsf{Exp}^{\mathrm{sub}}_{\mathcal{A}}(\kappa)$ outputs $1$; by perfect simulation, $\Pr[E]=\mathsf{Adv}^{\mathrm{sub}}_{\mathcal{A}}(\kappa)$ in the run of $\mathcal{B}$. On $E$, an honest node accepted $\widehat{C}$ for $(a,v)$, which happens only after verifying $\mathrm{Keccak256}(\widehat{C})=h_{a,v}$ against the canonical record (Algorithm~\ref{alg:upgrade-protocol}, line~\ref{line:hash-check}; the prepared set is keyed by $h_{a,v}$, so execution reloads the artifact under the same check). By Assumption~\ref{asm:registry}(i), $h_{a,v}=\mathrm{Keccak256}(C_{a,v})$, so $(\widehat{C},C_{a,v})$ is a collision and $\Pr[E]\le\mathsf{Adv}^{\mathrm{cr}}_{\mathrm{Keccak256}}(\mathcal{B})$, which is~\eqref{eq:binding-bound}. The reduction is tight: it loses no advantage and does not guess the target record.\qed
 \end{proof}
 
 The control hash binds only the bytecode. The entry and output descriptors, the gas component, and the Activation Block are the remaining fields of the same admitted proposal and are read from the canonical registry. These values are common to honest nodes under the stated ledger assumptions.
@@ -351,7 +345,7 @@ $E_3$ is a module substitution for $(a,v)$ with $\mu_{a,v}\in\mathsf{Reg}(\mathc
 
 \begin{remark}[Safety versus liveness]
 \label{rem:liveness}
-Theorems~\ref{thm:activation}--\ref{thm:soundness} are safety statements: an honest node never selects or runs a version other than the canonical one. They do not assert that every node can answer at height $H_{a,v}$; a node still preparing, or in the retry loop of Algorithm~\ref{alg:upgrade-protocol}, defers rather than degrades. Under Assumption~\ref{asm:committee}(iv) and the deterministic validation of Assumption~\ref{asm:runtime}, an admitted artifact validates identically at every honest node, so preparation cannot succeed at one node and fail permanently at another; preparation time is measured in Section~\ref{sec5.2} rather than proven here.
+Theorems~\ref{thm:activation}--\ref{thm:soundness} are safety statements: an honest node never selects or runs a version other than the canonical one. They do not assert that every node can answer at height $H_{a,v}$; a node still preparing, or in the retry loop of Algorithm~\ref{alg:upgrade-protocol}, defers rather than degrades. Under Assumption~\ref{asm:registry}(iv) and the deterministic validation of Assumption~\ref{asm:runtime}, an admitted artifact validates identically at every honest node, so preparation cannot succeed at one node and fail permanently at another; preparation time is measured in Section~\ref{sec5.2} rather than proven here.
 \end{remark}
 
 \subsection{Invocation Security}\label{sec4.3}
@@ -367,7 +361,7 @@ Returning $0$ when a node has not answered keeps the definition a safety propert
 
 \begin{lemma}[Pre-execution agreement]
 \label{lem:preexec}
-Under Assumptions~\ref{asm:ledger} and~\ref{asm:committee}, two honest nodes running Algorithm~\ref{alg:invocation-protocol} on the same $(d,g,b,i)$ take the same branch at every line before line~\ref{line:execute}, resolve the same version $v=v^{*}(a,b)$, and compute the same $G_{\mathrm{req}}=G(a,v,x,i,b)$. In particular, if either node returns an ABI, missing-version or out-of-gas error, both return the same error with $\gamma=0$.
+Under Assumptions~\ref{asm:ledger} and~\ref{asm:registry}, two honest nodes running Algorithm~\ref{alg:invocation-protocol} on the same $(d,g,b,i)$ take the same branch at every line before line~\ref{line:execute}, resolve the same version $v=v^{*}(a,b)$, and compute the same $G_{\mathrm{req}}=G(a,v,x,i,b)$. In particular, if either node returns an ABI, missing-version or out-of-gas error, both return the same error with $\gamma=0$.
 \end{lemma}
 
 \begin{proof}
@@ -402,97 +396,118 @@ The bound in~\eqref{eq:inv-bound} coincides with that of Theorem~\ref{thm:soundn
 
 \begin{theorem}[Gas-charge soundness]
 \label{thm:gas-soundness}
-Under Assumptions~\ref{asm:ledger} and~\ref{asm:committee}, every adversary $\mathcal{A}$, including a computationally unbounded one, has $\mathsf{Adv}^{\mathrm{gas}}_{\mathcal{A}}(\kappa)=0$.
+Under Assumptions~\ref{asm:ledger} and~\ref{asm:registry}, every adversary $\mathcal{A}$, including a computationally unbounded one, has $\mathsf{Adv}^{\mathrm{gas}}_{\mathcal{A}}(\kappa)=0$.
 \end{theorem}
 
 \begin{proof}
-Fix an invocation identified by $\mathcal{A}$ for which $G^{*}$ is defined. By Assumption~\ref{asm:ledger}, node $n$ uses the canonical registry and the gas component of the proposal for $a$. Assumption~\ref{asm:committee}(iii) fixes the admitted metadata, so Theorem~\ref{thm:activation} gives the canonical version $v^{*}(a,b)$ and its registered charge. The encoded input $x$ and the preceding charged calls determine $|x|$ and $i$ by Definition~\ref{def:gas-schedule}. Hence Definition~\ref{def:gas-schedule} selects the canonical pricing branch: either the immutable registered charge or Eq.~\eqref{eq:profile-gas} with the parameters in that gas component. In both cases, $G_{\mathrm{req}}=G^{*}$. Algorithm~\ref{alg:invocation-protocol} returns an out-of-gas error when $g<G_{\mathrm{req}}$ and charges $G_{\mathrm{req}}$ before execution otherwise. Reaching line~\ref{line:execute} therefore implies $g\geq G^{*}$ and $\gamma=G^{*}$, excluding both winning events in Definition~\ref{def:gas-evasion}. Thus $\mathsf{Exp}^{\mathrm{gas}}_{\mathcal{A}}(\kappa)$ never outputs $1$.\qed
+Fix an invocation identified by $\mathcal{A}$ for which $G^{*}$ is defined. By Assumption~\ref{asm:ledger}, node $n$ uses the canonical registry and the gas component of the proposal for $a$. Assumption~\ref{asm:registry}(iii) fixes the admitted metadata, so Theorem~\ref{thm:activation} gives the canonical version $v^{*}(a,b)$ and its registered charge. The encoded input $x$ and the preceding charged calls determine $|x|$ and $i$ by Definition~\ref{def:gas-schedule}. Hence Definition~\ref{def:gas-schedule} selects the canonical pricing branch: either the immutable registered charge or Eq.~\eqref{eq:profile-gas} with the parameters in that gas component. In both cases, $G_{\mathrm{req}}=G^{*}$. Algorithm~\ref{alg:invocation-protocol} returns an out-of-gas error when $g<G_{\mathrm{req}}$ and charges $G_{\mathrm{req}}$ before execution otherwise. Reaching line~\ref{line:execute} therefore implies $g\geq G^{*}$ and $\gamma=G^{*}$, excluding both winning events in Definition~\ref{def:gas-evasion}. Thus $\mathsf{Exp}^{\mathrm{gas}}_{\mathcal{A}}(\kappa)$ never outputs $1$.\qed
 \end{proof}
-
-Theorem~\ref{thm:gas-soundness} establishes adherence to the defined gas schedule; the resource-underpricing risk is addressed separately in Section~\ref{sec4.4}.
-
-\subsection{Residual Risks and Governed Recovery}\label{sec4.4}
-
-Two risks remain inside the model of Section~\ref{sec4.1} after Theorems~\ref{thm:activation}--\ref{thm:invocation}: an admitted implementation may later prove unsuitable or vulnerable, and either a registered charge or the gas component of an admitted proposal may underprice or overprice the resources a call consumes. Committee review of the registered charge is trusted but not infallible, and the gas component of each proposal requires its own calibration. EvoCrypt cannot prevent a poor initial choice; a governed version update can replace the implementation, while repricing through version metadata applies only when the gas component of the proposal does not override the registered charge.
-
-\begin{corollary}[Governed supersession]
-\label{cor:supersession}
-Under Assumptions~\ref{asm:ledger} and~\ref{asm:committee}, let $\mu_{a,v}$ and $\mu_{a,v'}$ be admitted with $H_{a,v'}>H_{a,v}$. Then for every honest node $n$ and every height $H_{a,v'}\le b\le|\mathcal{L}_n|$, $v^{*}_{n}(a,b)\neq v$. If, moreover, no admitted version of $a$ other than $v'$ has an activation height in $[H_{a,v'},b]$, then $v^{*}_{n}(a,b)=v'$.
-\end{corollary}
-
-Corollary~\ref{cor:supersession} covers three corrective actions. \emph{Replacement} admits $\mu_{a,v'}$ with new bytecode; from $H_{a,v'}$ on, Theorem~\ref{thm:soundness} guarantees that every honest node runs $C_{a,v'}$ and never $C_{a,v}$. \emph{Repricing} admits $\mu_{a,v'}$ with a revised $g^{\mathrm{reg}}_{a,v'}$ and possibly unchanged bytecode, which Assumption~\ref{asm:committee}(iii) permits because uniqueness is over $(a,v)$ rather than over $h_{a,v}$. This changes the charge only when the registered charge in Definition~\ref{def:gas-schedule} applies: the gas component of the admitted proposal takes precedence over a revision that changes only $g^{\mathrm{reg}}_{a,v}$. \emph{Deprecation} admits a version whose module returns a protocol error on every input, so that by Theorem~\ref{thm:invocation} all invocations of $a$ fail deterministically after $H_{a,v'}$ without any contract redeployment. In each case, the version change becomes effective $H_{a,v'}-u_{a,v'}$ blocks after admission, and a node is ready at that height whenever its preparation completes within this window (Remark~\ref{rem:liveness}); Section~\ref{sec5.3} tests version agreement around activation, not preparation-time sufficiency.
 
 \section{Evaluation}\label{sec5}
 
-The evaluation asks whether replaceable cryptography can offer useful execution performance without losing consistent version selection, and what costs accompany that flexibility. Section~\ref{sec5.1} establishes the experimental scope. Section~\ref{sec5.2} examines the performance and gas-accounting trade-offs of PBKDF2, while Section~\ref{sec5.3} tests network-wide upgrade consistency and the execution of more complex verifiers. These questions use different experimental settings and therefore support distinct conclusions.
+This evaluation asks whether EvoCrypt makes upgradeable cryptographic algorithms practical for contract-facing use. We measure the cost of making an algorithm callable and the steady-state invocation cost, comparing the coprocessor path with Solidity and Precompiled Contract baselines where appropriate.
 
-\subsection{Experimental Setup}\label{sec5.1}
+\subsection{Implementation}\label{sec5.1}
 
-Our prototype extends Geth with a WASM-backed cryptographic coprocessor. For upgrade validation, we deployed 20 Geth nodes as containers on a private Clique network with five-second blocks. The containers each have a limit of half a CPU and 768~MB of memory; they are not 20 separate physical servers. TODO: confirm the host hardware and operating system for this run.
+Experiments used a Geth-based private Clique network running modified Geth v1.17.5-unstable on a 16-core, 32~GB Aliyun server with Ubuntu 24.04 LTS, built with Go 1.25.7. Solidity contracts were compiled with solc 0.8.26, and WASM modules were built with TinyGo 0.42.0.
 
-The evaluation uses different settings for its three questions. Upgrade consistency is observed across the 20-node network; the PBKDF2 comparison concerns a single node, and the complex-verifier results are independent microbenchmarks. PBKDF2 derives a 32-byte key using HMAC-SHA-256. The time comparison varies its internal iteration count from 1 to 100, whereas the gas comparison fixes two iterations and varies the number $n$ of calls per transaction. For PBKDF2, Eq.~\eqref{eq:profile-gas} uses the gas parameters of that algorithm's proposal, $B_{a}(|x|)=g_0=3000$ for the tested inputs, $\alpha_{a}=1/2$, and $N_{0,a}=2$; the rule replaces the registered charge rather than supplementing it.
-
-\subsection{Performance Evaluation}\label{sec5.2}
-
-Moving PBKDF2 out of Solidity is advantageous in this comparison primarily as the work per call grows. EvoCrypt is marginally slower at one internal iteration but substantially faster at 100 iterations, where the recorded times are 2.967~ms and 8.152~ms, respectively. Figure~\ref{fig:pbkdf2-time} therefore supports a workload-dependent benefit rather than a claim of uniformly faster calls. The native precompile remains the fastest recorded path, illustrating the cost of replaceability relative to a built-in implementation. Its nearly flat time series, however, does not track the increasing PBKDF2 work; TODO: verify the native series and the plotted timing boundary before inferring how this overhead scales.
-
-\begin{figure}[H]
+Table~\ref{tab:eval-algorithms} gives the artifact sizes of the eight algorithms. Precompile (B) is the reference source of the client-integrated Precompiled Contract; WASM (B) is the uploaded module; Solidity (B) is the deployed runtime bytecode. Sizes and upgrade gas were remeasured on a fresh single-node Clique chain with Go 1.25.0, TinyGo 0.42.0, and solc 0.8.26 (Paris target, optimizer, 200 via-IR runs) on an Intel Core i7-10700 host running Ubuntu 22.04.5 LTS. Setup latency retains the original run. 
+\begin{table}[ht]
 \centering
-\includegraphics[width=.82\linewidth]{../image/efficiency/pbkdf2_execution_time_comparison.pdf}
-\caption{PBKDF2 time versus internal iterations for Solidity, native precompile, and EvoCrypt. The timing boundary of the archived series requires verification.}
-\label{fig:pbkdf2-time}
-\end{figure}
-
-The gas advantage under the current tariff is a pricing outcome, not evidence of reduced computation. EvoCrypt's archived single-call gas figure remains at 48{,}136 even as PBKDF2 iterations increase from 1 to 100, whereas the Solidity charge grows with that work. This reported amount should not be equated with the coprocessor charge $G$ until its measurement boundary is verified; the algorithm's pricing rule itself does not price the internal iteration count. The present schedule thus needs workload-sensitive calibration before a lower bill can be interpreted as faithful resource accounting.
-
-Transaction-level repetition exposes a second limit to claims of cheaper invocation. In the receipt-validated run, EvoCrypt is charged less than Solidity for one call but more for 16 calls, reaching 2.70 million versus 1.19 million gas. Figure~\ref{fig:pbkdf2-gas} illustrates how the configured tariff varies with call count and its parameters; its archived workbook curves do not match all receipt measurements. Accordingly, neither the small-$n$ saving nor the plotted parameter sensitivities establish a general gas advantage. TODO: reconcile the two data sources before making quantitative claims from the plotted curves.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\linewidth]{../image/gas/pbkdf2_cumulative_gas.pdf}
-\caption{Cumulative PBKDF2 gas. Top left: Solidity and EvoCrypt; top right: sensitivity to $g_0$; bottom left: sensitivity to $\alpha$; bottom right: sensitivity to $N_0$. The archived curves require reconciliation with the receipt results.}
-\label{fig:pbkdf2-gas}
-\end{figure}
-
-\subsection{Functional Validation}\label{sec5.3}
-
-Asynchronous preparation raises a consistency question: could nodes execute different versions for the same transaction near activation? In the 20-node run with activation at block 25, all 35 fully observed transactions across blocks 22--28 selected v1 before activation and v2 thereafter. For each transaction, the recorded outputs, gas charges, and local state roots agreed across all nodes. The observation concerns agreement at the execution height; it does not require nodes to finish preparing the module at the same wall-clock instant.
-
-A separate late-join scenario tests whether different synchronization histories disrupt the same height-based rule. Figure~\ref{fig:upgrade-consistency} shows three groups joining and progressing at different times around the scheduled activation at block 20. Their progress and preparation times differ, but the accompanying execution records show the expected version and output on every fully observed transaction around activation. The timeline alone cannot establish execution agreement; the per-node version and output records supply that evidence. Together, the two runs support consistency in the tested settings, without establishing behavior under arbitrary network failures or untested historical replay.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=.90\linewidth]{../image/consistence/consistence_scene.pdf}
-\caption{Late-join consistency scenario with activation at block 20. Top: block progress for three node groups; bottom: their start, preparation, and readiness events. The timeline shows differing local progress; version and output agreement are checked in the per-node execution records.}
-\label{fig:upgrade-consistency}
-\end{figure}
-
-Algorithm extensibility comes with a measurable but workload-dependent execution cost. EvoCrypt executes all six selected post-quantum signature and Groth16 proof verifiers in Table~\ref{tab:complex-algorithms}, extending the interface beyond the PBKDF2 workload. Their WASM-to-native verification-time ratios differ markedly, from about twofold for the signature workloads to more than fivefold for both Groth16 curves. This variation precludes attributing a single fixed overhead to the coprocessor; profiling would be needed to explain the gap. The comparison concerns standalone verification, not proof generation or transaction confirmation.
-
-% [H] 让表留在本段之后。table 与 figure 分属两个浮动队列，否则表会插到尚未输出的图前面。
-\begin{table}[H]
-\centering
-\caption{Average  and WASM execution; ratios are WASM/native.\label{tab:complex-algorithms}}
+\caption{Source and compiled artifact sizes of the evaluated algorithms.\label{tab:eval-algorithms}}
 \small
-% 算法名按内容定宽；三个数值列平分剩余版心，避免首列吞掉全部弹性宽度。
 \setlength{\tabcolsep}{4pt}
-\begin{tabularx}{\linewidth}{@{}l*{3}{>{\raggedleft\arraybackslash}X}@{}}
+\begin{tabularx}{\textwidth}{@{}llll>{\raggedright\arraybackslash}X@{}}
 \toprule
-Algorithm & Precompile (ms) & WASM (ms) & Ratio \\
+Algorithm & Precompile (B) & WASM(B) & Solidity(B) & Role \\
 \midrule
-Sha256 & 0.39 & 0.51 & 1.3 \\
-Dh2048Secret & 0.41 & 0.6 & 1.46 \\
-PedersenCommit & 0.47 & 1.26 & 2.68 \\
-SchnorrVerify & 1.26 & 3.67 & 2.91 \\
-Aigis-Sig2 & 0.106 & 0.226 & 2.13 \\
-Dilithium3 & 0.141 & 0.282 & 2.00 \\
-ML-DSA-65 & 0.141 & 0.286 & 2.03 \\
-SLH-DSA-SHAKE-192f & 3.964 & 7.585 & 1.91 \\
-Groth16-BLS12-381 & 3.518 & 18.809 & 5.34 \\
-Groth16-BN254 & 2.182 & 11.676 & 5.35 \\
+Add & 623 & 6{,}945 & 171 & Non-cryptographic \\
+Sha256 & 3{,}218 & 8{,}339 & 358 & Cryptographic hash \\
+PolynomialMul & 790 & 8{,}165 & 1{,}004 & Algebraic operation \\
+Blake2bSum256 & 4{,}911 & 8{,}868 & 3{,}721 & Cryptographic hash \\
+Pbkdf2Sha256 & 5{,}435 & 12{,}371 & 1{,}555 & Key derivation \\
+Dh2048Secret & 1{,}595 & 46{,}102 & 2{,}489$^{\dagger}$ & Key exchange \\
+PedersenCommit & 5{,}196 & 48{,}239 & 3{,}093$^{\dagger}$ & Commitment scheme \\
+SchnorrVerify & 5{,}627 & 48{,}639 & 4{,}232 & Signature verification \\
 \bottomrule
 \end{tabularx}
+\par\smallskip\noindent\textsuperscript{\ensuremath{\dagger}}\scriptsize Solidity runtime bytecode includes the inherited modular-arithmetic implementation.\normalsize
 \end{table}
+
+\subsection{Upgrade Efficiency}\label{sec5.2}
+
+Figure~\ref{fig:upgrade-efficiency} compares the cost of making an algorithm callable through EvoCrypt with deploying the equivalent Solidity contract. Receipt gas is \texttt{gasUsed} for the first upload or deployment, including intrinsic and calldata costs. The Precompiled Contract path needs no separate upload.
+
+\begin{figure}[!ht]
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{../image/figure_upgrade_latency_comparison.pdf}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{../image/figure_upgrade_gas_comparison.pdf}
+\end{minipage}
+\caption{Upgrade efficiency. Left: mean setup latency. Right: receipt gas for EvoCrypt upload and Solidity deployment.}
+\label{fig:upgrade-efficiency}
+\end{figure}
+
+The two paths were similar for lightweight algorithms and diverged as the algorithm grew heavier. Add required 0.60~ms through EvoCrypt and 0.37~ms through Solidity, whereas SchnorrVerify required 2.34~ms and 4.30~ms. Upload gas was lower for seven of the eight algorithms, by 1.9--84.7\%. PBKDF2 required 175{,}668 gas for upload versus 388{,}984 gas for Solidity deployment, whereas Add remained more expensive at 154{,}268 versus 90{,}309 gas. A heavier algorithm can therefore be made callable without deploying a full Solidity implementation, at a lower setup cost than contract deployment. Lightweight cases stay comparable. 
+\subsection{Upgrade Consistency}\label{sec5.3}
+
+Figure~\ref{fig:consistency-scene} shows the upgrade path on the 20-node private Clique network. The upgrade transaction records version metadata on chain, each node prepares the WASM module locally, and invocations at or after the Activation Block resolve to the same active version. Geth-side handling finished within 0.54--2.34~ms, after which every evaluated node exposed the same callable version. Local readiness affects only preparation timing; version selection is fixed by the shared metadata and block height. The experiment is a controlled private-network validation and leaves wide-area propagation and adversarial delay unmeasured.
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=\textwidth]{../image/consistence_scene.pdf}
+\caption{Upgrade consistency across nodes: synchronization, preparation, and readiness.}
+\label{fig:consistency-scene}
+\end{figure}
+
+\subsection{Execution Efficiency}\label{sec5.4}
+
+Steady-state invocation was measured on a single node. PBKDF2 used HMAC-SHA-256 to derive a 32-byte key, and the iteration count varied from 1 to 100 across Solidity, the Precompiled Contract, and EvoCrypt (Figure~\ref{fig:pbkdf2-comparison}, left). Each point is the median \texttt{eth\_call} latency of thirty measured calls after warm-up, including RPC overhead and excluding compilation, upload, and deployment. EvoCrypt stayed close to Solidity when each call did little work: at one iteration the times were 0.817~ms and 0.744~ms. At 100 iterations they were 2.967~ms and 8.152~ms, a 63.6\% reduction. The Precompiled Contract path remained fastest, at 0.639~ms. The latency advantage therefore grows with the work per call.
+
+Calling gas fixed ten internal iterations and varied the number of calls inside one transaction. The baseline used $g_0=3000$, $\alpha=1/2$, and $N_0=2$ in Eq.~\eqref{eq:profile-gas}; Figure~\ref{fig:pbkdf2-comparison} (right) also shows the variants $g_0=6000$, $\alpha=3/4$, and $N_0=4$. The curves are median receipt \texttt{gasUsed}. Under the baseline, EvoCrypt used less gas than Solidity at all nine call counts. One call cost 34{,}367 gas versus 297{,}297, and sixteen calls cost 2{,}703{,}489 versus 4{,}333{,}408. The saving narrowed from 88.4\% to 37.6\% as the tariff charged repeated calls more heavily. Raising $g_0$ or $\alpha$ increased that charge, and raising $N_0$ postponed the increase. The gas advantage holds for this schedule and narrows as calls accumulate.
+
+\begin{figure}[!ht]
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{../image/efficiency/pbkdf2_execution_time_comparison.pdf}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{../image/gas/pbkdf2_cumulative_gas.pdf}
+\end{minipage}
+\caption{PBKDF2 efficiency. Left: invocation latency versus iterations. Right: cumulative gas versus calls per transaction.}
+\label{fig:pbkdf2-comparison}
+\end{figure}
+
+\subsection{Functional Validation}\label{sec5.5}
+
+Table~\ref{tab:complex-algorithms} reports standalone verification of post-quantum signatures and Groth16 proofs. These algorithms are more demanding than the contract-facing suite, lie beyond practical direct Solidity execution in this setting, and are absent from the evaluated Precompiled Contract catalog. Each one was uploaded, prepared, and invoked through the same interface, without a client modification. The times exclude RPC, upload, and confirmation, and are separate from the invocation measurements in Section~\ref{sec5.4}.
+
+\begin{table}[H]
+\centering
+\caption{Mean standalone verification time for computationally intensive cryptographic algorithms. Ratios are WASM/Precompiled Contract.\label{tab:complex-algorithms}}
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llll@{}}
+\toprule
+Algorithm & WASM (ms) & Precompile (ms) & Ratio \\
+\midrule
+Aigis-Sig2Verify & 0.226 & 0.106 & 2.13 \\
+Dilithium3Verify & 0.282 & 0.141 & 2.00 \\
+ML-DSA-65Verify & 0.286 & 0.141 & 2.03 \\
+SLH-DSA-SHAKE-192fVerify & 7.585 & 3.964 & 1.91 \\
+Groth16Verify/BLS12-381 & 19.809 & 3.518 & 5.63 \\
+Groth16Verify/BN254 & 11.676 & 2.182 & 5.35 \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+All six verifiers executed successfully. A contract can therefore call algorithms that are not in the client catalog, and a later upgrade can replace the implementation through the same interface. WASM time was 1.91--5.63 times the corresponding Precompiled Contract time, with the largest ratio for Groth16Verify/\allowbreak BLS12-381. EvoCrypt extends the set of callable algorithms; where a Precompiled Contract already exists, that path remains faster.
 
 \section{Conclusion}\label{sec6}
 

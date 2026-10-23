@@ -5,7 +5,7 @@ import sys
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter, MaxNLocator
+from matplotlib.ticker import FuncFormatter
 from openpyxl import load_workbook
 
 
@@ -16,14 +16,8 @@ from audit_panel_alignment import require_matplotlib_panel_alignment
 
 OUTPUT_DIR = Path(__file__).resolve().parent
 WORKBOOK = OUTPUT_DIR.parent / "experiments_result.xlsx"
-# 正文以整版心插入 4.8 in 宽的图，缩放比约为 1。
-# 源字号取 5 pt，页上文字约为 5 pt。
-FONT_PT = 5.0
-STYLES = {
-    "baseline": ("#087F8C", "o"),
-    "lower": ("#566477", "s"),
-    "higher": ("#C56528", "^"),
-}
+# 源字号预留缩放余量，保证正文插图文字不小于 6 pt。
+FONT_PT = 6.5
 
 
 def read_block(sheet, header_row, first_row, last_row, labels):
@@ -38,27 +32,6 @@ def read_block(sheet, header_row, first_row, last_row, labels):
     if calls != sorted(set(calls)):
         raise ValueError("Call counts must be unique and ascending")
     return calls, [[row[col] for row in rows] for col in range(1, len(labels))]
-
-
-def draw_panel(ax, block, names, roles, headroom=1.16):
-    calls, series = block
-    for values, name, role in zip(series, names, roles):
-        color, marker = STYLES[role]
-        ax.plot(calls, values, color=color, marker=marker, markersize=3.8,
-                linewidth=1.55, label=name, zorder=3)
-    ax.set_xlim(0.5, 16.6)
-    ax.set_ylim(0, max(max(values) for values in series) * headroom)
-    ax.set_xticks([1, 2, 4, 6, 8, 12, 16])
-    ax.yaxis.set_major_locator(MaxNLocator(nbins=5))
-    ax.yaxis.set_major_formatter(FuncFormatter(lambda value, _: f"{value / 1e6:g}"))
-    ax.grid(axis="y", color="#E4E8EC", linewidth=0.7, zorder=0)
-    ax.tick_params(axis="both", length=3, color="#78818B")
-    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.03), fontsize=FONT_PT,
-              ncol=2, columnspacing=0.65, labelspacing=0.2,
-              handlelength=1.4, handletextpad=0.35,
-              borderaxespad=0)
-    ax.set_xlabel("Calls per transaction")
-    ax.set_ylabel("Cumulative gas (million)")
 
 
 def main():
@@ -90,17 +63,35 @@ def main():
             raise ValueError("Baseline call counts or EvoCrypt gas do not agree across blocks")
     workbook.close()
 
-    fig, axes = plt.subplots(2, 2, figsize=(4.8, 3.4))
-    draw_panel(axes[0, 0], baseline, ["Solidity", "EvoCrypt"],
-               ["lower", "baseline"])
-    draw_panel(axes[0, 1], gas_zero, ["base 1500", "base 3000", "base 6000"],
-               ["lower", "baseline", "higher"])
-    draw_panel(axes[1, 0], alpha, ["alpha 0.25", "alpha 0.5", "alpha 0.75"],
-               ["lower", "baseline", "higher"])
-    draw_panel(axes[1, 1], threshold, ["threshold 1", "threshold 2", "threshold 4"],
-               ["higher", "baseline", "lower"], headroom=1.25)
-    fig.subplots_adjust(left=0.13, right=0.99, bottom=0.12, top=0.80,
-                        wspace=0.38, hspace=0.95)
+    # 每条敏感性曲线只改变一个参数；从原工作簿读取，不拟合或插值造点。
+    curves = [
+        ("Solidity", baseline[1][0], "#566477", "s", "-"),
+        ("EvoCrypt", baseline[1][1], "#087F8C", "o", "-"),
+        ("g₀ = 6000", gas_zero[1][2], "#C56528", "^", "--"),
+        ("α = 3/4", alpha[1][2], "#8064A2", "D", "-."),
+        ("N₀ = 4", threshold[1][2], "#60933F", "v", ":"),
+    ]
+    fig, ax = plt.subplots(figsize=(2.35, 2.1))
+    for label, values, color, marker, linestyle in curves:
+        if any(value <= 0 for value in values):
+            raise ValueError("Logarithmic gas axis requires positive measurements")
+        ax.plot(baseline[0], values, label=label, color=color, marker=marker,
+                linestyle=linestyle, linewidth=1.1, markersize=3, zorder=3)
+    ax.set_xlim(0.5, 16.6)
+    ax.set_xticks([1, 2, 4, 6, 8, 12, 16])
+    ax.set_yscale("log")
+    ax.set_ylim(25000, 25000000)
+    ax.set_yticks([30000, 100000, 300000, 1000000, 3000000, 10000000])
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda value, _: f"{value / 1e6:g}"))
+    ax.minorticks_off()
+    ax.grid(axis="y", color="#E4E8EC", linewidth=0.7, zorder=0)
+    ax.tick_params(axis="both", length=3, color="#78818B")
+    ax.set_xlabel("Calls per transaction")
+    ax.set_ylabel("Cumulative gas (million)")
+    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.03), ncol=2,
+              fontsize=FONT_PT, columnspacing=0.65, labelspacing=0.25,
+              handlelength=1.35, handletextpad=0.4, borderaxespad=0)
+    fig.subplots_adjust(left=0.24, right=0.97, bottom=0.22, top=0.72)
     fig.canvas.draw()
     stem = OUTPUT_DIR / "pbkdf2_cumulative_gas"
     require_matplotlib_panel_alignment(fig, json_out=f"{stem}.alignment.json",

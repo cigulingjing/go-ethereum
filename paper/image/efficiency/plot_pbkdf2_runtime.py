@@ -9,13 +9,12 @@ from openpyxl import load_workbook
 
 OUTPUT_DIR = Path(__file__).resolve().parent
 WORKBOOK = OUTPUT_DIR.parent / "experiments_result.xlsx"
-# 正文以 0.82\linewidth 插入 4.0 in 宽的图，缩放比约为 0.9846。
-# 源字号取 5.08 pt，页上文字约为 5 pt。
-FONT_PT = 5.08
+# 源字号预留缩放余量，保证正文插图文字不小于 6 pt。
+FONT_PT = 6.5
 HEADERS = ("内部迭代次数", "Solidity 时间 ms", "原生预编译时间 ms", "EvoCrypt 时间 ms")
 SERIES = (
     ("Solidity", "#566477", "s"),
-    ("Native precompile", "#C56528", "^"),
+    ("Precompiled Contract", "#C56528", "^"),
     ("EvoCrypt", "#087F8C", "o"),
 )
 
@@ -52,10 +51,10 @@ def main():
         "axes.facecolor": "white",
     })
     iterations, measurements = load_measurements()
-    fig, ax = plt.subplots(figsize=(4.0, 2.0))
+    fig, ax = plt.subplots(figsize=(2.35, 2.1))
     for (label, color, marker), values in zip(SERIES, measurements):
         ax.plot(iterations, values, label=label, color=color, marker=marker,
-                markersize=4, linewidth=1.65, zorder=3)
+                markersize=3, linewidth=1.1, zorder=3)
     ax.set_xscale("log")
     ax.set_xlim(0.85, 120)
     ax.set_xticks(iterations)
@@ -66,10 +65,10 @@ def main():
     ax.set_ylabel("Execution time (ms)")
     ax.grid(axis="y", color="#E4E8EC", linewidth=0.7, zorder=0)
     ax.tick_params(axis="both", length=3, color="#78818B")
-    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.04), ncol=3, fontsize=FONT_PT,
+    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.04), ncol=2, fontsize=FONT_PT,
               handlelength=1.35, handletextpad=0.35, columnspacing=0.8,
               borderaxespad=0)
-    fig.subplots_adjust(left=0.145, right=0.985, bottom=0.24, top=0.75)
+    fig.subplots_adjust(left=0.24, right=0.97, bottom=0.22, top=0.72)
     fig.canvas.draw()
     stem = OUTPUT_DIR / "pbkdf2_execution_time_comparison"
     fig.savefig(f"{stem}.pdf")
