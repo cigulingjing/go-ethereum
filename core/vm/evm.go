@@ -93,7 +93,8 @@ type TxContext struct {
 // The EVM should never be reused and is not thread safe.
 type EVM struct {
 	// CryptoUpgradeContext carries observational metadata only, never consensus state.
-	CryptoUpgradeContext context.Context
+	CryptoUpgradeContext      context.Context
+	cryptoUpgradePricingCalls map[string]uint64
 	// Context provides auxiliary blockchain related information
 	Context BlockContext
 	TxContext
@@ -219,6 +220,7 @@ func (evm *EVM) SetJumpDestCache(jumpDests JumpDestCache) {
 // SetTxContext resets the EVM with a new transaction context.
 // This is not threadsafe and should only be done very cautiously.
 func (evm *EVM) SetTxContext(txCtx TxContext) {
+	evm.cryptoUpgradePricingCalls = nil
 	if evm.chainRules.IsEIP4762 {
 		txCtx.AccessEvents = state.NewAccessEvents()
 	}
@@ -303,7 +305,7 @@ func (evm *EVM) Call(caller common.Address, addr common.Address, input []byte, g
 	if isPrecompile {
 		ret, gas, err = RunPrecompiledContract(evm.StateDB, p, addr, input, gas, evm.Config.Tracer, evm.chainRules)
 	} else if isCryptoUpgrade {
-		ret, gas, err = runCryptoUpgradeCall(evm.StateDB, input, evm.Context.BlockNumber.Uint64(), gas, evm.Config.Tracer, false, evm.CryptoUpgradeContext)
+		ret, gas, err = runCryptoUpgradeCall(evm, input, gas, evm.Config.Tracer, false)
 	} else {
 		// Initialise a new contract and set the code that is to be used by the EVM.
 		code := evm.resolveCode(addr)
@@ -362,7 +364,7 @@ func (evm *EVM) CallCode(caller common.Address, addr common.Address, input []byt
 	if p, isPrecompile := evm.precompile(addr); isPrecompile {
 		ret, gas, err = RunPrecompiledContract(evm.StateDB, p, addr, input, gas, evm.Config.Tracer, evm.chainRules)
 	} else if isCryptoUpgradeCall(addr, input) {
-		ret, gas, err = runCryptoUpgradeCall(evm.StateDB, input, evm.Context.BlockNumber.Uint64(), gas, evm.Config.Tracer, false, evm.CryptoUpgradeContext)
+		ret, gas, err = runCryptoUpgradeCall(evm, input, gas, evm.Config.Tracer, false)
 	} else {
 		// Initialise a new contract and set the code that is to be used by the EVM.
 		// The contract is a scoped environment for this execution context only.
@@ -410,7 +412,7 @@ func (evm *EVM) DelegateCall(originCaller common.Address, caller common.Address,
 	if p, isPrecompile := evm.precompile(addr); isPrecompile {
 		ret, gas, err = RunPrecompiledContract(evm.StateDB, p, addr, input, gas, evm.Config.Tracer, evm.chainRules)
 	} else if isCryptoUpgradeCall(addr, input) {
-		ret, gas, err = runCryptoUpgradeCall(evm.StateDB, input, evm.Context.BlockNumber.Uint64(), gas, evm.Config.Tracer, false, evm.CryptoUpgradeContext)
+		ret, gas, err = runCryptoUpgradeCall(evm, input, gas, evm.Config.Tracer, false)
 	} else {
 		contract := NewContract(originCaller, caller, value, gas, evm.jumpDests)
 		contract.SetCallCode(evm.resolveCodeHash(addr), evm.resolveCode(addr))
@@ -464,7 +466,7 @@ func (evm *EVM) StaticCall(caller common.Address, addr common.Address, input []b
 	if p, isPrecompile := evm.precompile(addr); isPrecompile {
 		ret, gas, err = RunPrecompiledContract(evm.StateDB, p, addr, input, gas, evm.Config.Tracer, evm.chainRules)
 	} else if isCryptoUpgradeCall(addr, input) {
-		ret, gas, err = runCryptoUpgradeCall(evm.StateDB, input, evm.Context.BlockNumber.Uint64(), gas, evm.Config.Tracer, true, evm.CryptoUpgradeContext)
+		ret, gas, err = runCryptoUpgradeCall(evm, input, gas, evm.Config.Tracer, true)
 	} else {
 		contract := NewContract(caller, addr, new(uint256.Int), gas, evm.jumpDests)
 		contract.SetCallCode(evm.resolveCodeHash(addr), evm.resolveCode(addr))

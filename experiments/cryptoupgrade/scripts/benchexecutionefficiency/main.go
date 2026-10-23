@@ -25,6 +25,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/cryptoupgrade/wasmtool"
 	"github.com/ethereum/go-ethereum/rpc"
+	"golang.org/x/crypto/pbkdf2"
 )
 
 const (
@@ -49,6 +50,10 @@ type config struct {
 	b                 string
 	warmup            int
 	samples           int
+	pbkdfIterations   int
+	pbkdfWasmPath     string
+	receiptSamples    int
+	receiptGasLimit   uint64
 	upload            bool
 	algoGas           uint64
 	uploadGas         uint64
@@ -139,11 +144,20 @@ type implementationResult struct {
 	ABIOutputTypes  []string       `json:"abiOutputTypes"`
 	CalldataBytes   int            `json:"calldataBytes"`
 	GasEstimate     uint64         `json:"gasEstimate"`
+	GasReceipts     []gasReceipt   `json:"gasReceipts,omitempty"`
 	Latency         latencyMetrics `json:"latency"`
 	OutputHex       string         `json:"outputHex"`
 	OutputSHA256    string         `json:"outputSha256"`
 	OutputValue     string         `json:"outputValue"`
 	OutputCanonical string         `json:"outputCanonical"`
+}
+
+type gasReceipt struct {
+	TxHash      string `json:"txHash"`
+	BlockHash   string `json:"blockHash"`
+	BlockNumber uint64 `json:"blockNumber"`
+	GasUsed     uint64 `json:"gasUsed"`
+	Status      uint64 `json:"status"`
 }
 
 type ratioMetrics struct {
@@ -306,6 +320,10 @@ func parseFlags() config {
 	flag.StringVar(&cfg.b, "b", "100", "second Add operand, non-negative decimal integer")
 	flag.IntVar(&cfg.warmup, "warmup", 10, "warmup eth_call count per implementation")
 	flag.IntVar(&cfg.samples, "n", 100, "measured eth_call count per implementation")
+	flag.IntVar(&cfg.pbkdfIterations, "pbkdf-iterations", 2, "PBKDF2 internal iterations, fixed for all three implementations")
+	flag.StringVar(&cfg.pbkdfWasmPath, "pbkdf-wasm", "experiments/cryptoupgrade/algorithm/go/wasm/pbkdf2_sha256.wasm", "PBKDF2 WASM artifact path")
+	flag.IntVar(&cfg.receiptSamples, "receipt-samples", 0, "successful real transactions per implementation; zero preserves estimate-only mode")
+	flag.Uint64Var(&cfg.receiptGasLimit, "receipt-gas-limit", 0, "real transaction gas limit; zero uses node estimate")
 	flag.BoolVar(&cfg.upload, "upload", true, "upload each selected Go algorithm through CodeStorage before measuring")
 	flag.Uint64Var(&cfg.algoGas, "algo-gas", 0, "override algorithm gas metadata recorded by CodeStorage.uploadCode; 0 uses fixture defaults")
 	flag.Uint64Var(&cfg.uploadGas, "upload-gas", 5000000, "gas limit for CodeStorage.uploadCode setup transaction")
@@ -334,6 +352,9 @@ func (cfg *config) validate() error {
 	}
 	if cfg.warmup < 0 {
 		return errors.New("-warmup cannot be negative")
+	}
+	if cfg.pbkdfIterations < 1 || cfg.pbkdfIterations > 10000 || cfg.receiptSamples < 0 {
+		return errors.New("PBKDF2 iterations must be in [1,10000] and receipt samples nonnegative")
 	}
 	if cfg.from != "" && !common.IsHexAddress(cfg.from) {
 		return fmt.Errorf("invalid -from %q", cfg.from)
@@ -374,7 +395,7 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 	sampleData := []byte("hello cryptoupgrade")
 	pbkdf2Password := []byte("password")
 	pbkdf2Salt := []byte("salt")
-	pbkdf2Iterations := big.NewInt(2)
+	pbkdf2Iterations := big.NewInt(int64(cfg.pbkdfIterations))
 	pbkdf2KeyLength := big.NewInt(32)
 	dhPrivate := []byte{0x05}
 	dhPeerPublic := dh2048PeerPublic(7)
@@ -399,7 +420,7 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 			Algorithm:             "Add",
 			UpgradeName:           "Add",
 			SourcePath:            "experiments/cryptoupgrade/algorithm/go/wasm/add.wasm",
-			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/archive/Add.sol",
+			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/Add.sol",
 			ContractName:          "AddContract",
 			ContractFunction:      "Add",
 			PrecompileName:        "Add",
@@ -424,7 +445,7 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 			Algorithm:             "Sha256",
 			UpgradeName:           "Sha256",
 			SourcePath:            "experiments/cryptoupgrade/algorithm/go/wasm/sha256.wasm",
-			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/archive/Sha256.sol",
+			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/Sha256.sol",
 			ContractName:          "Sha256Contract",
 			ContractFunction:      "Sha256",
 			PrecompileName:        "Sha256",
@@ -447,7 +468,7 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 			Algorithm:             "Blake2bSum256",
 			UpgradeName:           "Sum256",
 			SourcePath:            "experiments/cryptoupgrade/algorithm/go/wasm/blake2b.wasm",
-			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/archive/Blake2b.sol",
+			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/Blake2b.sol",
 			ContractName:          "Blake2b",
 			ContractFunction:      "Sum256",
 			PrecompileName:        "Blake2bSum256",
@@ -469,8 +490,8 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 		{
 			Algorithm:             "Pbkdf2Sha256",
 			UpgradeName:           "Pbkdf2Sha256",
-			SourcePath:            "experiments/cryptoupgrade/algorithm/go/wasm/pbkdf2_sha256.wasm",
-			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/archive/Pbkdf2Sha256.sol",
+			SourcePath:            cfg.pbkdfWasmPath,
+			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/Pbkdf2Sha256.sol",
 			ContractName:          "Pbkdf2Sha256Contract",
 			ContractFunction:      "Pbkdf2Sha256",
 			PrecompileName:        "Pbkdf2Sha256",
@@ -496,7 +517,7 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 			Algorithm:             "Dh2048Secret",
 			UpgradeName:           "Dh2048Secret",
 			SourcePath:            "experiments/cryptoupgrade/algorithm/go/wasm/dh2048.wasm",
-			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/archive/Dh2048.sol",
+			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/Dh2048.sol",
 			ContractName:          "Dh2048",
 			ContractFunction:      "Dh2048Secret",
 			PrecompileName:        "Dh2048Secret",
@@ -522,7 +543,7 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 			Algorithm:             "PedersenCommit",
 			UpgradeName:           "PedersenCommit",
 			SourcePath:            "experiments/cryptoupgrade/algorithm/go/wasm/pedersen_commit.wasm",
-			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/archive/PedersenCommit.sol",
+			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/PedersenCommit.sol",
 			ContractName:          "PedersenCommitContract",
 			ContractFunction:      "PedersenCommit",
 			PrecompileName:        "PedersenCommit",
@@ -546,7 +567,7 @@ func buildFixtures(cfg config) ([]benchmarkFixture, []skippedAlgorithm, error) {
 			Algorithm:             "SchnorrVerify",
 			UpgradeName:           "SchnorrVerify",
 			SourcePath:            "experiments/cryptoupgrade/algorithm/go/wasm/schnorr_proof.wasm",
-			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/archive/SchnorrProof.sol",
+			ContractSource:        "experiments/cryptoupgrade/algorithm/contracts/src/SchnorrProof.sol",
 			ContractName:          "SchnorrProof",
 			ContractFunction:      "SchnorrVerify",
 			PrecompileName:        "SchnorrVerify",
@@ -764,6 +785,19 @@ func runFixture(ctx context.Context, client *rpc.Client, codeStorageABI abi.ABI,
 	if err := validateTargets(ctx, client, from, targets, cfg.callGas); err != nil {
 		return algorithmResult{}, err
 	}
+	if fixture.Algorithm == "Pbkdf2Sha256" {
+		reference := pbkdf2.Key([]byte("password"), []byte("salt"), cfg.pbkdfIterations, 32, sha256.New)
+		for _, target := range targets {
+			output, err := ethCall(ctx, client, txArgs{From: from, To: &target.address, Data: target.calldata}, cfg.callGas)
+			if err != nil {
+				return algorithmResult{}, fmt.Errorf("PBKDF2 reference call %s: %w", target.scheme, err)
+			}
+			decoded, err := decodeSingleOutput(target.returns, output)
+			if err != nil || decoded.canonical != "bytes:"+hexutil.Encode(reference) {
+				return algorithmResult{}, fmt.Errorf("PBKDF2 reference mismatch for %s: decoded=%v error=%v", target.scheme, decoded, err)
+			}
+		}
+	}
 
 	implementations := make([]implementationResult, 0, len(targets))
 	for _, target := range targets {
@@ -775,7 +809,15 @@ func runFixture(ctx context.Context, client *rpc.Client, codeStorageABI abi.ABI,
 		if err != nil {
 			return algorithmResult{}, fmt.Errorf("benchmark %s: %w", target.scheme, err)
 		}
-		implementations = append(implementations, makeImplementationResult(target, gas, stats, cfg.warmup))
+		result := makeImplementationResult(target, gas, stats, cfg.warmup)
+		for receiptIndex := 0; receiptIndex < cfg.receiptSamples; receiptIndex++ {
+			receipt, err := measureGasReceipt(ctx, client, from, target, cfg.receiptGasLimit)
+			if err != nil {
+				return algorithmResult{}, fmt.Errorf("receipt %s sample %d: %w", target.scheme, receiptIndex+1, err)
+			}
+			result.GasReceipts = append(result.GasReceipts, receipt)
+		}
+		implementations = append(implementations, result)
 	}
 
 	return algorithmResult{
@@ -787,6 +829,27 @@ func runFixture(ctx context.Context, client *rpc.Client, codeStorageABI abi.ABI,
 		Ratios:          makeRatios(implementations),
 		OutputMatched:   true,
 	}, nil
+}
+
+func measureGasReceipt(ctx context.Context, client *rpc.Client, from common.Address, target callTarget, gasLimit uint64) (gasReceipt, error) {
+	args := txArgs{From: from, To: &target.address, Data: target.calldata}
+	if gasLimit != 0 {
+		limit := hexutil.Uint64(gasLimit)
+		args.Gas = &limit
+	}
+	txHash, err := sendTransaction(ctx, client, args)
+	if err != nil {
+		return gasReceipt{}, err
+	}
+	receipt, err := waitReceipt(ctx, client, txHash, 2*time.Minute)
+	if err != nil {
+		return gasReceipt{}, err
+	}
+	measured := gasReceipt{TxHash: txHash.Hex(), BlockHash: receipt.BlockHash.Hex(), BlockNumber: receipt.BlockNumber.Uint64(), GasUsed: receipt.GasUsed, Status: receipt.Status}
+	if receipt.Status != types.ReceiptStatusSuccessful {
+		return measured, fmt.Errorf("transaction %s failed status=%d gasUsed=%d", measured.TxHash, measured.Status, measured.GasUsed)
+	}
+	return measured, nil
 }
 
 func uploadAlgorithm(ctx context.Context, client *rpc.Client, codeStorageABI abi.ABI, from common.Address, cfg config, fixture benchmarkFixture) (setupReference, error) {

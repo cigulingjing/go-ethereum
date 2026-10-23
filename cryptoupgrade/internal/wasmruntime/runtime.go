@@ -38,8 +38,9 @@ var (
 
 // Config controls how modules are compiled and executed.
 type Config struct {
-	MemoryLimitPages uint32
-	ExecutionBudget  time.Duration
+	MemoryLimitPages          uint32
+	ExecutionBudget           time.Duration
+	DisableCloseOnContextDone bool
 }
 
 func (c Config) normalize() Config {
@@ -61,7 +62,7 @@ type Loader struct {
 }
 
 // Default is the process-wide WASM loader used by cryptoupgrade.
-var Default = NewLoader(Config{})
+var Default = NewLoader(Config{DisableCloseOnContextDone: os.Getenv("EVOCRYPT_EXPERIMENT_DISABLE_WAZERO_TERMINATION") == "1"})
 
 // NewLoader creates a new loader with the supplied configuration.
 func NewLoader(cfg Config) *Loader {
@@ -137,7 +138,7 @@ func (l *Loader) compileAndInstantiate(ctx context.Context, wasmPath, compiledPa
 
 	runtimeConfig := wazero.NewRuntimeConfig().
 		WithMemoryLimitPages(l.cfg.MemoryLimitPages).
-		WithCloseOnContextDone(true).
+		WithCloseOnContextDone(!l.cfg.DisableCloseOnContextDone).
 		WithCompilationCache(cache)
 	rt := wazero.NewRuntimeWithConfig(ctx, runtimeConfig)
 	if _, err := wasi_snapshot_preview1.Instantiate(ctx, rt); err != nil {

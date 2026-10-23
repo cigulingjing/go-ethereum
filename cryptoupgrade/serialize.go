@@ -2,11 +2,17 @@ package cryptoupgrade
 
 import (
 	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/callcodec"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/internal/model"
 	"github.com/ethereum/go-ethereum/log"
 )
 
 func ParseCall(data []byte) (string, []byte, error) {
 	return callcodec.ParseCall(CodeStorageABI, data)
+}
+
+// NormalizeAlgorithmName uses the same canonical name as CodeStorage and its runtime.
+func NormalizeAlgorithmName(name string) string {
+	return model.NormalizeAlgorithmName(name)
 }
 
 // Decode callFunc(name,input), which is abi code

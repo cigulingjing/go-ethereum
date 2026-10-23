@@ -1,5 +1,7 @@
 ## Context
 
+**实验子集进度（2026-10-23）：** `evaluate-evocrypt` 已为 PBKDF2 单节点实验接入创世固定 profile 和交易内递增 Gas 扣费，并强制配置的父块倍率始终为 1；已产生真实目标交易收据。下述父区块计数、哈希索引、重放/重组、广泛算法覆盖和跨节点验证**未实现**，不得将本实验子集当作完整通用计费变更验收。旧 `uploadCode` 重启后版本索引无法可靠恢复，列为后续阻塞项。
+
 技术栈：Go、ethereum/go-ethereum、OpenSpec；复现实验位于 `experiments/cryptoupgrade`。现有 `cryptoupgrade/internal/evm/code_storage.go` 仅对 `callFunc` 读取算法 Gas；`cryptoupgrade/plugin.go` 按已激活版本返回固定费用；`core/vm/contracts_cryptoupgrade.go` 在执行前扣费，目前仅传入区块高度，没有父区块调用量或交易内算法计数。参见 `proposal.md` 和 `specs/cryptoupgrade-algorithm-gas-pricing/spec.md`。
 
 ## Goals / Non-Goals

@@ -13,32 +13,32 @@ var ErrGasOverflow = errors.New("algorithm gas exceeds uint64")
 const maxAlphaDenominator = 10000
 
 type Ratio struct {
-	Numerator   uint64 `json:"numerator"`
-	Denominator uint64 `json:"denominator"`
+	Numerator   uint64 `json:"numerator" yaml:"numerator"`
+	Denominator uint64 `json:"denominator" yaml:"denominator"`
 }
 
 type InputBand struct {
-	MaxMetric uint64 `json:"maxMetric"`
-	Gas       uint64 `json:"gas"`
+	MaxMetric uint64 `json:"maxMetric" yaml:"maxMetric"`
+	Gas       uint64 `json:"gas" yaml:"gas"`
 }
 
 type Algorithm struct {
-	Name    string      `json:"name"`
-	Version uint64      `json:"version"`
-	Metric  string      `json:"metric"`
-	Bands   []InputBand `json:"bands"`
+	Name    string      `json:"name" yaml:"name"`
+	Version uint64      `json:"version" yaml:"version"`
+	Metric  string      `json:"metric" yaml:"metric"`
+	Bands   []InputBand `json:"bands" yaml:"bands"`
 }
 
 type LoadBand struct {
-	MaxCalls   uint64 `json:"maxCalls"`
-	Multiplier Ratio  `json:"multiplier"`
+	MaxCalls   uint64 `json:"maxCalls" yaml:"maxCalls"`
+	Multiplier Ratio  `json:"multiplier" yaml:"multiplier"`
 }
 
 type Profile struct {
-	Threshold  uint64      `json:"threshold"`
-	Alpha      Ratio       `json:"alpha"`
-	Algorithms []Algorithm `json:"algorithms"`
-	Load       []LoadBand  `json:"load"`
+	Threshold  uint64      `json:"threshold" yaml:"threshold"`
+	Alpha      Ratio       `json:"alpha" yaml:"alpha"`
+	Algorithms []Algorithm `json:"algorithms" yaml:"algorithms"`
+	Load       []LoadBand  `json:"load" yaml:"load"`
 }
 
 func (p Profile) Validate() error {

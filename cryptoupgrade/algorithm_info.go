@@ -41,6 +41,12 @@ func getActiveAlgorithmVersionInfoAt(name string, blockNumber uint64) (algoVersi
 	return runtimeAlgorithmRepository.ActiveVersionAt(name, blockNumber)
 }
 
+// ActiveVersionAt returns the scheduled version used by the EVM pricing boundary.
+func ActiveVersionAt(name string, blockNumber uint64) (uint64, bool) {
+	info, ok := getActiveAlgorithmVersionInfoAt(name, blockNumber)
+	return info.Version, ok
+}
+
 func setAlgorithmInfo(name string, info algoInfo) {
 	runtimeAlgorithmRepository.SetActive(name, info)
 }

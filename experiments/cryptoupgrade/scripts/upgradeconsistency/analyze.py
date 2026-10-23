@@ -17,7 +17,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", required=True)
     parser.add_argument("--out-dir", required=True)
+    parser.add_argument("--nodes", type=int, default=20, help="expected node count in this run")
     args = parser.parse_args()
+    if args.nodes < 1:
+        parser.error("--nodes must be positive")
     os.makedirs(args.out_dir, exist_ok=True)
     run = json.load(open(args.input, encoding="utf-8"))
     H = int(run["activation_block"])
@@ -48,7 +51,7 @@ def main():
         outputs = {output_value(r.get("output", "")) for r in observed}
         gas_status = {(r.get("gas_used"), r.get("receipt_status")) for r in observed}
         roots = {r.get("local_state_root") for r in observed if r.get("local_state_root")}
-        complete = len(observed) == 20
+        complete = len(observed) == args.nodes
         if complete and block in range(max(0, H - 3), H + 4):
             complete_samples += 1
         if block < H and any(v != 1 for v in versions):
@@ -59,7 +62,7 @@ def main():
             metrics["output_gas_status_divergence_count"] += 1
         if len(roots) > 1:
             metrics["state_root_divergence_count"] += 1
-        checks.append({"tx_hash": tx_hash, "block_number": block, "expected_version": expected, "observed_nodes": len(observed), "coverage": len(observed) / 20, "complete": complete, "versions": sorted(versions), "outputs": sorted(outputs), "gas_status_pairs": len(gas_status), "local_state_roots": sorted(roots), "same_block_hash": len({r.get("block_hash") for r in observed}) <= 1})
+        checks.append({"tx_hash": tx_hash, "block_number": block, "expected_version": expected, "observed_nodes": len(observed), "coverage": len(observed) / args.nodes, "complete": complete, "versions": sorted(versions), "outputs": sorted(outputs), "gas_status_pairs": len(gas_status), "local_state_roots": sorted(roots), "same_block_hash": len({r.get("block_hash") for r in observed}) <= 1})
     coverage = (complete_samples / expected_samples) if expected_samples else 0.0
     summary = {
         "algorithm": run["algorithm"], "activation_block": H, "sample_count": len(checks),
@@ -70,7 +73,7 @@ def main():
             "post_activation_v2_output_2": all(c["block_number"] < H or c["expected_version"] == 2 and c["outputs"] == ["2"] for c in checks),
             "same_tx_consistent": all(c["complete"] and len(c["versions"]) == 1 and c["gas_status_pairs"] == 1 and c["same_block_hash"] for c in checks),
             "local_state_roots_consistent": all(len(c["local_state_roots"]) <= 1 and c["complete"] for c in checks),
-            "all_selected_samples_cover_20_nodes": complete_samples == expected_samples and expected_samples > 0,
+            f"all_selected_samples_cover_{args.nodes}_nodes": complete_samples == expected_samples and expected_samples > 0,
         }, "metrics": metrics, "samples": checks,
         "limitations": ["pending observations are excluded from consistency counts", "this experiment reports only the observed chain and does not establish universal consensus safety"],
     }
@@ -82,7 +85,7 @@ def main():
         writer.writerow(["sample_coverage", coverage])
     try:
         import matplotlib.pyplot as plt
-        nodes = [f"node{i}" for i in range(1, 21)]
+        nodes = [f"node{node_index}" for node_index in range(1, args.nodes + 1)]
         blocks = sorted({int(r["block_number"]) for r in rows if not r.get("pending") and r.get("block_number")})
         blocks = [b for b in blocks if H - 3 <= b <= H + 3]
         index = {b: j for j, b in enumerate(blocks)}
@@ -91,11 +94,11 @@ def main():
             if row.get("pending") or int(row.get("block_number", 0)) not in index or not row.get("selected_version"):
                 continue
             values[nodes.index(row["node_id"])][index[int(row["block_number"])]] = int(row["selected_version"])
-        fig, ax = plt.subplots(figsize=(max(7, len(blocks) * .8), 6))
+        fig, ax = plt.subplots(figsize=(max(7, len(blocks) * .8), max(2.5, args.nodes * .3)))
         cmap = plt.matplotlib.colors.ListedColormap(["#3b82f6", "#ef4444"])
         masked = __import__("numpy").ma.masked_invalid(values)
         ax.imshow(masked, cmap=cmap, vmin=1, vmax=2, aspect="auto")
-        ax.set_xticks(range(len(blocks)), [str(b) for b in blocks]); ax.set_yticks(range(20), nodes)
+        ax.set_xticks(range(len(blocks)), [str(b) for b in blocks]); ax.set_yticks(range(args.nodes), nodes)
         ax.axvline(index[H], color="black", linewidth=1.5) if H in index else None
         ax.set_xlabel("Block height (H marked by black line)"); ax.set_ylabel("Node")
         ax.set_title("UpgradeConsistencyProbe: executed version")

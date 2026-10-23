@@ -1,5 +1,54 @@
 # Cryptoupgrade Scripts
 
+## 第五章单节点实验
+
+第五章的新链上测量使用 `config/local-1node.yaml`，不启动 20 节点网络。单节点启动命令及 PBKDF2 原始数据、曲线、证据矩阵和验收边界见 `experiments/cryptoupgrade/results/chapter-five/20261022-single-node-pbkdf2-rebuilt/report.md`。复现实验先按下文“运行前提”启动单节点，再运行：
+
+```bash
+python3 experiments/cryptoupgrade/scripts/chapterfive/run_pbkdf2.py \
+  --wasm experiments/cryptoupgrade/results/chapter-five/20261022-single-node-pbkdf2-rebuilt/pbkdf2_sha256.wasm \
+  --output experiments/cryptoupgrade/output/results/chapter-five-recheck
+python3 experiments/cryptoupgrade/scripts/chapterfive/plot_pbkdf2.py \
+  experiments/cryptoupgrade/output/results/chapter-five-recheck
+```
+
+本采集入口固定三路径相同输入和七档内部迭代次数，按 3 轮×30 次 `eth_call`、每档每路径 9 笔真实收据报告。调用计费使用单独的 `local-1node-pricing.yaml` 创世配置及 `Pbkdf2Batch.sol`；不可把两条链的 Gas 费率混为一谈。
+
+EvoCrypt 的 `WithCloseOnContextDone` 对照补测见 `results/chapter-five/20261023-single-node-pbkdf2-no-termination/report.md`。仅隔离实验节点可设 `EVOCRYPT_EXPERIMENT_DISABLE_WAZERO_TERMINATION=1`，使其值为 `false`；正常节点默认仍为 `true`。关闭后 WASM 的上下文取消和执行超时不能终止失控计算，不应在生产或共享网络使用。补测仅收集 EvoCrypt 的 `eth_call` 往返时间，不测 Gas。
+
+5.2.2 在**独立单节点链**中固定 10 次 PBKDF2 内部迭代，预注册单笔调用次数 `1,2,3,4,5,6,8,12,16`；仅 PBKDF2 版本 1 在激活块之后采用固定 `g₀=3000`、`N₀=2`、`α=1/2` 的实验计费。父区块倍率恒为 1（暂不实现跨区块自适应计费）。每个目标块只含一笔目标交易，其父块仅含一笔普通自转账；链上 `receipt.gasUsed` 是累计 Gas。先检查创世 profile、上传算法与部署 Solidity 参考合约（可复用 `benchexecutionefficiency -algorithms Pbkdf2Sha256 -pbkdf-iterations 10 -warmup 2 -n 2 -receipt-samples 0` 的 `setup.contract.address`），随后运行：
+
+```bash
+make geth
+go run ./experiments/cryptoupgrade/scripts/render -config experiments/cryptoupgrade/config/local-1node-pricing.yaml -geth "$(pwd)/build/bin/geth"
+./experiments/cryptoupgrade/output/network/local-1node-pricing/node1/start.sh
+go run ./experiments/cryptoupgrade/scripts/benchexecutionefficiency \
+  -algorithms Pbkdf2Sha256 -rpc http://127.0.0.1:8545 \
+  -pbkdf-wasm experiments/cryptoupgrade/results/chapter-five/20261022-single-node-pbkdf2-rebuilt/pbkdf2_sha256.wasm \
+  -pbkdf-iterations 10 -solc /home/liuqi/project/.tools/solc/solc-0.8.26 \
+  -warmup 2 -n 2 -receipt-samples 0 \
+  -output-json experiments/cryptoupgrade/output/results/billing-setup.json
+REFERENCE_ADDRESS=$(python3 -c 'import json; print(json.load(open("experiments/cryptoupgrade/output/results/billing-setup.json"))["results"][0]["setup"]["contract"]["address"])')
+go run ./experiments/cryptoupgrade/scripts/chapterfive/benchbilling \
+  -reference "$REFERENCE_ADDRESS" \
+  -genesis experiments/cryptoupgrade/output/network/local-1node-pricing/genesis.json \
+  -output experiments/cryptoupgrade/output/results/billing-recheck
+python3 experiments/cryptoupgrade/scripts/chapterfive/plot_billing.py \
+  experiments/cryptoupgrade/output/results/billing-recheck
+```
+
+新计费不改变原生预编译，也**不能**把人为配置的较低 Gas 当作执行时间优势，或把单笔交易内递增当作跨交易抗攻击能力。旧插件上传的版本索引在节点重启后可能无法恢复；运行前务必验证已激活版本/重新上传，不能默默将重启前后数据混采。
+
+基于同一 5.2.2 配置的单因素敏感性实验将 `g₀` 设为 1500/3000/6000、`α` 设为 1/4、1/2、3/4，或将阈值 `N₀` 设为 1/2/4，其余参数固定。七个场景（共用一组基线）及选择依据在 `results/chapter-five/20261023-pricing-sensitivity/matrix.json` 中冻结。每个场景在独立单节点链上分别运行并上传相同的归档 PBKDF2 模块，不能对同一创世链运行时改费率。依次运行和汇总：
+
+```bash
+go build -o experiments/cryptoupgrade/output/results/pricing-sensitivity/geth ./cmd/geth
+python3 experiments/cryptoupgrade/scripts/chapterfive/run_pricing_sensitivity.py \
+  --binary experiments/cryptoupgrade/output/results/pricing-sensitivity/geth
+```
+
+运行脚本需要 `PyYAML` 和绘图用的 `matplotlib`。每组正式记录 3 轮×每轮 10 张收据×2 路径×9 档调用次数，并在节点停止前重新向 RPC 核验收据、单目标交易区块及中性父块。中断或失败时保留已有链和原始数据，不替换失败档或无声地重试；完整数据合并为 `sensitivity-summary.csv`。开关实验的 `EVOCRYPT_EXPERIMENT_DISABLE_WAZERO_TERMINATION` 在这些计费节点始终不设置。
+
 以下命令默认在 go-ethereum 仓库根目录执行。网络 YAML 位于 `experiments/cryptoupgrade/config/`，节点制品、编译缓存、stage log 和新结果默认写入 `experiments/cryptoupgrade/output/`。
 
 ## 运行前提

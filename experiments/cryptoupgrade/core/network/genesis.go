@@ -50,6 +50,7 @@ func MarshalGenesisJSON(genesis *core.Genesis) ([]byte, error) {
 func cliqueChainConfig(cfg *Config) *params.ChainConfig {
 	return &params.ChainConfig{
 		ChainID:                 new(big.Int).SetUint64(cfg.Network.ChainID),
+		CryptoUpgradePricing:    cfg.CryptoUpgrade.Pricing,
 		HomesteadBlock:          new(big.Int).Set(zeroBlock),
 		EIP150Block:             new(big.Int).Set(zeroBlock),
 		EIP155Block:             new(big.Int).Set(zeroBlock),

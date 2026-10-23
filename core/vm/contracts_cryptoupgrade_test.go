@@ -48,6 +48,17 @@ func TestCryptoUpgradePrecompilesRegistered(t *testing.T) {
 	}
 }
 
+func TestCryptoUpgradePricingCounterResetsPerTransaction(t *testing.T) {
+	if cryptoupgrade.NormalizeAlgorithmName("pbkdf2Sha256") != "Pbkdf2Sha256" {
+		t.Fatal("algorithm alias bypasses the priced name")
+	}
+	evm := &EVM{cryptoUpgradePricingCalls: map[string]uint64{"Pbkdf2Sha256": 6}}
+	evm.SetTxContext(TxContext{})
+	if len(evm.cryptoUpgradePricingCalls) != 0 {
+		t.Fatalf("counter leaked across transactions: %+v", evm.cryptoUpgradePricingCalls)
+	}
+}
+
 func TestCryptoUpgradePrecompileRunAndErrors(t *testing.T) {
 	contracts := activePrecompiledContracts(params.Rules{})
 	entry := mustCryptoUpgradeEntry(t, "Sha256")

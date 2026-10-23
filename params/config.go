@@ -21,8 +21,10 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"reflect"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/cryptoupgrade/pricing"
 	"github.com/ethereum/go-ethereum/params/forks"
 )
 
@@ -418,7 +420,8 @@ var NetworkNames = map[string]string{
 // that any network, identified by its genesis block, can have its own
 // set of configuration options.
 type ChainConfig struct {
-	ChainID *big.Int `json:"chainId"` // chainId identifies the current chain and is used for replay protection
+	ChainID              *big.Int                    `json:"chainId"` // chainId identifies the current chain and is used for replay protection
+	CryptoUpgradePricing *CryptoUpgradePricingConfig `json:"cryptoUpgradePricing,omitempty"`
 
 	HomesteadBlock *big.Int `json:"homesteadBlock,omitempty"` // Homestead switch block (nil = no fork, 0 = already homestead)
 
@@ -478,6 +481,12 @@ type ChainConfig struct {
 	Ethash             *EthashConfig       `json:"ethash,omitempty"`
 	Clique             *CliqueConfig       `json:"clique,omitempty"`
 	BlobScheduleConfig *BlobScheduleConfig `json:"blobSchedule,omitempty"`
+}
+
+// CryptoUpgradePricingConfig enables an experimental, genesis-frozen intra-transaction tariff.
+type CryptoUpgradePricingConfig struct {
+	ActivationBlock uint64          `json:"activationBlock" yaml:"activationBlock"`
+	Profile         pricing.Profile `json:"profile" yaml:"profile"`
 }
 
 // EthashConfig is the consensus engine configs for proof-of-work based sealing.
@@ -906,6 +915,23 @@ func (c *ChainConfig) CheckCompatible(newcfg *ChainConfig, height uint64, time u
 // CheckConfigForkOrder checks that we don't "skip" any forks, geth isn't pluggable enough
 // to guarantee that forks can be implemented in a different order than on official networks
 func (c *ChainConfig) CheckConfigForkOrder() error {
+	if c.CryptoUpgradePricing != nil {
+		profile := c.CryptoUpgradePricing.Profile
+		if err := profile.Validate(); err != nil {
+			return fmt.Errorf("invalid cryptoUpgradePricing: %w", err)
+		}
+		if len(profile.Load) != 1 || profile.Load[0].Multiplier.Numerator != profile.Load[0].Multiplier.Denominator {
+			return errors.New("experimental cryptoUpgradePricing requires neutral parent-block load")
+		}
+		for _, algorithm := range profile.Algorithms {
+			if len(algorithm.Name) > 0 && algorithm.Name[0] >= 'a' && algorithm.Name[0] <= 'z' {
+				return fmt.Errorf("cryptoUpgradePricing algorithm %q must use canonical name", algorithm.Name)
+			}
+			if algorithm.Metric != "encodedInputBytes" {
+				return fmt.Errorf("unsupported cryptoUpgradePricing metric %q", algorithm.Metric)
+			}
+		}
+	}
 	type fork struct {
 		name      string
 		block     *big.Int // forks up to - and including the merge - were defined with block numbers
@@ -1023,6 +1049,17 @@ func (bc *BlobConfig) validate() error {
 }
 
 func (c *ChainConfig) checkCompatible(newcfg *ChainConfig, headNumber *big.Int, headTimestamp uint64) *ConfigCompatError {
+	if !reflect.DeepEqual(c.CryptoUpgradePricing, newcfg.CryptoUpgradePricing) {
+		activation := new(big.Int)
+		if c.CryptoUpgradePricing != nil {
+			activation.SetUint64(c.CryptoUpgradePricing.ActivationBlock)
+		} else if newcfg.CryptoUpgradePricing != nil {
+			activation.SetUint64(newcfg.CryptoUpgradePricing.ActivationBlock)
+		}
+		if headNumber.Cmp(activation) >= 0 {
+			return newBlockCompatError("CryptoUpgrade pricing", activation, activation)
+		}
+	}
 	if isForkBlockIncompatible(c.HomesteadBlock, newcfg.HomesteadBlock, headNumber) {
 		return newBlockCompatError("Homestead fork block", c.HomesteadBlock, newcfg.HomesteadBlock)
 	}

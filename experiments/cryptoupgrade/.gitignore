@@ -5,8 +5,3 @@
 /output/
 /deployments/
 /results/*
-!/results/gas-complexity/
-/results/gas-complexity/*
-!/results/gas-complexity/README.md
-!/results/gas-complexity/2026-10-22-*.json
-!/results/gas-complexity/2026-10-22-*.md

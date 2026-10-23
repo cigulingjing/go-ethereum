@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/params"
 	"gopkg.in/yaml.v3"
 )
 
@@ -75,9 +76,10 @@ type DockerConfig struct {
 
 // CryptoUpgradeConfig 控制是否在 genesis 中保留 cryptoupgrade 实验账户。
 type CryptoUpgradeConfig struct {
-	Enabled   *bool  `yaml:"enabled"`
-	SmokeTest bool   `yaml:"smokeTest"`
-	AddSource string `yaml:"addSource"`
+	Enabled   *bool                              `yaml:"enabled"`
+	SmokeTest bool                               `yaml:"smokeTest"`
+	AddSource string                             `yaml:"addSource"`
+	Pricing   *params.CryptoUpgradePricingConfig `yaml:"pricing,omitempty"`
 }
 
 // AccountConfig 描述实验账户；privateKey 可为相对路径或 32 字节 hex，password 直接写在 YAML 中。
