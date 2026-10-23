@@ -1,10 +1,10 @@
 {
-  "pdf": "paper/image/efficiency/pbkdf2_execution_time_comparison.pdf",
+  "pdf": "pbkdf2_execution_time_comparison.pdf",
   "auditable": true,
   "verdict": "PASS",
   "page_count": 1,
-  "visible_text_box_count": 18,
-  "text_trace_count": 18,
+  "visible_text_box_count": 17,
+  "text_trace_count": 17,
   "stroke_path_count": 49,
   "filled_region_count": 38,
   "image_region_count": 0,

@@ -8,6 +8,10 @@
   \IfFileExists{newtxmath.sty}{\usepackage[varvw]{newtxmath}}{}%
 }{}
 \usepackage{graphicx}
+\usepackage{float}
+% 大图独占一页的剩余空间时，flushbottom 会把空白撑进图和后文之间。
+% raggedbottom 把这段空白留在页底，使图仍紧挨对应论述。
+\raggedbottom
 \usepackage{multirow}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{mathrsfs}
@@ -80,17 +84,18 @@ Dynamic software-update schemes move replacement below the application layer by 
 
 EvoCrypt is a cryptographic coprocessor framework for dynamically upgrading contract-facing cryptographic algorithms. This section presents the system model, the upgrade protocol, and the invocation protocol that together define the design. We focus on the coordination, version-selection, and contract-facing execution rules of EvoCrypt, while the prototype implementation and experimental configuration are described in Section~\ref{sec5}.
 
-\begin{figure}[!tb]
+\subsection{System Model}\label{sec3.1}
+EvoCrypt separates governance, chain state, contract execution, and module execution into four cooperating components: the Community, the Blockchain, the EVM, and the Cryptographic Coprocessor. The Community includes developers and an authorizing committee that proposes and approves algorithm upgrades. The Blockchain maintains the canonical chain and shared world state, including smart contracts and the Management Contract. The EVM processes smart-contract transactions, while the node-local Cryptographic Coprocessor prepares, activates, and executes replaceable cryptographic modules.
+
+Two chain-derived paths connect these components. An approved proposer records an upgrade through the Management Contract, whereas a contract initiates an invocation through the EVM of a Blockchain node. The Management Contract stores each admitted upgrade proposal, including the gas rule bound to its algorithm, and exposes the contract-facing upgrade and invocation interfaces. The coprocessor uses the resulting chain state to prepare and execute the corresponding module. Figure~\ref{fig:overview} summarizes these objects and their relationships.
+
+% [H] 让图留在引用段落之后，不进入浮动队列。
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.9\textwidth]{../image/overview.pdf}
 \caption{System model for proposed EvoCrypt framework.}
 \label{fig:overview}
 \end{figure}
-
-\subsection{System Model}\label{sec3.1}
-EvoCrypt separates governance, chain state, contract execution, and module execution into four cooperating components: the Community, the Blockchain, the EVM, and the Cryptographic Coprocessor. The Community includes developers and an authorizing committee that proposes and approves algorithm upgrades. The Blockchain maintains the canonical chain and shared world state, including smart contracts and the Management Contract. The EVM processes smart-contract transactions, while the node-local Cryptographic Coprocessor prepares, activates, and executes replaceable cryptographic modules.
-
-Two chain-derived paths connect these components. An approved proposer records an upgrade through the Management Contract, whereas a contract initiates an invocation through the EVM of a Blockchain node. The Management Contract stores each admitted upgrade proposal, including the gas rule bound to its algorithm, and exposes the contract-facing upgrade and invocation interfaces. The coprocessor uses the resulting chain state to prepare and execute the corresponding module. Figure~\ref{fig:overview} summarizes these objects and their relationships.
 
 \subsection{Upgrade Protocol}\label{sec3.2}
 \noindent\textbf{On-chain publication.} On-chain publication provides the authoritative record that coordinates node-local preparation and height-based activation. After the committee approves a proposal, a committee-authorized proposer submits it through the designated upgrade interface. The Management Contract admits the proposal only after the committee has reached consensus on its three parts, stores that record, and emits an upgrade event.
@@ -115,13 +120,6 @@ The algorithm component carries the compiled WASM bytecode $C_{a,v}$ together wi
 \noindent\textbf{Node-local preparation.} Node-local preparation converts the admitted metadata record into executable state without changing the active version. After observing the upgrade event, each client recovers $\mu_{a,v}$, checks that the event index agrees with the stored record, decodes the artifact, and recomputes its hash. The Upgrade Handler then compiles and instantiates the module and validates its required entry point. Once these checks succeed, the node records $(a,v)$ as prepared. Algorithm~\ref{alg:upgrade-protocol} gives the complete publication and preparation procedure.
 
 Preparation is deliberately separated from the chain-level upgrade record. Node-local work can proceed asynchronously, failed attempts can retry from the authoritative chain record, and an executed upgrade transaction is not rolled back. The separation allows preparation to complete without changing the version selected by the chain.
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=0.9\textwidth]{../image/upgrade_protocol.pdf}
-\caption{Node-local preparation and deterministic activation of an EvoCrypt upgrade.}
-\label{fig:upgrade-protocol}
-\end{figure}
 
 \begin{algorithm}[!htb]
 \caption{\textbf{Activation-Block-based WASM upgrade protocol.}}
@@ -149,6 +147,13 @@ Preparation is deliberately separated from the chain-level upgrade record. Node-
 \noindent\textbf{Height-based activation.} Height-based activation makes the selected version a function of shared chain height rather than node-local preparation time. The Upgrade Block includes the admitted upgrade transaction and emits $\langle a,v,H_{a,v}\rangle$. After that block, each node independently completes the off-chain Load--Verify--Ready sequence, while invocations before $H_{a,v}$ continue to use the previously selected version. At the Activation Block, nodes with the same chain view select version $v$ according to the rule below. Compilation-time differences therefore cannot change the version selected at a given execution height.
 
 When a selected version is not yet prepared, the node reloads its authoritative metadata and continues preparation rather than selecting an obsolete version. The policy preserves height-based selection while allowing node-local readiness to complete asynchronously. Figure~\ref{fig:upgrade-protocol} shows the separation between publication, preparation, and activation.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{../image/upgrade_protocol.pdf}
+\caption{Node-local preparation and deterministic activation of an EvoCrypt upgrade.}
+\label{fig:upgrade-protocol}
+\end{figure}
 
 \begin{definition}[Active version]
 \label{def:active-version}
@@ -400,7 +405,7 @@ The bound in~\eqref{eq:inv-bound} coincides with that of Theorem~\ref{thm:soundn
 Under Assumptions~\ref{asm:ledger} and~\ref{asm:committee}, every adversary $\mathcal{A}$, including a computationally unbounded one, has $\mathsf{Adv}^{\mathrm{gas}}_{\mathcal{A}}(\kappa)=0$.
 \end{theorem}
 
-\begin{proof}[Proof sketch]
+\begin{proof}
 Fix an invocation identified by $\mathcal{A}$ for which $G^{*}$ is defined. By Assumption~\ref{asm:ledger}, node $n$ uses the canonical registry and the gas component of the proposal for $a$. Assumption~\ref{asm:committee}(iii) fixes the admitted metadata, so Theorem~\ref{thm:activation} gives the canonical version $v^{*}(a,b)$ and its registered charge. The encoded input $x$ and the preceding charged calls determine $|x|$ and $i$ by Definition~\ref{def:gas-schedule}. Hence Definition~\ref{def:gas-schedule} selects the canonical pricing branch: either the immutable registered charge or Eq.~\eqref{eq:profile-gas} with the parameters in that gas component. In both cases, $G_{\mathrm{req}}=G^{*}$. Algorithm~\ref{alg:invocation-protocol} returns an out-of-gas error when $g<G_{\mathrm{req}}$ and charges $G_{\mathrm{req}}$ before execution otherwise. Reaching line~\ref{line:execute} therefore implies $g\geq G^{*}$ and $\gamma=G^{*}$, excluding both winning events in Definition~\ref{def:gas-evasion}. Thus $\mathsf{Exp}^{\mathrm{gas}}_{\mathcal{A}}(\kappa)$ never outputs $1$.\qed
 \end{proof}
 
@@ -431,7 +436,7 @@ The evaluation uses different settings for its three questions. Upgrade consiste
 
 Moving PBKDF2 out of Solidity is advantageous in this comparison primarily as the work per call grows. EvoCrypt is marginally slower at one internal iteration but substantially faster at 100 iterations, where the recorded times are 2.967~ms and 8.152~ms, respectively. Figure~\ref{fig:pbkdf2-time} therefore supports a workload-dependent benefit rather than a claim of uniformly faster calls. The native precompile remains the fastest recorded path, illustrating the cost of replaceability relative to a built-in implementation. Its nearly flat time series, however, does not track the increasing PBKDF2 work; TODO: verify the native series and the plotted timing boundary before inferring how this overhead scales.
 
-\begin{figure}[!ht]
+\begin{figure}[H]
 \centering
 \includegraphics[width=.82\linewidth]{../image/efficiency/pbkdf2_execution_time_comparison.pdf}
 \caption{PBKDF2 time versus internal iterations for Solidity, native precompile, and EvoCrypt. The timing boundary of the archived series requires verification.}
@@ -440,14 +445,14 @@ Moving PBKDF2 out of Solidity is advantageous in this comparison primarily as th
 
 The gas advantage under the current tariff is a pricing outcome, not evidence of reduced computation. EvoCrypt's archived single-call gas figure remains at 48{,}136 even as PBKDF2 iterations increase from 1 to 100, whereas the Solidity charge grows with that work. This reported amount should not be equated with the coprocessor charge $G$ until its measurement boundary is verified; the algorithm's pricing rule itself does not price the internal iteration count. The present schedule thus needs workload-sensitive calibration before a lower bill can be interpreted as faithful resource accounting.
 
-\begin{figure}[!ht]
+Transaction-level repetition exposes a second limit to claims of cheaper invocation. In the receipt-validated run, EvoCrypt is charged less than Solidity for one call but more for 16 calls, reaching 2.70 million versus 1.19 million gas. Figure~\ref{fig:pbkdf2-gas} illustrates how the configured tariff varies with call count and its parameters; its archived workbook curves do not match all receipt measurements. Accordingly, neither the small-$n$ saving nor the plotted parameter sensitivities establish a general gas advantage. TODO: reconcile the two data sources before making quantitative claims from the plotted curves.
+
+\begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{../image/gas/pbkdf2_cumulative_gas.pdf}
 \caption{Cumulative PBKDF2 gas. Top left: Solidity and EvoCrypt; top right: sensitivity to $g_0$; bottom left: sensitivity to $\alpha$; bottom right: sensitivity to $N_0$. The archived curves require reconciliation with the receipt results.}
 \label{fig:pbkdf2-gas}
 \end{figure}
-
-Transaction-level repetition exposes a second limit to claims of cheaper invocation. In the receipt-validated run, EvoCrypt is charged less than Solidity for one call but more for 16 calls, reaching 2.70 million versus 1.19 million gas. Figure~\ref{fig:pbkdf2-gas} illustrates how the configured tariff varies with call count and its parameters; its archived workbook curves do not match all receipt measurements. Accordingly, neither the small-$n$ saving nor the plotted parameter sensitivities establish a general gas advantage. TODO: reconcile the two data sources before making quantitative claims from the plotted curves.
 
 \subsection{Functional Validation}\label{sec5.3}
 
@@ -455,19 +460,17 @@ Asynchronous preparation raises a consistency question: could nodes execute diff
 
 A separate late-join scenario tests whether different synchronization histories disrupt the same height-based rule. Figure~\ref{fig:upgrade-consistency} shows three groups joining and progressing at different times around the scheduled activation at block 20. Their progress and preparation times differ, but the accompanying execution records show the expected version and output on every fully observed transaction around activation. The timeline alone cannot establish execution agreement; the per-node version and output records supply that evidence. Together, the two runs support consistency in the tested settings, without establishing behavior under arbitrary network failures or untested historical replay.
 
-\begin{figure}[!ht]
+\begin{figure}[H]
 \centering
-\includegraphics[width=.70\linewidth]{../image/consistence/consistence_scene.pdf}
+\includegraphics[width=.90\linewidth]{../image/consistence/consistence_scene.pdf}
 \caption{Late-join consistency scenario with activation at block 20. Top: block progress for three node groups; bottom: their start, preparation, and readiness events. The timeline shows differing local progress; version and output agreement are checked in the per-node execution records.}
 \label{fig:upgrade-consistency}
 \end{figure}
 
 Algorithm extensibility comes with a measurable but workload-dependent execution cost. EvoCrypt executes all six selected post-quantum signature and Groth16 proof verifiers in Table~\ref{tab:complex-algorithms}, extending the interface beyond the PBKDF2 workload. Their WASM-to-native verification-time ratios differ markedly, from about twofold for the signature workloads to more than fivefold for both Groth16 curves. This variation precludes attributing a single fixed overhead to the coprocessor; profiling would be needed to explain the gap. The comparison concerns standalone verification, not proof generation or transaction confirmation.
 
-% 该类默认的正文浮动间距为 8mm；此表紧挨节标题，再叠加节前距会留下大块空白。
-\begingroup
-\setlength{\intextsep}{8pt plus 2pt minus 2pt}
-\begin{table}[!ht]
+% [H] 让表留在本段之后。table 与 figure 分属两个浮动队列，否则表会插到尚未输出的图前面。
+\begin{table}[H]
 \centering
 \caption{Average  and WASM execution; ratios are WASM/native.\label{tab:complex-algorithms}}
 \small
@@ -490,7 +493,6 @@ Groth16-BN254 & 2.182 & 11.676 & 5.35 \\
 \bottomrule
 \end{tabularx}
 \end{table}
-\endgroup
 
 \section{Conclusion}\label{sec6}
 

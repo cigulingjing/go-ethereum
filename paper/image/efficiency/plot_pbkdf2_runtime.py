@@ -9,6 +9,9 @@ from openpyxl import load_workbook
 
 OUTPUT_DIR = Path(__file__).resolve().parent
 WORKBOOK = OUTPUT_DIR.parent / "experiments_result.xlsx"
+# 正文以 0.82\linewidth 插入 4.0 in 宽的图，缩放比约为 0.9846。
+# 源字号取 5.08 pt，页上文字约为 5 pt。
+FONT_PT = 5.08
 HEADERS = ("内部迭代次数", "Solidity 时间 ms", "原生预编译时间 ms", "EvoCrypt 时间 ms")
 SERIES = (
     ("Solidity", "#566477", "s"),
@@ -38,7 +41,7 @@ def main():
     mpl.rcParams.update({
         "font.family": "sans-serif",
         "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans"],
-        "font.size": 8,
+        "font.size": FONT_PT,
         "svg.fonttype": "none",
         "pdf.fonttype": 42,
         "axes.spines.top": False,
@@ -63,7 +66,7 @@ def main():
     ax.set_ylabel("Execution time (ms)")
     ax.grid(axis="y", color="#E4E8EC", linewidth=0.7, zorder=0)
     ax.tick_params(axis="both", length=3, color="#78818B")
-    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.04), ncol=3, fontsize=7.5,
+    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.04), ncol=3, fontsize=FONT_PT,
               handlelength=1.35, handletextpad=0.35, columnspacing=0.8,
               borderaxespad=0)
     fig.subplots_adjust(left=0.145, right=0.985, bottom=0.24, top=0.75)

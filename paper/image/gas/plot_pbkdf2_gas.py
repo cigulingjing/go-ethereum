@@ -16,6 +16,9 @@ from audit_panel_alignment import require_matplotlib_panel_alignment
 
 OUTPUT_DIR = Path(__file__).resolve().parent
 WORKBOOK = OUTPUT_DIR.parent / "experiments_result.xlsx"
+# 正文以整版心插入 4.8 in 宽的图，缩放比约为 1。
+# 源字号取 5 pt，页上文字约为 5 pt。
+FONT_PT = 5.0
 STYLES = {
     "baseline": ("#087F8C", "o"),
     "lower": ("#566477", "s"),
@@ -50,7 +53,7 @@ def draw_panel(ax, block, names, roles, headroom=1.16):
     ax.yaxis.set_major_formatter(FuncFormatter(lambda value, _: f"{value / 1e6:g}"))
     ax.grid(axis="y", color="#E4E8EC", linewidth=0.7, zorder=0)
     ax.tick_params(axis="both", length=3, color="#78818B")
-    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.03), fontsize=7.5,
+    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.03), fontsize=FONT_PT,
               ncol=2, columnspacing=0.65, labelspacing=0.2,
               handlelength=1.4, handletextpad=0.35,
               borderaxespad=0)
@@ -62,7 +65,7 @@ def main():
     mpl.rcParams.update({
         "font.family": "sans-serif",
         "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans"],
-        "font.size": 7.5,
+        "font.size": FONT_PT,
         "svg.fonttype": "none",
         "pdf.fonttype": 42,
         "axes.spines.top": False,
