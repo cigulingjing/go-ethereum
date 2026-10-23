@@ -49,7 +49,7 @@ def main():
         "axes.facecolor": "white",
     })
     iterations, measurements = load_measurements()
-    fig, ax = plt.subplots(figsize=(7.2, 3.5))
+    fig, ax = plt.subplots(figsize=(4.0, 2.0))
     for (label, color, marker), values in zip(SERIES, measurements):
         ax.plot(iterations, values, label=label, color=color, marker=marker,
                 markersize=4, linewidth=1.65, zorder=3)
@@ -61,12 +61,12 @@ def main():
     ax.set_ylim(0, 9.1)
     ax.set_xlabel("PBKDF2 iterations (log scale)")
     ax.set_ylabel("Execution time (ms)")
-    ax.set_title("PBKDF2 execution time", loc="left", fontweight="bold", fontsize=10, pad=12)
     ax.grid(axis="y", color="#E4E8EC", linewidth=0.7, zorder=0)
     ax.tick_params(axis="both", length=3, color="#78818B")
-    ax.legend(loc="upper left", ncol=3, fontsize=7, handlelength=1.8,
-              columnspacing=1.4, borderaxespad=0.6)
-    fig.subplots_adjust(left=0.12, right=0.98, bottom=0.17, top=0.88)
+    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.04), ncol=3, fontsize=7.5,
+              handlelength=1.35, handletextpad=0.35, columnspacing=0.8,
+              borderaxespad=0)
+    fig.subplots_adjust(left=0.145, right=0.985, bottom=0.24, top=0.75)
     fig.canvas.draw()
     stem = OUTPUT_DIR / "pbkdf2_execution_time_comparison"
     fig.savefig(f"{stem}.pdf")

@@ -37,13 +37,12 @@ def read_block(sheet, header_row, first_row, last_row, labels):
     return calls, [[row[col] for row in rows] for col in range(1, len(labels))]
 
 
-def draw_panel(ax, block, names, roles, title, headroom=1.16):
+def draw_panel(ax, block, names, roles, headroom=1.16):
     calls, series = block
     for values, name, role in zip(series, names, roles):
         color, marker = STYLES[role]
         ax.plot(calls, values, color=color, marker=marker, markersize=3.8,
                 linewidth=1.55, label=name, zorder=3)
-    ax.set_title(title, loc="left", fontsize=9, fontweight="bold", pad=8)
     ax.set_xlim(0.5, 16.6)
     ax.set_ylim(0, max(max(values) for values in series) * headroom)
     ax.set_xticks([1, 2, 4, 6, 8, 12, 16])
@@ -51,17 +50,19 @@ def draw_panel(ax, block, names, roles, title, headroom=1.16):
     ax.yaxis.set_major_formatter(FuncFormatter(lambda value, _: f"{value / 1e6:g}"))
     ax.grid(axis="y", color="#E4E8EC", linewidth=0.7, zorder=0)
     ax.tick_params(axis="both", length=3, color="#78818B")
-    ax.legend(loc="upper left", fontsize=7, labelspacing=0.3,
-              handlelength=1.8, borderaxespad=0.55)
+    ax.legend(loc="lower left", bbox_to_anchor=(0, 1.03), fontsize=7.5,
+              ncol=2, columnspacing=0.65, labelspacing=0.2,
+              handlelength=1.4, handletextpad=0.35,
+              borderaxespad=0)
     ax.set_xlabel("Calls per transaction")
-    ax.set_ylabel("Cumulative gas (×10⁶)")
+    ax.set_ylabel("Cumulative gas (million)")
 
 
 def main():
     mpl.rcParams.update({
         "font.family": "sans-serif",
         "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans"],
-        "font.size": 8,
+        "font.size": 7.5,
         "svg.fonttype": "none",
         "pdf.fonttype": 42,
         "axes.spines.top": False,
@@ -86,17 +87,17 @@ def main():
             raise ValueError("Baseline call counts or EvoCrypt gas do not agree across blocks")
     workbook.close()
 
-    fig, axes = plt.subplots(2, 2, figsize=(7.2, 5.4))
+    fig, axes = plt.subplots(2, 2, figsize=(4.8, 3.4))
     draw_panel(axes[0, 0], baseline, ["Solidity", "EvoCrypt"],
-               ["lower", "baseline"], "(a) Solidity vs. EvoCrypt")
-    draw_panel(axes[0, 1], gas_zero, ["g₀ = 1500", "g₀ = 3000", "g₀ = 6000"],
-               ["lower", "baseline", "higher"], "(b) Sensitivity to g₀")
-    draw_panel(axes[1, 0], alpha, ["α = 0.25", "α = 0.5", "α = 0.75"],
-               ["lower", "baseline", "higher"], "(c) Sensitivity to α")
-    draw_panel(axes[1, 1], threshold, ["N₀ = 1", "N₀ = 2", "N₀ = 4"],
-               ["higher", "baseline", "lower"], "(d) Sensitivity to N₀", headroom=1.25)
-    fig.subplots_adjust(left=0.09, right=0.985, bottom=0.10, top=0.94,
-                        wspace=0.29, hspace=0.42)
+               ["lower", "baseline"])
+    draw_panel(axes[0, 1], gas_zero, ["base 1500", "base 3000", "base 6000"],
+               ["lower", "baseline", "higher"])
+    draw_panel(axes[1, 0], alpha, ["alpha 0.25", "alpha 0.5", "alpha 0.75"],
+               ["lower", "baseline", "higher"])
+    draw_panel(axes[1, 1], threshold, ["threshold 1", "threshold 2", "threshold 4"],
+               ["higher", "baseline", "lower"], headroom=1.25)
+    fig.subplots_adjust(left=0.13, right=0.99, bottom=0.12, top=0.80,
+                        wspace=0.38, hspace=0.95)
     fig.canvas.draw()
     stem = OUTPUT_DIR / "pbkdf2_cumulative_gas"
     require_matplotlib_panel_alignment(fig, json_out=f"{stem}.alignment.json",
