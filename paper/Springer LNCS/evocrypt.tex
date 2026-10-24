@@ -24,6 +24,11 @@
 \usepackage{algpseudocode}
 \usepackage{listings}
 
+\usepackage{needspace}
+\usepackage{etoolbox}
+% 标题至少与数行正文同页，避免页末零散起段。
+\pretocmd{\section}{\Needspace{6\baselineskip}}{}{}
+\pretocmd{\subsection}{\Needspace{5\baselineskip}}{}{}
 % Security-model environment used in Section 4; llncs provides the remaining
 % theorem-like environments (theorem, lemma, definition, remark, proof).
 \spnewtheorem{assumption}{Assumption}{\bfseries}{\itshape}
@@ -422,7 +427,7 @@ This evaluation asks whether EvoCrypt makes upgradeable cryptographic algorithms
 Experiments used a Geth-based private Clique network running modified Geth v1.17.5-unstable on a 16-core, 32~GB Aliyun server with Ubuntu 24.04 LTS, built with Go 1.25.7. Solidity contracts were compiled with solc 0.8.26, and WASM modules were built with TinyGo 0.42.0.
 
 Table~\ref{tab:eval-algorithms} gives the artifact sizes of the eight algorithms. Precompile (B) is the reference source of the client-integrated Precompiled Contract; WASM (B) is the uploaded module; Solidity (B) is the deployed runtime bytecode. Sizes and upgrade gas were remeasured on a fresh single-node Clique chain with Go 1.25.0, TinyGo 0.42.0, and solc 0.8.26 (Paris target, optimizer, 200 runs, via-IR) on an Intel Core i7-10700 host running Ubuntu 22.04.5 LTS. Setup latency retains the original run. 
-\begin{table}[ht]
+\begin{table}[H]
 \centering
 \caption{Source and compiled artifact sizes of the evaluated algorithms.\label{tab:eval-algorithms}}
 \small
@@ -448,7 +453,7 @@ SchnorrVerify & 5{,}627 & 48{,}639 & 4{,}232 & Signature verification \\
 
 Figure~\ref{fig:upgrade-efficiency} compares the cost of making an algorithm callable through EvoCrypt with deploying the equivalent Solidity contract. Receipt gas is \texttt{gasUsed} for the first upload or deployment, including intrinsic and calldata costs. The Precompiled Contract path needs no separate upload.
 
-\begin{figure}[!ht]
+\begin{figure}[H]
 \centering
 \begin{minipage}[t]{0.48\textwidth}
 \centering
@@ -462,12 +467,13 @@ Figure~\ref{fig:upgrade-efficiency} compares the cost of making an algorithm cal
 \label{fig:upgrade-efficiency}
 \end{figure}
 
-The two paths were similar for lightweight algorithms and diverged as the algorithm grew heavier. Add required 0.60~ms through EvoCrypt and 0.37~ms through Solidity, whereas SchnorrVerify required 2.34~ms and 4.30~ms. Upload gas was lower for seven of the eight algorithms, by 1.9--84.7\%. PBKDF2 required 175{,}668 gas for upload versus 388{,}984 gas for Solidity deployment, whereas Add remained more expensive at 105{,}964 versus 90{,}309 gas. A heavier algorithm can therefore be made callable without deploying a full Solidity implementation, at a lower setup cost than contract deployment. Lightweight cases stay comparable. 
+The two paths were similar for lightweight algorithms and diverged as the algorithm grew heavier. Add required 0.60~ms through EvoCrypt and 0.37~ms through Solidity, whereas SchnorrVerify required 2.34~ms and 4.30~ms. Upload gas was lower for seven of the eight algorithms, by 1.9--84.7\%. PBKDF2 required 175{,}668 gas for upload versus 388{,}984 gas for Solidity deployment, whereas Add remained more expensive at 105{,}964 versus 90{,}309 gas. A heavier algorithm can therefore be made callable without deploying a full Solidity implementation, at a lower setup cost than contract deployment. Lightweight cases stay comparable.
+
 \subsection{Upgrade Consistency}\label{sec5.3}
 
 Figure~\ref{fig:consistency-scene} shows the upgrade path on the 20-node private Clique network. The upgrade transaction records version metadata on chain, each node prepares the WASM module locally, and invocations at or after the Activation Block resolve to the same active version. Geth-side handling finished within 0.54--2.34~ms, after which every evaluated node exposed the same callable version. Local readiness affects only preparation timing; version selection is fixed by the shared metadata and block height. The experiment is a controlled private-network validation and leaves wide-area propagation and adversarial delay unmeasured.
 
-\begin{figure}[!ht]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{../image/consistence_scene.pdf}
 \caption{Upgrade consistency across nodes: synchronization, preparation, and readiness.}
@@ -480,7 +486,7 @@ Steady-state invocation was measured on a single node. PBKDF2 used HMAC-SHA-256 
 
 The gas experiment fixed ten PBKDF2 iterations and varied the number of calls per transaction. The previous-block threshold was not triggered, so $m_a(b)=1$ throughout. The baseline used $g_0=3000$, $\alpha=1/2$, and $N_0=2$ in Eq.~\eqref{eq:gas-schedule}; Figure~\ref{fig:pbkdf2-comparison} (right) also shows the variants $g_0=6000$, $\alpha=3/4$, and $N_0=4$. The curves report median receipt \texttt{gasUsed}, including transaction overhead and coprocessor charges. Under the baseline, EvoCrypt used less gas than Solidity at all nine call counts. One call cost 34{,}367 gas versus 297{,}297, and sixteen calls cost 2{,}703{,}489 versus 4{,}333{,}408. The saving narrowed from 88.4\% to 37.6\% as the tariff charged repeated calls more heavily. Raising $g_0$ or $\alpha$ increased that charge, and raising $N_0$ postponed the increase. The gas advantage holds for this schedule and narrows as calls accumulate.
 
-\begin{figure}[!ht]
+\begin{figure}[H]
 \centering
 \begin{minipage}[t]{0.48\textwidth}
 \centering
@@ -494,6 +500,8 @@ The gas experiment fixed ten PBKDF2 iterations and varied the number of calls pe
 \label{fig:pbkdf2-comparison}
 \end{figure}
 
+% 将本小节标题与表格前的说明留在同页。
+\Needspace{12\baselineskip}
 \subsection{Functional Validation}\label{sec5.5}
 
 Table~\ref{tab:complex-algorithms} reports standalone verification of post-quantum signatures and Groth16 proofs. These algorithms are more demanding than the contract-facing suite, lie beyond practical direct Solidity execution in this setting, and are absent from the evaluated Precompiled Contract catalog. Each one was uploaded, prepared, and invoked through the same interface, without a client modification. The times exclude RPC, upload, and confirmation, and are separate from the invocation measurements in Section~\ref{sec5.4}.
