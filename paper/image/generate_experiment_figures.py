@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate paper figures from paper/image/lab_result.xlsx (four sheets)."""
+"""Generate paper figures from paper/image/experiments_result.xlsx (four sheets)."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from openpyxl import load_workbook
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = Path(__file__).resolve().parent
-DATA_XLSX = OUT_DIR / "lab_result.xlsx"
+DATA_XLSX = OUT_DIR / "experiments_result.xlsx"
 
 PALETTE = {
     "evocrypt": "#0F4D92",
