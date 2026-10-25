@@ -39,16 +39,19 @@
 \titlerunning{EvoCrypt: A Runtime-Upgradable Cryptographic Coprocessor}
 
 \author{Anonymous Authors}
-% \author{Qi Liu\inst{1} \and
-% Qianhong Wu\inst{1} \and
-% Bo Qin\inst{2}\and
-% Hongzi He\inst{1} }
-% \authorrunning{Q. Liu et al.}
+\author{Qi Liu\inst{1} \and
+Qianhong Wu\inst{1} \and
+Bo Qin\inst{2}\and
+Hongzi He\inst{1} \and
+Wenkuan Xiao\inst{1} \and
+Sipeng Xie \inst{1} \and
+HaoChen Sun\inst{1}
+}
+\authorrunning{Q. Liu et al.}
 
 
-\institute{}
-% \institute{School of Cyber Science and Technology, Beihang University, Beijing 100191, China
-% \and School of Information, Renmin University of China, Beijing 100872, China}
+\institute{School of Cyber Science and Technology, Beihang University, Beijing 100191, China
+\and School of Information, Renmin University of China, Beijing 100872, China}
 
 \maketitle
 
@@ -103,7 +106,7 @@ EvoCrypt separates algorithm development, chain state, contract execution, and m
 Two chain-derived paths connect these components. A proposer records an upgrade through the Management Contract, whereas a contract initiates an invocation through the EVM of a Blockchain node. The Management Contract stores each admitted upgrade proposal, including the gas rule bound to its algorithm, and exposes the contract-facing upgrade and invocation interfaces. The coprocessor uses the resulting chain state to prepare and execute the corresponding module. Figure~\ref{fig:overview} summarizes these objects and their relationships.
 
 \subsection{Upgrade Protocol}\label{sec3.2}
-\noindent\textbf{On-chain publication.} On-chain publication provides the authoritative record that coordinates node-local preparation and height-based activation. A proposer submits an upgrade proposal through the designated upgrade interface. The Management Contract records its algorithm, gas, and control components and emits an upgrade event.
+\noindent\textbf{On-chain publication.} On-chain publication provides the authoritative record that coordinates node-local preparation and height-based activation. Only a designated governance account may call the upgrade interface to submit an upgrade proposal. The protocol requires the Management Contract to authenticate the caller before recording metadata or emitting an upgrade event. Calls from other accounts are rejected without changing the registry. This restriction governs upgrade admission; invocation of an admitted algorithm remains available to ordinary smart contracts. The authorized proposal records the algorithm, gas, and control components. Governance is trusted to review module behavior, input constraints, and resource requirements before admission; authorization alone does not establish implementation correctness.
 
 The EVM records the proposal but does not compile or instantiate the WASM module. Node-dependent preparation remains outside the transaction that changes the chain state. Each proposal contains the algorithm implementation and ABI descriptors, its gas parameters, and the Activation Block and bytecode hash. The event emits only $\langle a,v,H_{a,v}\rangle$ as a notification index. Let $\mathcal{V}_{a}$ denote the versions already registered for algorithm $a$.
 
@@ -130,9 +133,10 @@ Preparation is deliberately separated from the chain-level upgrade record. Node-
 \caption{\textbf{Activation-Block-based WASM upgrade protocol.}}
 \label{alg:upgrade-protocol}
 \begin{algorithmic}[1]
-\Require Upgrade proposal $\mu_{a,v}$ as in~\eqref{eq:version-metadata}; node set $\mathcal{N}$
+\Require Upgrade proposal $\mu_{a,v}$ as in~\eqref{eq:version-metadata}; node set $\mathcal{N}$; designated governance account $g$
 \Ensure Prepared set updated on every $n_i\in\mathcal{N}$
 \State proposer submits $\mu_{a,v}$ through the designated upgrade interface
+\State reject unless the caller is $g$
 \State Management Contract stores $\mu_{a,v}$; emits event $\langle a,v,H_{a,v}\rangle$
 \ForAll{$n_i\in\mathcal{N}$}
     \State observe $\langle a,v,H_{a,v}\rangle$; fetch $\mu'_{a,v}$ from Management Contract
@@ -173,7 +177,7 @@ in lexicographic order, later activation height first and then larger version nu
 \subsection{Invocation Protocol}\label{sec3.3}
 A unified Management Contract entry point keeps the contract-facing call boundary stable. The caller serializes the algorithm name $a$ and its parameters into an encoded request $x$ and submits it through the designated interface, so different algorithms share one destination address and the contract binds to the ABI descriptors of the selected version rather than to module location, implementation language, or node-local loading state. EVM-side Hooks admit only requests to that interface; all others remain on the ordinary EVM path. For a routed request the coprocessor parses $(a,x)$, resolves $v^{*}(a,b)$ by~\eqref{eq:version-select}, and, under the mandatory-preparation policy, prepares the selected version if necessary rather than falling back to an obsolete implementation. The selected module receives the encoded parameters and returns an encoded result; the call shape remains compatible when $\tau^{\mathrm{in}}_{a,v}$ and $\tau^{\mathrm{out}}_{a,v}$ are compatible. Algorithm~\ref{alg:invocation-protocol} specifies this procedure and its protocol-error conditions.
 
-For each algorithm, the first $N_0$ charged calls in a transaction incur a fixed base charge $g_0$ before the block multiplier is applied. Each subsequent call increases this charge by a factor of $1+\alpha$. If the algorithm's charged-call count in the previous block exceeds $T_a$, all its invocation charges in the current block are multiplied by $\mu_a$.
+A flat per-call charge does not distinguish occasional use from repeated invocation of the same algorithm. We therefore apply a transaction-local surcharge while preserving predictable pricing for initial calls. For each algorithm, the first $N_0$ charged calls in a transaction incur a fixed base charge $g_0$ before the block multiplier is applied. Each subsequent call increases this charge by a factor of $1+\alpha$.Using the completed parent block supplies a shared load signal without making the current block's multiplier depend on transaction placement within that block. If the algorithm's charged-call count in the previous block exceeds $T_a$, all its invocation charges in the current block are multiplied by $\mu_a$.
 
 \begin{definition}[Algorithm-level gas schedule]
 \label{def:gas-schedule}
@@ -424,7 +428,7 @@ This evaluation asks whether EvoCrypt makes upgradeable cryptographic algorithms
 
 \subsection{Implementation}\label{sec5.1}
 
-Experiments used a Geth-based private Clique network running modified Geth v1.17.5-unstable on a 16-core, 32~GB Aliyun server with Ubuntu 24.04 LTS, built with Go 1.25.7. Solidity contracts were compiled with solc 0.8.26, and WASM modules were built with TinyGo 0.42.0.
+Experiments used a Geth-based private Clique network running modified Geth v1.17.5-unstable on a 16-core, 32~GB Aliyun server with Ubuntu 24.04 LTS, built with Go 1.25.7. Solidity contracts were compiled with solc 0.8.26, and WASM modules were built with TinyGo 0.42.0.WASM execution used wazero v1.12.0 with a 16~MiB memory limit per module. The default execution timeout was 5~s, extended to 30~s for standalone verification of the computationally intensive algorithms. Inputs followed each algorithm's declared ABI and were constrained by available module memory, without a separate uniform size limit. These timeouts served as local safeguards; the evaluation does not establish deterministic behavior when a timeout occurs.
 
 Table~\ref{tab:eval-algorithms} gives the artifact sizes of the eight algorithms. Precompile (B) is the reference source of the client-integrated Precompiled Contract; WASM (B) is the uploaded module; Solidity (B) is the deployed runtime bytecode. Sizes and upgrade gas were remeasured on a fresh single-node Clique chain with Go 1.25.0, TinyGo 0.42.0, and solc 0.8.26 (Paris target, optimizer, 200 runs, via-IR) on an Intel Core i7-10700 host running Ubuntu 22.04.5 LTS. Setup latency retains the original run. 
 \begin{table}[H]
@@ -451,7 +455,7 @@ SchnorrVerify & 5{,}627 & 48{,}639 & 4{,}232 & Signature verification \\
 
 \subsection{Upgrade Efficiency}\label{sec5.2}
 
-Figure~\ref{fig:upgrade-efficiency} compares the cost of making an algorithm callable through EvoCrypt with deploying the equivalent Solidity contract. Receipt gas is \texttt{gasUsed} for the first upload or deployment, including intrinsic and calldata costs. The Precompiled Contract path needs no separate upload.
+Figure~\ref{fig:upgrade-efficiency} compares the cost of making an algorithm callable through EvoCrypt with deploying the equivalent Solidity contract. The reported latency measures upgrade transaction execution time rather than end-to-end upgrade latency. Receipt gas is \texttt{gasUsed} for the first upload or deployment, including intrinsic and calldata costs. The Precompiled Contract path needs no separate upload.
 
 \begin{figure}[H]
 \centering
@@ -500,8 +504,6 @@ The gas experiment fixed ten PBKDF2 iterations and varied the number of calls pe
 \label{fig:pbkdf2-comparison}
 \end{figure}
 
-% 将本小节标题与表格前的说明留在同页。
-\Needspace{12\baselineskip}
 \subsection{Functional Validation}\label{sec5.5}
 
 Table~\ref{tab:complex-algorithms} reports standalone verification of post-quantum signatures and Groth16 proofs. These algorithms are more demanding than the contract-facing suite, lie beyond practical direct Solidity execution in this setting, and are absent from the evaluated Precompiled Contract catalog. Each one was uploaded, prepared, and invoked through the same interface, without a client modification. The times exclude RPC, upload, and confirmation, and are separate from the invocation measurements in Section~\ref{sec5.4}.
