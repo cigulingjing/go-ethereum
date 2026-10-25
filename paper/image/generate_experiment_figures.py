@@ -323,13 +323,20 @@ def main() -> None:
     # Chart 2: upgrade latency — EvoCrypt vs Solidity
     if only in (None, "upgrade-latency"):
         algos, upgrade_lat, contract_lat = load_upgrade_latency()
+        # 保持论文现有类别顺序，避免工作簿行序改变已发表图形的对应关系。
+        order = ["Add", "Sha256", "PolynomialMul", "Blake2bSum256",
+                 "Pbkdf2Sha256", "Dh2048Secret", "PedersenCommit", "SchnorrVerify"]
+        indices = sorted(range(len(algos)), key=lambda i: order.index(algos[i]))
+        algos = [algos[i] for i in indices]
+        upgrade_lat = [upgrade_lat[i] for i in indices]
+        contract_lat = [contract_lat[i] for i in indices]
         upgrade_line(
             algos,
             [
                 ("EvoCrypt", upgrade_lat, PALETTE["evocrypt"]),
                 ("Solidity", contract_lat, PALETTE["solidity"]),
             ],
-            ylabel="Upgrade latency (ms)",
+            ylabel="Upgrade transaction\nexecution latency (ms)",
             stem="figure_upgrade_latency_comparison",
             log_y=False,
         )

@@ -45,7 +45,7 @@ Bo Qin\inst{2}\and
 Hongzi He\inst{1} \and
 Wenkuan Xiao\inst{1} \and
 Sipeng Xie \inst{1} \and
-HaoChen Sun\inst{1}
+Haochen Sun\inst{1}
 }
 \authorrunning{Q. Liu et al.}
 
@@ -86,7 +86,7 @@ Blockchain upgrades at the protocol or client layer replace execution rules thro
 
 Contract-level schemes update application logic without replacing the entire blockchain client, using deployable contracts, proxy indirection, or bytecode rewriting. EVMPatch patches deployed Ethereum smart contracts through bytecode rewriting and proxy-based deployment, while Solidity implementations offer application-level flexibility within the EVM \cite{rodler2021evmpatch,ethereumEVM}. LEAGAN extends contract-level upgradeability through data separation, incremental hashing, revision control, and status-contract-based version management \cite{kumar2025leagan}. Precompiled Contracts provide a complementary client-side path for selected cryptographic routines through reserved EVM-facing addresses \cite{evmCodesPrecompiled,eip196,eip197}. Contract-level implementations remain constrained by EVM execution cost and state or interface compatibility, whereas adding or replacing a Precompiled Contract normally requires changes to client and protocol rules.
 
-Dynamic software-update schemes move replacement below the application layer by loading new components into a running host. KylinX supports runtime library replacement through dynamic mapping, Mvedsua combines dynamic updates with multi-version execution, PYLIVE changes Python code online, and distributed-system research addresses modular updates and version consistency \cite{zhang2018kylinx,pina2019mvedsua,huang2021pylive,ajmani2006modular,baresi2017versionConsistency}. WASM provides a portable artifact format and explicit host boundary for this style of replacement. In blockchain systems, existing WASM-based upgrades generally target broad runtime logic rather than a narrow EVM-facing cryptographic interface \cite{webassemblyCoreSpec,polkadotRuntimeUpgrades}.
+Dynamic software-update schemes move replacement below the application layer by loading new components into a running host. KylinX supports runtime library replacement through dynamic mapping, MVEDSUA combines dynamic updates with multi-version execution, PYLIVE changes Python code online, and distributed-system research addresses modular updates and version consistency \cite{zhang2018kylinx,pina2019mvedsua,huang2021pylive,ajmani2006modular,baresi2017versionConsistency}. WASM provides a portable artifact format and explicit host boundary for this style of replacement. In blockchain systems, existing WASM-based upgrades generally target broad runtime logic rather than a narrow EVM-facing cryptographic interface \cite{webassemblyCoreSpec,polkadotRuntimeUpgrades}.
 
 \section{EvoCrypt Design}\label{sec3}
 
@@ -133,7 +133,7 @@ Preparation is deliberately separated from the chain-level upgrade record. Node-
 \caption{\textbf{Activation-Block-based WASM upgrade protocol.}}
 \label{alg:upgrade-protocol}
 \begin{algorithmic}[1]
-\Require Upgrade proposal $\mu_{a,v}$ as in~\eqref{eq:version-metadata}; node set $\mathcal{N}$; designated governance account $g$
+\Require Upgrade proposal $\mu_{a,v}$ as in~\eqref{eq:version-metadata}; node set $\mathcal{N}$; governance account~$g$
 \Ensure Prepared set updated on every $n_i\in\mathcal{N}$
 \State proposer submits $\mu_{a,v}$ through the designated upgrade interface
 \State reject unless the caller is $g$
@@ -168,7 +168,7 @@ When a selected version is not yet prepared, the node reloads its authoritative 
 \label{def:active-version}
 Let $\mathcal{V}_{a}$ be the registered versions of algorithm $a$ and $b$ the execution height. The version used at height $b$ is
 \begin{equation}
-v^{*}(a,b)=\arg\max\{(H_{a,v},v): v\in\mathcal{V}_{a},\, H_{a,v}\le b\},
+v^{*}(a,b)=\operatorname*{arg\,max}_{v\in\mathcal{V}_{a}:\,H_{a,v}\le b}(H_{a,v},v),
 \label{eq:version-select}
 \end{equation}
 in lexicographic order, later activation height first and then larger version number. If no such version exists, the invocation fails with a missing-version error.
@@ -177,7 +177,7 @@ in lexicographic order, later activation height first and then larger version nu
 \subsection{Invocation Protocol}\label{sec3.3}
 A unified Management Contract entry point keeps the contract-facing call boundary stable. The caller serializes the algorithm name $a$ and its parameters into an encoded request $x$ and submits it through the designated interface, so different algorithms share one destination address and the contract binds to the ABI descriptors of the selected version rather than to module location, implementation language, or node-local loading state. EVM-side Hooks admit only requests to that interface; all others remain on the ordinary EVM path. For a routed request the coprocessor parses $(a,x)$, resolves $v^{*}(a,b)$ by~\eqref{eq:version-select}, and, under the mandatory-preparation policy, prepares the selected version if necessary rather than falling back to an obsolete implementation. The selected module receives the encoded parameters and returns an encoded result; the call shape remains compatible when $\tau^{\mathrm{in}}_{a,v}$ and $\tau^{\mathrm{out}}_{a,v}$ are compatible. Algorithm~\ref{alg:invocation-protocol} specifies this procedure and its protocol-error conditions.
 
-A flat per-call charge does not distinguish occasional use from repeated invocation of the same algorithm. We therefore apply a transaction-local surcharge while preserving predictable pricing for initial calls. For each algorithm, the first $N_0$ charged calls in a transaction incur a fixed base charge $g_0$ before the block multiplier is applied. Each subsequent call increases this charge by a factor of $1+\alpha$.Using the completed parent block supplies a shared load signal without making the current block's multiplier depend on transaction placement within that block. If the algorithm's charged-call count in the previous block exceeds $T_a$, all its invocation charges in the current block are multiplied by $\mu_a$.
+A flat per-call charge does not distinguish occasional use from repeated invocation of the same algorithm. We therefore apply a transaction-local surcharge while preserving predictable pricing for initial calls. For each algorithm, the first $N_0$ charged calls in a transaction incur a fixed base charge $g_0$ before the block multiplier is applied. Each subsequent call increases this charge by a factor of $1+\alpha$. Using the completed parent block supplies a shared load signal without making the current block's multiplier depend on transaction placement within that block. If the algorithm's charged-call count in the previous block exceeds $T_a$, all its invocation charges in the current block are multiplied by $\mu_a$.
 
 \begin{definition}[Algorithm-level gas schedule]
 \label{def:gas-schedule}
@@ -274,6 +274,7 @@ The WASM Runtime exposes a validation predicate $\mathsf{Validate}(C)\in\{0,1\}$
 
 \noindent\textbf{Adversary.} The PPT adversary $\mathcal{A}$ may (a) submit arbitrary transactions, including invocation inputs and candidate upgrade proposals, the latter admitted only subject to Assumption~\ref{asm:registry}; (b) schedule the delivery of upgrade events, delay or interrupt node-local preparation, and crash and restart nodes so that preparation retries; and (c) tamper with the node-local artifact path, i.e., replace the byte sequence $\widehat{C}$ that a node obtains when it decodes, persists or reloads an artifact, modelling corrupted caches, persisted copies and untrusted retrieval channels. It cannot violate Assumptions~\ref{asm:ledger}--\ref{asm:cr} or alter the client binary. The model thus excludes a compromised Geth binary, a broken consensus protocol, and a primitive whose underlying assumption is false. Registry validity does not imply that a registered implementation is cryptographically correct or that its gas parameters accurately price resource use.
 
+\smallskip
 \noindent\textbf{Security definitions.} Each experiment below runs $\mathcal{A}$ against the honest nodes in this model and outputs $1$ when $\mathcal{A}$ causes the undesirable event; the advantage of $\mathcal{A}$ is the probability of output $1$ over all coins.
 
 \begin{definition}[Version divergence]
@@ -364,7 +365,7 @@ $E_3$ is a module substitution for $(a,v)$ with $\mu_{a,v}\in\mathsf{Reg}(\mathc
 
 \begin{remark}[Safety versus liveness]
 \label{rem:liveness}
-Theorems~\ref{thm:activation}--\ref{thm:soundness} are safety statements: an honest node never selects or runs a version other than the canonical one. They do not assert that every node can answer at height $H_{a,v}$; a node still preparing, or in the retry loop of Algorithm~\ref{alg:upgrade-protocol}, defers rather than degrades. Under Assumption~\ref{asm:registry}(iv) and the deterministic validation of Assumption~\ref{asm:runtime}, an admitted artifact validates identically at every honest node, so preparation cannot succeed at one node and fail permanently at another; preparation time is measured in Section~\ref{sec5.2} rather than proven here.
+Theorems~\ref{thm:activation}--\ref{thm:soundness} are safety statements: an honest node never selects or runs a version other than the canonical one. They do not assert that every node can answer at height $H_{a,v}$; a node still preparing, or in the retry loop of Algorithm~\ref{alg:upgrade-protocol}, defers rather than degrades.
 \end{remark}
 
 \subsection{Invocation Security}\label{sec4.3}
@@ -428,9 +429,9 @@ This evaluation asks whether EvoCrypt makes upgradeable cryptographic algorithms
 
 \subsection{Implementation}\label{sec5.1}
 
-Experiments used a Geth-based private Clique network running modified Geth v1.17.5-unstable on a 16-core, 32~GB Aliyun server with Ubuntu 24.04 LTS, built with Go 1.25.7. Solidity contracts were compiled with solc 0.8.26, and WASM modules were built with TinyGo 0.42.0.WASM execution used wazero v1.12.0 with a 16~MiB memory limit per module. The default execution timeout was 5~s, extended to 30~s for standalone verification of the computationally intensive algorithms. Inputs followed each algorithm's declared ABI and were constrained by available module memory, without a separate uniform size limit. These timeouts served as local safeguards; the evaluation does not establish deterministic behavior when a timeout occurs.
+Experiments used a Geth-based private Clique network running modified Geth v1.17.5-unstable on a 16-core, 32~GB Aliyun server with Ubuntu 24.04 LTS, built with Go 1.25.7. Solidity contracts were compiled with solc 0.8.26, and WASM modules were built with TinyGo 0.42.0. WASM execution used wazero v1.12.0 with a 16~MiB memory limit per module. The default execution timeout was 5~s, extended to 30~s for standalone verification of the computationally intensive algorithms. Inputs followed each algorithm's declared ABI and were constrained by available module memory, without a separate uniform size limit. These timeouts served as local safeguards; the evaluation does not establish deterministic behavior when a timeout occurs.
 
-Table~\ref{tab:eval-algorithms} gives the artifact sizes of the eight algorithms. Precompile (B) is the reference source of the client-integrated Precompiled Contract; WASM (B) is the uploaded module; Solidity (B) is the deployed runtime bytecode. Sizes and upgrade gas were remeasured on a fresh single-node Clique chain with Go 1.25.0, TinyGo 0.42.0, and solc 0.8.26 (Paris target, optimizer, 200 runs, via-IR) on an Intel Core i7-10700 host running Ubuntu 22.04.5 LTS. Setup latency retains the original run. 
+Table~\ref{tab:eval-algorithms} gives the artifact sizes of the eight algorithms. Precompiled Contract (B) is the reference source of the client-integrated Precompiled Contract; WASM (B) is the uploaded module; Solidity (B) is the deployed runtime bytecode. Sizes and upgrade gas were remeasured on a fresh single-node Clique chain with Go 1.25.0, TinyGo 0.42.0, and solc 0.8.26 (Paris target, optimizer, 200 runs, via-IR) on an Intel Core i7-10700 host running Ubuntu 22.04.5 LTS. Upgrade transaction execution latencies are from the original run.
 \begin{table}[H]
 \centering
 \caption{Source and compiled artifact sizes of the evaluated algorithms.\label{tab:eval-algorithms}}
@@ -438,7 +439,7 @@ Table~\ref{tab:eval-algorithms} gives the artifact sizes of the eight algorithms
 \setlength{\tabcolsep}{4pt}
 \begin{tabularx}{\textwidth}{@{}llll>{\raggedright\arraybackslash}X@{}}
 \toprule
-Algorithm & Precompile (B) & WASM(B) & Solidity(B) & Role \\
+Algorithm & \shortstack[l]{Precompiled\\Contract (B)} & WASM (B) & Solidity (B) & Role \\
 \midrule
 Add & 623 & 6{,}945 & 171 & Non-cryptographic \\
 Sha256 & 3{,}218 & 8{,}339 & 358 & Cryptographic hash \\
@@ -455,7 +456,7 @@ SchnorrVerify & 5{,}627 & 48{,}639 & 4{,}232 & Signature verification \\
 
 \subsection{Upgrade Efficiency}\label{sec5.2}
 
-Figure~\ref{fig:upgrade-efficiency} compares the cost of making an algorithm callable through EvoCrypt with deploying the equivalent Solidity contract. The reported latency measures upgrade transaction execution time rather than end-to-end upgrade latency. Receipt gas is \texttt{gasUsed} for the first upload or deployment, including intrinsic and calldata costs. The Precompiled Contract path needs no separate upload.
+Figure~\ref{fig:upgrade-efficiency} compares the cost of making an algorithm callable through EvoCrypt with deploying the equivalent Solidity contract. The reported latency measures upgrade transaction execution latency rather than end-to-end upgrade latency. Receipt gas is \texttt{gasUsed} for the first upload or deployment, including intrinsic and calldata costs. The Precompiled Contract path needs no separate upload.
 
 \begin{figure}[H]
 \centering
@@ -467,7 +468,7 @@ Figure~\ref{fig:upgrade-efficiency} compares the cost of making an algorithm cal
 \centering
 \includegraphics[width=\linewidth]{../image/figure_upgrade_gas_comparison.pdf}
 \end{minipage}
-\caption{Upgrade efficiency. Left: mean setup latency. Right: receipt gas for EvoCrypt upload and Solidity deployment.}
+\caption{Upgrade efficiency: mean upgrade transaction execution latency (left) and receipt gas for EvoCrypt upload and Solidity deployment (right).}
 \label{fig:upgrade-efficiency}
 \end{figure}
 
@@ -506,16 +507,16 @@ The gas experiment fixed ten PBKDF2 iterations and varied the number of calls pe
 
 \subsection{Functional Validation}\label{sec5.5}
 
-Table~\ref{tab:complex-algorithms} reports standalone verification of post-quantum signatures and Groth16 proofs. These algorithms are more demanding than the contract-facing suite, lie beyond practical direct Solidity execution in this setting, and are absent from the evaluated Precompiled Contract catalog. Each one was uploaded, prepared, and invoked through the same interface, without a client modification. The times exclude RPC, upload, and confirmation, and are separate from the invocation measurements in Section~\ref{sec5.4}.
+Table~\ref{tab:complex-algorithms} compares standalone verification times for post-quantum signatures and Groth16 proofs using WASM modules and the corresponding Precompiled Contracts. These algorithms are more demanding than the contract-facing suite and lie beyond practical direct Solidity execution in this setting. On the EvoCrypt path, each module was uploaded, prepared, and invoked through the same interface, without a client modification. The times exclude RPC, upload, and confirmation, and are separate from the invocation measurements in Section~\ref{sec5.4}.
 
 \begin{table}[H]
 \centering
-\caption{Mean standalone verification time for computationally intensive cryptographic algorithms. Ratios are WASM/Precompiled Contract.\label{tab:complex-algorithms}}
+\caption{Mean standalone verification times for WASM and Precompiled Contracts, with ratios defined as WASM/Precompiled Contract.\label{tab:complex-algorithms}}
 \small
 \setlength{\tabcolsep}{6pt}
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llll@{}}
 \toprule
-Algorithm & WASM (ms) & Precompile (ms) & Ratio \\
+Algorithm & WASM (ms) & \shortstack[l]{Precompiled\\Contract (ms)} & Ratio \\
 \midrule
 Aigis-Sig2Verify & 0.226 & 0.106 & 2.13 \\
 Dilithium3Verify & 0.282 & 0.141 & 2.00 \\
@@ -527,7 +528,7 @@ Groth16Verify/BN254 & 11.676 & 2.182 & 5.35 \\
 \end{tabular*}
 \end{table}
 
-All six verifiers executed successfully. A contract can therefore call algorithms that are not in the client catalog, and a later upgrade can replace the implementation through the same interface. WASM time was 1.91--5.63 times the corresponding Precompiled Contract time, with the largest ratio for Groth16Verify/\allowbreak BLS12-381. EvoCrypt extends the set of callable algorithms; where a Precompiled Contract already exists, that path remains faster.
+All six verifiers executed successfully. Through EvoCrypt, a contract can call each uploaded verifier, and a later upgrade can replace its implementation through the same interface. WASM time was 1.91--5.63 times the corresponding Precompiled Contract time, with the largest ratio for Groth16Verify/\allowbreak BLS12-381. EvoCrypt supports runtime replacement of these verifiers, while the corresponding Precompiled Contracts provide faster verification in these measurements.
 
 \section{Conclusion}\label{sec6}
 

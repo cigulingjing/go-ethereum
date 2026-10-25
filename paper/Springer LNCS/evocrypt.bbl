@@ -14,7 +14,7 @@ Zou, W., Lo, D., Kochhar, P.S., Le, X.B.D., Xia, X., Feng, Y., Chen, Z., Xu,
 
 \bibitem{woodEthereumYellowPaper}
 Wood, G.: Ethereum: A secure decentralised generalised transaction ledger.
-  \url{https://ethereum.github.io/yellowpaper/paper.pdf} (2014), ethereum
+  \url{https://ethereum.github.io/yellowpaper/paper.pdf} (2014), {Ethereum}
   Yellow Paper. Accessed 21 August 2026
 
 \bibitem{ethereumEVM}
@@ -130,8 +130,8 @@ Baresi, L., Ghezzi, C., Ma, X., Panzica La~Manna, V.: Efficient dynamic updates
 
 \bibitem{webassemblyCoreSpec}
 {World Wide Web Consortium}: {WebAssembly Core Specification}.
-  \url{https://www.w3.org/TR/wasm-core-2/}, w3C Candidate Recommendation Draft.
-  Accessed 3 September 2026
+  \url{https://www.w3.org/TR/wasm-core-2/}, {W3C} Candidate Recommendation
+  Draft. Accessed 3 September 2026
 
 \bibitem{garay2015backbone}
 Garay, J.A., Kiayias, A., Leonardos, N.: The bitcoin backbone protocol:

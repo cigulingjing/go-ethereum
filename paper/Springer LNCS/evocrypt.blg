@@ -5,9 +5,9 @@ The style file: splncs04-unsrt.bst
 Database file #1: sn-bibliography.bib
 You've used 26 entries,
             2850 wiz_defined-function locations,
-            767 strings with 10286 characters,
-and the built_in function-call counts, 12346 in all, are:
-= -- 950
+            767 strings with 10290 characters,
+and the built_in function-call counts, 12342 in all, are:
+= -- 948
 > -- 289
 < -- 25
 + -- 112
@@ -16,13 +16,13 @@ and the built_in function-call counts, 12346 in all, are:
 := -- 1309
 add.period$ -- 46
 call.type$ -- 26
-change.case$ -- 57
+change.case$ -- 55
 chr.to.int$ -- 0
 cite$ -- 26
 duplicate$ -- 1266
 empty$ -- 1312
 format.name$ -- 101
-if$ -- 2892
+if$ -- 2890
 int.to.chr$ -- 0
 int.to.str$ -- 26
 missing$ -- 281
@@ -32,7 +32,7 @@ pop$ -- 521
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 317
+skip$ -- 319
 stack$ -- 0
 substring$ -- 694
 swap$ -- 775
