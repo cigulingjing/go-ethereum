@@ -3,44 +3,44 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: evocrypt.aux
 The style file: splncs04-unsrt.bst
 Database file #1: sn-bibliography.bib
-You've used 26 entries,
+You've used 29 entries,
             2850 wiz_defined-function locations,
-            767 strings with 10290 characters,
-and the built_in function-call counts, 12342 in all, are:
-= -- 948
-> -- 289
-< -- 25
-+ -- 112
-- -- 86
-* -- 689
-:= -- 1309
-add.period$ -- 46
-call.type$ -- 26
-change.case$ -- 55
+            791 strings with 11433 characters,
+and the built_in function-call counts, 14165 in all, are:
+= -- 1075
+> -- 357
+< -- 29
++ -- 136
+- -- 107
+* -- 812
+:= -- 1515
+add.period$ -- 55
+call.type$ -- 29
+change.case$ -- 63
 chr.to.int$ -- 0
-cite$ -- 26
-duplicate$ -- 1266
-empty$ -- 1312
-format.name$ -- 101
-if$ -- 2890
+cite$ -- 29
+duplicate$ -- 1451
+empty$ -- 1486
+format.name$ -- 127
+if$ -- 3300
 int.to.chr$ -- 0
-int.to.str$ -- 26
-missing$ -- 281
-newline$ -- 84
-num.names$ -- 36
-pop$ -- 521
+int.to.str$ -- 29
+missing$ -- 329
+newline$ -- 93
+num.names$ -- 43
+pop$ -- 598
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 319
+skip$ -- 351
 stack$ -- 0
-substring$ -- 694
-swap$ -- 775
-text.length$ -- 25
+substring$ -- 771
+swap$ -- 895
+text.length$ -- 29
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 0
-while$ -- 97
-width$ -- 28
-write$ -- 275
+while$ -- 111
+width$ -- 31
+write$ -- 313

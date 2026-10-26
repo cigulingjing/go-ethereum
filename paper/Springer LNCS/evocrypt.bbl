@@ -133,6 +133,29 @@ Baresi, L., Ghezzi, C., Ma, X., Panzica La~Manna, V.: Efficient dynamic updates
   \url{https://www.w3.org/TR/wasm-core-2/}, {W3C} Candidate Recommendation
   Draft. Accessed 3 September 2026
 
+\bibitem{chenAdaptiveGas}
+Chen, T., Li, X., Wang, Y., Chen, J., Li, Z., Luo, X., Au, M.H., Zhang, X.: An
+  adaptive gas cost mechanism for {Ethereum} to defend against under-priced
+  {DoS} attacks. In: Liu, J.K., Samarati, P. (eds.) Information Security
+  Practice and Experience: 13th International Conference, ISPEC 2017,
+  Melbourne, VIC, Australia, December 13--15, 2017, Proceedings. Lecture Notes
+  in Computer Science, vol. 10701, pp. 3--24. Springer, Cham (2017).
+  \doi{10.1007/978-3-319-72359-4_1}
+
+\bibitem{crapisDynamicFees}
+Crapis, D., Moallemi, C.C., Wang, S.: Optimal dynamic fees for blockchain
+  resources. In: Clark, J., Shi, E. (eds.) Financial Cryptography and Data
+  Security: 28th International Conference, FC 2024, Willemstad, Cura{\c{c}}ao,
+  March 4--8, 2024, Revised Selected Papers, Part I. Lecture Notes in Computer
+  Science, vol. 14744, pp. 271--291. Springer, Cham (2025).
+  \doi{10.1007/978-3-031-78676-1_15}
+
+\bibitem{chaliasosRollups}
+Chaliasos, S., Swann, C., Pilehchiha, S., Mohnblatt, N., Livshits, B., Kattis,
+  A.: Unaligned incentives: Pricing attacks against blockchain rollups.
+  arXiv:2509.17126. \url{https://arxiv.org/abs/2509.17126} (2025), preprint,
+  posted 21 September 2025
+
 \bibitem{garay2015backbone}
 Garay, J.A., Kiayias, A., Leonardos, N.: The bitcoin backbone protocol:
   Analysis and applications. In: Oswald, E., Fischlin, M. (eds.) 2015 Annual

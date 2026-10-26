@@ -65,9 +65,9 @@ Smart contracts frequently rely on cryptographic algorithms, yet implementing co
 
 As blockchain systems become programmable platforms, smart contracts increasingly depend on cryptographic algorithms for authentication, integrity, signatures, and privacy \cite{nakamoto2008bitcoin,zou2021smartContracts,woodEthereumYellowPaper,ethereumEVM}. The long-term security of these applications also requires the ability to adopt new algorithms, including post-quantum alternatives, without disrupting contract-facing functionality \cite{shor1999,grover1996,nistPqcProject}. Blockchain clients therefore need an extensible way to provide evolving cryptographic capabilities to smart contracts.
 
-Ethereum provides two main mechanisms for executing cryptographic operations: Solidity contract implementations and Precompiled Contracts. Solidity implementations are flexible and deployable at the contract layer, but complex cryptographic computation expands into costly EVM execution; Precompiled Contracts execute selected routines efficiently in client-side code, but their supported algorithms are fixed to the client and normally require coordinated client updates to change \cite{woodEthereumYellowPaper,ethereumEVM,evmCodesPrecompiled}.
+Ethereum provides two main mechanisms for executing cryptographic operations: Solidity contract implementations and Precompiled Contracts. Solidity implementations are flexible and deployable at the contract layer, but complex cryptographic computation expands into costly EVM execution; Precompiled Contracts execute selected routines efficiently in client-side code, but their supported algorithms are fixed to the client and normally require coordinated client updates to change \cite{woodEthereumYellowPaper,ethereumEVM,evmCodesPrecompiled}. Such client changes may require node restarts, temporarily reducing network hash-computation capacity and disrupting consensus stability. If nodes adopt incompatible client rules, the transition may also trigger a hard fork.
 
-Together, these mechanisms expose a fundamental trade-off between execution efficiency and algorithm upgradability. Solidity keeps algorithms deployable without client changes but can impose substantial execution and gas overhead, whereas Precompiled Contracts provide efficient execution only for routines embedded in the client and are therefore difficult to evolve independently. The central challenge is to replace contract-facing cryptographic implementations without sacrificing efficient execution, deterministic behavior across nodes, or compatibility with the existing EVM interface.
+Together, these mechanisms expose a fundamental trade-off between execution efficiency and algorithm upgradability. Solidity keeps algorithms deployable without client changes but can impose substantial execution and gas overhead, whereas Precompiled Contracts provide efficient execution only for routines embedded in the client and are therefore difficult to evolve independently. The central challenge is to replace contract-facing cryptographic implementations without sacrificing efficient execution, deterministic behavior across nodes, or compatibility with the existing EVM interface. Providing a cross-platform computational environment within the EVM is a promising way to address this challenge.
 
 EvoCrypt addresses this trade-off by separating the stable contract-facing interface from replaceable WASM implementations and by separating module preparation from module activation. The interface preserves how smart contracts invoke cryptographic operations, while portable WASM modules allow implementations to be replaced without embedding each algorithm in contract bytecode or rebuilding the client for every change. Asynchronous preparation moves verification, compilation, and instantiation away from the transaction execution path. Activation-Block-based selection then ensures that nodes switch versions according to a common chain-derived rule rather than local readiness time. The design combines algorithm-level accounting with deterministic, incrementally deployable upgrades.
 
@@ -82,11 +82,13 @@ The main contributions of this article are summarized as follows.
 
 Research on cryptographic algorithm upgrades in blockchain systems has not yet resolved the combined problem of efficient invocation and practical implementation. Related approaches can be organized by the layer at which they support upgrades: protocol and client, contract, or dynamic runtime.
 
-Blockchain upgrades at the protocol or client layer replace execution rules through a coordinated transition. Cardano switches protocol eras with a hard-fork combinator at designated heights, and work on updatable blockchains studies how old and new chains stay synchronized \cite{cardanoHardForkCombinator,cardanoEvolution,ciampi2020updatable}. Soft forks encode selected policy changes in rules that can be adopted without replacing the protocol \cite{zindros2021softPower}. Phoenix and Polkadot are closest to EvoCrypt in supporting live replacement: Phoenix compiles upgrade code carried in transactions at runtime, while Polkadot replaces on-chain WASM runtime logic during block synchronization \cite{wang2023phoenix,polkadotRuntimeUpgrades}. Both nevertheless replace client or chain-runtime components rather than a contract-facing cryptographic algorithm. They do not specify how a contract names an algorithm, binds its interface, or switches versions without redeploying the caller. EvoCrypt narrows the replacement boundary to individual WASM modules behind a stable Solidity-facing interface. Consistency follows from an on-chain proposal whose control fields carry the module hash and Activation Block, and whose gas fields are bound to the individual algorithm.
+Blockchain upgrades at the protocol or client layer replace execution rules through a coordinated transition. Cardano switches protocol eras with a hard-fork combinator at designated heights, and work on updatable blockchains studies how old and new chains stay synchronized \cite{cardanoHardForkCombinator,cardanoEvolution,ciampi2020updatable}. Soft forks encode selected policy changes in rules that can be adopted without replacing the protocol \cite{zindros2021softPower}. Phoenix and Polkadot are closest to EvoCrypt in supporting live replacement: Phoenix compiles upgrade code carried in transactions at runtime, while Polkadot replaces on-chain WASM runtime logic during block synchronization \cite{wang2023phoenix,polkadotRuntimeUpgrades}. Both nevertheless replace client or chain-runtime components rather than a computational algorithm in the EVM.
 
 Contract-level schemes update application logic without replacing the entire blockchain client, using deployable contracts, proxy indirection, or bytecode rewriting. EVMPatch patches deployed Ethereum smart contracts through bytecode rewriting and proxy-based deployment, while Solidity implementations offer application-level flexibility within the EVM \cite{rodler2021evmpatch,ethereumEVM}. LEAGAN extends contract-level upgradeability through data separation, incremental hashing, revision control, and status-contract-based version management \cite{kumar2025leagan}. Precompiled Contracts provide a complementary client-side path for selected cryptographic routines through reserved EVM-facing addresses \cite{evmCodesPrecompiled,eip196,eip197}. Contract-level implementations remain constrained by EVM execution cost and state or interface compatibility, whereas adding or replacing a Precompiled Contract normally requires changes to client and protocol rules.
 
-Dynamic software-update schemes move replacement below the application layer by loading new components into a running host. KylinX supports runtime library replacement through dynamic mapping, MVEDSUA combines dynamic updates with multi-version execution, PYLIVE changes Python code online, and distributed-system research addresses modular updates and version consistency \cite{zhang2018kylinx,pina2019mvedsua,huang2021pylive,ajmani2006modular,baresi2017versionConsistency}. WASM provides a portable artifact format and explicit host boundary for this style of replacement. In blockchain systems, existing WASM-based upgrades generally target broad runtime logic rather than a narrow EVM-facing cryptographic interface \cite{webassemblyCoreSpec,polkadotRuntimeUpgrades}.
+Dynamic software-update schemes move replacement below the application layer by loading new components into a running host. KylinX supports runtime library replacement through dynamic mapping, MVEDSUA combines dynamic updates with multi-version execution, PYLIVE changes Python code online, and distributed-system research addresses modular updates and version consistency \cite{zhang2018kylinx,pina2019mvedsua,huang2021pylive,ajmani2006modular,baresi2017versionConsistency}. In blockchain systems, existing WASM-based upgrades generally target broad runtime logic rather than a narrow EVM-facing cryptographic interface, leaving algorithm-specific replacement outside their focus \cite{webassemblyCoreSpec,polkadotRuntimeUpgrades}.
+
+Gas-pricing work for EVM and rollup execution remains limited and often targets specific defenses; systematic models for pricing application-specific computational workloads remain underexplored. Chen et al. measured EVM opcode resource use through emulation and proposed execution-frequency-based gas adjustment, with parameters stored in a smart contract and read by a patched EVM \cite{chenAdaptiveGas}. Crapis et al. derived optimal dynamic fees across resources to balance persistent demand shifts against observation noise \cite{crapisDynamicFees}. Chaliasos et al. identified rollup data-availability-saturation and prover-killer attacks caused by underpriced data and proof costs, and proposed multidimensional-fee mitigations that target liveness and finality risks \cite{chaliasosRollups}.
 
 \section{EvoCrypt Design}\label{sec3}
 
@@ -431,28 +433,29 @@ This evaluation asks whether EvoCrypt makes upgradeable cryptographic algorithms
 
 Experiments used a Geth-based private Clique network running modified Geth v1.17.5-unstable on a 16-core, 32~GB Aliyun server with Ubuntu 24.04 LTS, built with Go 1.25.7. Solidity contracts were compiled with solc 0.8.26, and WASM modules were built with TinyGo 0.42.0. WASM execution used wazero v1.12.0 with a 16~MiB memory limit per module. The default execution timeout was 5~s, extended to 30~s for standalone verification of the computationally intensive algorithms. Inputs followed each algorithm's declared ABI and were constrained by available module memory, without a separate uniform size limit. These timeouts served as local safeguards; the evaluation does not establish deterministic behavior when a timeout occurs.
 
-Table~\ref{tab:eval-algorithms} gives the artifact sizes of the eight algorithms. Precompiled Contract (B) is the reference source of the client-integrated Precompiled Contract; WASM (B) is the uploaded module; Solidity (B) is the deployed runtime bytecode. Sizes and upgrade gas were remeasured on a fresh single-node Clique chain with Go 1.25.0, TinyGo 0.42.0, and solc 0.8.26 (Paris target, optimizer, 200 runs, via-IR) on an Intel Core i7-10700 host running Ubuntu 22.04.5 LTS. Upgrade transaction execution latencies are from the original run.
 \begin{table}[H]
-\centering
-\caption{Source and compiled artifact sizes of the evaluated algorithms.\label{tab:eval-algorithms}}
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabularx}{\textwidth}{@{}llll>{\raggedright\arraybackslash}X@{}}
-\toprule
-Algorithm & \shortstack[l]{Precompiled\\Contract (B)} & WASM (B) & Solidity (B) & Role \\
-\midrule
-Add & 623 & 6{,}945 & 171 & Non-cryptographic \\
-Sha256 & 3{,}218 & 8{,}339 & 358 & Cryptographic hash \\
-PolynomialMul & 790 & 8{,}165 & 1{,}004 & Algebraic operation \\
-Blake2bSum256 & 4{,}911 & 8{,}868 & 3{,}721 & Cryptographic hash \\
-Pbkdf2Sha256 & 5{,}435 & 12{,}371 & 1{,}555 & Key derivation \\
-Dh2048Secret & 1{,}595 & 46{,}102 & 2{,}489$^{\dagger}$ & Key exchange \\
-PedersenCommit & 5{,}196 & 48{,}239 & 3{,}093$^{\dagger}$ & Commitment scheme \\
-SchnorrVerify & 5{,}627 & 48{,}639 & 4{,}232 & Signature verification \\
-\bottomrule
-\end{tabularx}
-\par\smallskip\noindent\textsuperscript{\ensuremath{\dagger}}\scriptsize Solidity runtime bytecode includes the inherited modular-arithmetic implementation.\normalsize
-\end{table}
+    \centering
+    \caption{Source and compiled artifact sizes of the evaluated algorithms.\label{tab:eval-algorithms}}
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabularx}{\textwidth}{@{}llll>{\raggedright\arraybackslash}X@{}}
+    \toprule
+    Algorithm & \shortstack[l]{Precompiled\\Contract (B)} & WASM (B) & Solidity (B) & Role \\
+    \midrule
+    Add & 623 & 6{,}945 & 171 & Non-cryptographic \\
+    Sha256 & 3{,}218 & 8{,}339 & 358 & Cryptographic hash \\
+    PolynomialMul & 790 & 8{,}165 & 1{,}004 & Algebraic operation \\
+    Blake2bSum256 & 4{,}911 & 8{,}868 & 3{,}721 & Cryptographic hash \\
+    Pbkdf2Sha256 & 5{,}435 & 12{,}371 & 1{,}555 & Key derivation \\
+    Dh2048Secret & 1{,}595 & 46{,}102 & 2{,}489$^{\dagger}$ & Key exchange \\
+    PedersenCommit & 5{,}196 & 48{,}239 & 3{,}093$^{\dagger}$ & Commitment scheme \\
+    SchnorrVerify & 5{,}627 & 48{,}639 & 4{,}232 & Signature verification \\
+    \bottomrule
+    \end{tabularx}
+    \par\smallskip\noindent\textsuperscript{\ensuremath{\dagger}}\scriptsize Solidity runtime bytecode includes the inherited modular-arithmetic implementation.\normalsize
+    \end{table}
+
+Table~\ref{tab:eval-algorithms} gives the artifact sizes of the eight algorithms. Precompiled Contract (B) is the reference source of the client-integrated Precompiled Contract; WASM (B) is the uploaded module; Solidity (B) is the deployed runtime bytecode. Sizes and upgrade gas were remeasured on a fresh single-node Clique chain with Go 1.25.0, TinyGo 0.42.0, and solc 0.8.26 (Paris target, optimizer, 200 runs, via-IR) on an Intel Core i7-10700 host running Ubuntu 22.04.5 LTS. Upgrade transaction execution latencies are from the original run.
 
 \subsection{Upgrade Efficiency}\label{sec5.2}
 
@@ -472,11 +475,13 @@ Figure~\ref{fig:upgrade-efficiency} compares the cost of making an algorithm cal
 \label{fig:upgrade-efficiency}
 \end{figure}
 
-The two paths were similar for lightweight algorithms and diverged as the algorithm grew heavier. Add required 0.60~ms through EvoCrypt and 0.37~ms through Solidity, whereas SchnorrVerify required 2.34~ms and 4.30~ms. Upload gas was lower for seven of the eight algorithms, by 1.9--84.7\%. PBKDF2 required 175{,}668 gas for upload versus 388{,}984 gas for Solidity deployment, whereas Add remained more expensive at 105{,}964 versus 90{,}309 gas. A heavier algorithm can therefore be made callable without deploying a full Solidity implementation, at a lower setup cost than contract deployment. Lightweight cases stay comparable.
+The two paths were similar for lightweight algorithms and diverged as the algorithm grew heavier. Add required 0.60~ms through EvoCrypt and 0.37~ms through Solidity, whereas SchnorrVerify required 2.34~ms and 4.30~ms. Upload gas was lower for seven of the eight algorithms, by 1.9--84.7\%. PBKDF2 required 175{,}668 gas for upload versus 388{,}984 gas for Solidity deployment, whereas Add remained more expensive at 105{,}964 versus 90{,}309 gas. Blake2b’s Solidity implementation expands its 12-round compression into a 3{,}721-byte runtime, whose code-deposit charge alone is 744{,}200 gas at 200 gas per byte, most of the 856{,}731-gas receipt. The final three EvoCrypt uploads were similar at 503{,}168--531{,}232 gas because their WASM modules were also close in size, at 46{,}102--48{,}639 bytes, resulting in similar calldata costs. A heavier algorithm can therefore be made callable without deploying a full Solidity implementation, at a lower setup cost than contract deployment. Lightweight cases stay comparable.
 
 \subsection{Upgrade Consistency}\label{sec5.3}
 
-Figure~\ref{fig:consistency-scene} shows the upgrade path on the 20-node private Clique network. The upgrade transaction records version metadata on chain, each node prepares the WASM module locally, and invocations at or after the Activation Block resolve to the same active version. Geth-side handling finished within 0.54--2.34~ms, after which every evaluated node exposed the same callable version. Local readiness affects only preparation timing; version selection is fixed by the shared metadata and block height. The experiment is a controlled private-network validation and leaves wide-area propagation and adversarial delay unmeasured.
+Figure~\ref{fig:consistency-scene} shows the upgrade path on the 20-node private Clique network with staggered node startup. The upgrade transaction was submitted at block~10, and the Activation Block was set to block~20. Nodes~1--10 were started at the beginning of the experiment. Nodes~11--15 were started after the upgrade block but before the Activation Block, whereas nodes~16--20 were started after the Activation Block. This setup covered nodes already online at submission and nodes joining before or after activation.
+
+The upgrade transaction records version metadata on chain, and each node prepares the WASM module locally. The event timeline separates startup, preparation, and readiness for each node group. Together with the synchronization trace, it shows how nodes joining at different stages reach the version selected at the Activation Block. Invocations at or after the Activation Block resolve to the same active version. Geth-side handling finished within 0.54--2.34~ms, after which every evaluated node exposed the same callable version. Local readiness affects only preparation timing; version selection is fixed by the shared metadata and block height. The experiment is a controlled private-network validation and leaves wide-area propagation and adversarial delay unmeasured.
 
 \begin{figure}[H]
 \centering
@@ -528,7 +533,7 @@ Groth16Verify/BN254 & 11.676 & 2.182 & 5.35 \\
 \end{tabular*}
 \end{table}
 
-All six verifiers executed successfully. Through EvoCrypt, a contract can call each uploaded verifier, and a later upgrade can replace its implementation through the same interface. WASM time was 1.91--5.63 times the corresponding Precompiled Contract time, with the largest ratio for Groth16Verify/\allowbreak BLS12-381. EvoCrypt supports runtime replacement of these verifiers, while the corresponding Precompiled Contracts provide faster verification in these measurements.
+All six verifiers executed successfully. Through EvoCrypt, a contract can call each uploaded verifier, and a later upgrade can replace its implementation through the same interface. WASM time was 1.91--5.63 times the corresponding Precompiled Contract time. Ratios were 1.91--2.13 for signature verification and 5.35--5.63 for Groth16 verification, showing a larger relative gap for proof verification in this test set. EvoCrypt supports runtime replacement of these verifiers, while the corresponding Precompiled Contracts provide faster verification in these measurements.
 
 \section{Conclusion}\label{sec6}
 
